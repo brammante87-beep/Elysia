@@ -150,6 +150,10 @@ export class Renderer {
     }
 
     drawEntity(entity) {
+        if (entity.reservedForPartnership) {
+            this.drawPartnerTargetHighlight(entity);
+        }
+
         if (entity === this.world.hero) {
             this.drawHero(entity);
         } else {
@@ -161,6 +165,18 @@ export class Renderer {
         if (entity.state === "cuttingTree") {
             this.drawCuttingFeedback(entity);
         }
+
+        if (entity.state === "socializing" || entity.partnerFeedbackTimer > 0) {
+            this.drawHeartFeedback(entity);
+        }
+    }
+
+    drawPartnerTargetHighlight(entity) {
+        this.context.strokeStyle = "#f472b6";
+        this.context.lineWidth = 3;
+        this.context.beginPath();
+        this.context.ellipse(entity.x, entity.y + 16, 18, 8, 0, 0, Math.PI * 2);
+        this.context.stroke();
     }
 
     drawHero(hero) {
@@ -233,6 +249,18 @@ export class Renderer {
         }
 
         return ["#d1d5db", "#f8fafc"];
+    }
+
+    drawHeartFeedback(entity) {
+        const x = entity.x;
+        const y = entity.y - 34;
+
+        this.context.fillStyle = "#f472b6";
+        this.context.beginPath();
+        this.context.moveTo(x, y + 6);
+        this.context.bezierCurveTo(x - 10, y, x - 8, y - 9, x, y - 4);
+        this.context.bezierCurveTo(x + 8, y - 9, x + 10, y, x, y + 6);
+        this.context.fill();
     }
 
     drawCuttingFeedback(entity) {

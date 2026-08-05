@@ -12,7 +12,15 @@ export class Hero extends Entity {
         this.state = "idle";
         this.actionTimer = 0;
         this.wood = 0;
+        this.water = 0;
+        this.meat = 0;
         this.house = null;
+        this.partners = [];
+        this.parents = [];
+        this.children = [];
+        this.partnerTarget = null;
+        this.socialTimer = 0;
+        this.partnerFeedbackTimer = 0;
     }
 
     getSpriteKey() {

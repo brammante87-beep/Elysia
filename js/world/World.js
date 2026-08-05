@@ -13,6 +13,7 @@ export class World {
         this.villagers = [];
         this.trees = [];
         this.houses = [];
+        this.lastPartnerIneligibilityReason = null;
     }
 
     initialize(settings = {}) {
@@ -21,9 +22,10 @@ export class World {
         this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
         this.trees = [];
         this.houses = [];
+        this.lastPartnerIneligibilityReason = null;
         this.villagers = [
-            new Villager("Mira", 448, 384),
-            new Villager("Taro", 384, 480)
+            new Villager("Mira", 448, 384, { gender: "donna", orientation: "bisessuale", relationshipStyle: "monogamo" }),
+            new Villager("Taro", 384, 480, { gender: "uomo", orientation: "etero", relationshipStyle: "monogamo" })
         ];
         this.villagers.forEach((villager) => {
             villager.idleTimer = this.getRandomVillagerIdleTime();
@@ -34,6 +36,7 @@ export class World {
         this.updateHero(delta);
         this.assignVillagersToTrees();
         this.updateTreeFeedback(delta);
+        this.updatePartnerFeedback(delta);
 
         this.villagers.forEach((villager) => {
             this.updateVillager(villager, delta);
@@ -41,6 +44,11 @@ export class World {
     }
 
     updateHero(delta) {
+        if (this.hero.partnerTarget !== null) {
+            this.updateHeroPartnerProposal(delta);
+            return;
+        }
+
         if (this.hero.targetTree !== null) {
             this.updateHeroTreeWorker(delta);
             return;
@@ -107,6 +115,10 @@ export class World {
     }
 
     updateVillager(villager, delta) {
+        if (villager.reservedForPartnership) {
+            return;
+        }
+
         if (villager.targetTree !== null) {
             this.updateTreeWorker(villager, delta);
             return;
@@ -185,6 +197,8 @@ export class World {
             this.removeTree(tree);
             this.clearTreeWork(worker);
         }
+
+        this.clearVillagerTreeWork(worker);
     }
 
     clearTreeWork(worker) {
@@ -219,6 +233,7 @@ export class World {
     getAvailableVillager() {
         return this.villagers.find((villager) => {
             return villager.targetTree === null &&
+                !villager.reservedForPartnership &&
                 villager.state === "idle";
         }) || null;
     }
@@ -268,11 +283,19 @@ export class World {
         });
     }
 
+    updatePartnerFeedback(delta) {
+        this.hero.partnerFeedbackTimer = Math.max(0, this.hero.partnerFeedbackTimer - delta);
+        this.villagers.forEach((villager) => {
+            villager.partnerFeedbackTimer = Math.max(0, villager.partnerFeedbackTimer - delta);
+        });
+    }
+
     getRandomVillagerIdleTime() {
         return 1 + Math.random() * 3;
     }
 
     setHeroDestination(x, y) {
+        this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
         this.heroDestination = { x, y };
         this.hero.state = "walking";
@@ -283,6 +306,7 @@ export class World {
             return false;
         }
 
+        this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
         this.releaseTreeFromVillager(tree);
         tree.assignedHero = this.hero;
@@ -307,6 +331,179 @@ export class World {
         return this.trees.find((tree) => {
             return Math.hypot(tree.x - x, tree.y - y) <= tree.radius;
         }) || null;
+    }
+
+    getVillagerAtWorldPosition(x, y) {
+        return this.villagers.find((villager) => {
+            return Math.hypot(villager.x - x, villager.y - y) <= villager.radius;
+        }) || null;
+    }
+
+    commandHeroToPartnerWith(villager) {
+        const ineligibilityReason = this.getPartnerIneligibilityReason(villager);
+
+        if (ineligibilityReason !== null) {
+            this.lastPartnerIneligibilityReason = ineligibilityReason;
+            this.clearHeroPartnerProposal();
+            return false;
+        }
+
+        this.lastPartnerIneligibilityReason = null;
+
+        this.clearHeroPartnerProposal();
+        this.clearHeroTreeWork();
+        this.clearVillagerTreeWork(villager);
+        this.hero.partnerTarget = villager;
+        this.hero.socialTimer = 0;
+        this.heroDestination = null;
+        this.hero.state = "seekingPartner";
+        villager.reservedForPartnership = true;
+        villager.destination = null;
+        villager.state = "awaitingPartner";
+
+        return true;
+    }
+
+    updateHeroPartnerProposal(delta) {
+        const villager = this.hero.partnerTarget;
+
+        if (!this.isVillagerEligiblePartner(villager)) {
+            this.clearHeroPartnerProposal();
+            return;
+        }
+
+        const stopDistance = this.hero.radius + villager.radius + 4;
+        const distanceX = villager.x - this.hero.x;
+        const distanceY = villager.y - this.hero.y;
+        const distance = Math.hypot(distanceX, distanceY);
+
+        if (distance > stopDistance + 0.5) {
+            this.hero.state = "seekingPartner";
+            villager.state = "awaitingPartner";
+
+            const step = Math.min(this.hero.speed * delta, distance - stopDistance);
+            this.hero.x += (distanceX / distance) * step;
+            this.hero.y += (distanceY / distance) * step;
+            return;
+        }
+
+        this.hero.state = "socializing";
+        villager.state = "socializing";
+        this.hero.socialTimer += delta;
+
+        if (this.hero.socialTimer >= 2) {
+            this.completeHeroPartnership(villager);
+        }
+    }
+
+    completeHeroPartnership(villager) {
+        if (!this.isVillagerEligiblePartner(villager)) {
+            this.clearHeroPartnerProposal();
+            return false;
+        }
+
+        this.hero.wood -= 3;
+        this.hero.water -= 3;
+        this.hero.meat -= 3;
+        this.hero.partners.push(villager);
+        villager.partners.push(this.hero);
+        villager.house = this.hero.house;
+
+        if (!this.hero.house.occupants.includes(villager)) {
+            this.hero.house.occupants.push(villager);
+        }
+
+        this.hero.partnerFeedbackTimer = 1.5;
+        villager.partnerFeedbackTimer = 1.5;
+        this.clearHeroPartnerProposal();
+
+        return true;
+    }
+
+    clearHeroPartnerProposal() {
+        const villager = this.hero.partnerTarget;
+
+        if (villager !== null) {
+            villager.reservedForPartnership = false;
+            villager.destination = null;
+            villager.idleTimer = this.getRandomVillagerIdleTime();
+            villager.state = "idle";
+        }
+
+        this.hero.partnerTarget = null;
+        this.hero.socialTimer = 0;
+
+        if (this.hero.state === "seekingPartner" || this.hero.state === "socializing") {
+            this.hero.state = "idle";
+        }
+    }
+
+    isVillagerEligiblePartner(villager) {
+        return this.getPartnerIneligibilityReason(villager) === null;
+    }
+
+    getPartnerIneligibilityReason(villager) {
+        if (!this.villagers.includes(villager) || villager === this.hero || !villager.alive || !villager.isAdult) {
+            return "Non disponibile";
+        }
+
+        if (this.hero.house === null) {
+            return "Casa non costruita";
+        }
+
+        if (this.hero.wood < 3 || this.hero.water < 3 || this.hero.meat < 3) {
+            return "Servono 3 legna, 3 acqua e 3 carne";
+        }
+
+        if (this.hero.partners.length > 0 || this.hero.partners.includes(villager)) {
+            return "Il Prescelto ha già un partner";
+        }
+
+        if (this.isCloseRelative(this.hero, villager)) {
+            return "Parente stretto";
+        }
+
+        if (villager.relationshipStyle === "monogamo" && villager.partners.length > 0) {
+            return "Ha già una relazione esclusiva";
+        }
+
+        if (!this.isOrientationCompatible(this.hero, villager)) {
+            return "Non compatibile con l'orientamento";
+        }
+
+        return null;
+    }
+
+    isCloseRelative(first, second) {
+        return first.parents.includes(second) ||
+            first.children.includes(second) ||
+            second.parents.includes(first) ||
+            second.children.includes(first);
+    }
+
+    isOrientationCompatible(hero, villager) {
+        if (hero.orientation === "pansessuale") {
+            return true;
+        }
+
+        if (hero.gender === "non-binario") {
+            return true;
+        }
+
+        if (hero.orientation === "bisessuale") {
+            return villager.gender === "uomo" || villager.gender === "donna";
+        }
+
+        if (hero.orientation === "gay-lesbica") {
+            return villager.gender === hero.gender;
+        }
+
+        if (hero.orientation === "etero") {
+            return (hero.gender === "uomo" && villager.gender === "donna") ||
+                (hero.gender === "donna" && villager.gender === "uomo");
+        }
+
+        return false;
     }
 
     isWalkableAtWorldPosition(x, y) {
