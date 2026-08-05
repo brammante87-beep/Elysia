@@ -5,6 +5,7 @@ export class Entity {
         this.y = y;
         this.color = color;
         this.radius = 12;
+        this.id = null;
     }
 
     update(delta) {

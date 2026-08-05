@@ -5,6 +5,7 @@ import { Input } from "../input/Input.js";
 import { UI } from "../ui/UI.js";
 import { MiracleManager } from "../miracles/MiracleManager.js";
 import { AssetLoader } from "../assets/AssetLoader.js";
+import { SaveManager } from "./SaveManager.js";
 
 export class Game {
     constructor(canvasId, uiId) {
@@ -19,6 +20,9 @@ export class Game {
         this.input = new Input(this.canvas, this.world, this.miracleManager);
         this.ui = new UI(this.uiRoot, this.miracleManager, this.world);
         this.engine = new Engine(this);
+        this.world.onAutosaveNeeded = () => this.safeAutosave();
+        this.saveManager = new SaveManager();
+        this.autosaveTimer = 0;
         this.started = false;
 
         this.preloadAssets();
@@ -50,30 +54,78 @@ export class Game {
     }
 
     start() {
-        this.ui.showMainMenu(() => {
-            this.ui.showCharacterCreation((settings) => {
-                this.startNewGame(settings);
-            });
+        this.ui.showMainMenu({
+            hasSave: this.saveManager.hasValidSave(),
+            onContinue: () => this.continueGame(),
+            onNewGame: () => this.prepareNewGame()
         });
     }
 
-    startNewGame(settings) {
-        if (this.started) {
+    prepareNewGame() {
+        if (this.saveManager.hasValidSave() && !window.confirm("Iniziare una nuova partita eliminerà il salvataggio attuale.")) {
+            this.start();
             return;
         }
 
+        this.saveManager.deleteSave();
+        this.ui.showCharacterCreation((settings) => {
+            this.startNewGame(settings);
+        });
+    }
+
+    continueGame() {
+        const save = this.saveManager.load();
+        if (save === null || !this.world.loadFromData(save.gameState)) {
+            this.start();
+            return;
+        }
+
+        this.showGameplayUi();
         this.started = true;
+        this.engine.start();
+    }
+
+    startNewGame(settings) {
+        this.started = true;
+        this.autosaveTimer = 0;
         this.world.initialize(settings);
-        this.ui.clear();
-        this.ui.showMiracleToolbar();
-        this.ui.showHouseHud();
+        this.showGameplayUi();
         this.engine.start();
     }
 
     update(delta) {
         this.world.update(delta);
+        this.updateAutosave(delta);
         this.ui.updateMiracleButtons();
         this.ui.updateHouseHud();
+    }
+
+    showGameplayUi() {
+        this.ui.clear();
+        this.ui.showMiracleToolbar();
+        this.ui.showHouseHud();
+        this.ui.showSaveButton(() => this.manualSave());
+    }
+
+    updateAutosave(delta) {
+        this.autosaveTimer += delta;
+        if (this.autosaveTimer >= 60) {
+            this.autosaveTimer = 0;
+            this.safeAutosave();
+        }
+    }
+
+    safeAutosave() {
+        try { this.saveManager.save(this.world.serialize()); } catch (error) { console.warn("Autosave non riuscito", error); }
+    }
+
+    manualSave() {
+        try {
+            this.saveManager.save(this.world.serialize());
+            this.ui.showFeedback("Partita salvata");
+        } catch (error) {
+            console.warn("Salvataggio non riuscito", error);
+        }
     }
 
     render() {

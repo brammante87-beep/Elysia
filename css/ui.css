@@ -213,3 +213,36 @@
         gap: 6px 10px;
     }
 }
+
+#saveButton {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(47, 143, 70, 0.92);
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    pointer-events: auto;
+    touch-action: manipulation;
+}
+
+.feedbackMessage {
+    position: absolute;
+    top: max(54px, calc(env(safe-area-inset-top) + 54px));
+    right: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(16, 24, 32, 0.88);
+    color: #ffffff;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.menuPanel .primaryButton + .primaryButton {
+    margin-top: 12px;
+}
