@@ -157,7 +157,7 @@ export class Renderer {
         if (entity === this.world.hero) {
             this.drawHero(entity);
         } else {
-            this.drawGeometricEntity(entity);
+            this.drawVillager(entity);
         }
 
         this.drawEntityName(entity);
@@ -199,6 +199,26 @@ export class Renderer {
         return this.assetLoader.getImage(hero.getSpriteKey());
     }
 
+    drawVillager(villager) {
+        const sprite = this.getVillagerSprite(villager);
+
+        if (sprite === null) {
+            this.drawGeometricEntity(villager);
+        } else {
+            this.context.drawImage(sprite, villager.x - 32, villager.y - 45, 64, 64);
+        }
+
+        this.drawOrientationAccent(villager);
+    }
+
+    getVillagerSprite(villager) {
+        if (this.assetLoader === null) {
+            return null;
+        }
+
+        return this.assetLoader.getImage(villager.spriteKey);
+    }
+
     drawGeometricEntity(entity) {
         this.context.fillStyle = "rgba(0, 0, 0, 0.25)";
         this.context.beginPath();
@@ -218,11 +238,11 @@ export class Renderer {
         this.context.fillText(entity.name, entity.x, entity.y - 20);
     }
 
-    drawOrientationAccent(hero) {
-        const colors = this.getOrientationAccentColors(hero.orientation);
+    drawOrientationAccent(entity) {
+        const colors = this.getOrientationAccentColors(entity.orientation);
         const stripeWidth = 3;
-        const startX = hero.x + 7;
-        const startY = hero.y - 9;
+        const startX = entity.x + 7;
+        const startY = entity.y - 9;
 
         this.context.fillStyle = "#2d2013";
         this.context.beginPath();

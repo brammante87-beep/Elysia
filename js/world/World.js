@@ -24,8 +24,26 @@ export class World {
         this.houses = [];
         this.lastPartnerIneligibilityReason = null;
         this.villagers = [
-            new Villager("Mira", 448, 384, { gender: "donna", orientation: "bisessuale", relationshipStyle: "monogamo" }),
-            new Villager("Taro", 384, 480, { gender: "uomo", orientation: "etero", relationshipStyle: "monogamo" })
+            new Villager({
+                name: "Mira",
+                x: 448,
+                y: 384,
+                gender: "donna",
+                orientation: "bisessuale",
+                relationshipStyle: "monogamo",
+                age: 26,
+                spriteKey: "villager_female_01"
+            }),
+            new Villager({
+                name: "Taro",
+                x: 384,
+                y: 480,
+                gender: "uomo",
+                orientation: "pansessuale",
+                relationshipStyle: "poliamoroso",
+                age: 29,
+                spriteKey: "villager_male_01"
+            })
         ];
         this.villagers.forEach((villager) => {
             villager.idleTimer = this.getRandomVillagerIdleTime();
