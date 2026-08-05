@@ -5,6 +5,7 @@ import { Tree } from "../entities/Tree.js";
 import { House } from "../entities/House.js";
 import { WaterSource } from "../entities/WaterSource.js";
 import { Animal } from "../entities/Animal.js";
+import { Child } from "../entities/Child.js";
 
 export class World {
     constructor() {
@@ -19,6 +20,7 @@ export class World {
         this.houses = [];
         this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
+        this.lastFertilityIneligibilityReason = null;
     }
 
     initialize(settings = {}) {
@@ -31,6 +33,7 @@ export class World {
         this.houses = [];
         this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
+        this.lastFertilityIneligibilityReason = null;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -60,6 +63,8 @@ export class World {
 
     update(delta) {
         this.updateHero(delta);
+        this.updateFertilityEvents(delta);
+        this.updateChildren(delta);
         this.assignVillagersToResources();
         this.updateResourceFeedback(delta);
         this.updatePartnerFeedback(delta);
@@ -70,6 +75,10 @@ export class World {
     }
 
     updateHero(delta) {
+        if (this.hero.reservedForFertility) {
+            return;
+        }
+
         if (this.hero.partnerTarget !== null) {
             this.updateHeroPartnerProposal(delta);
             return;
@@ -151,7 +160,7 @@ export class World {
     }
 
     updateVillager(villager, delta) {
-        if (villager.reservedForPartnership) {
+        if (!villager.isAdult || villager.reservedForPartnership || villager.reservedForFertility || villager.state === "insideHouse") {
             return;
         }
 
@@ -372,6 +381,8 @@ export class World {
                 villager.targetWaterSource === null &&
                 villager.targetAnimal === null &&
                 !villager.reservedForPartnership &&
+                !villager.reservedForFertility &&
+                villager.isAdult &&
                 villager.state === "idle";
         }) || null;
     }
@@ -412,9 +423,12 @@ export class World {
     }
 
     clearVillagerAllWork(villager) {
-        this.clearVillagerTreeWork(villager);
-        this.clearVillagerWaterWork(villager);
-        this.clearVillagerAnimalWork(villager);
+        if (villager.targetTree !== null) { this.clearVillagerTreeWork(villager); }
+        if (villager.targetWaterSource !== null) { this.clearVillagerWaterWork(villager); }
+        if (villager.targetAnimal !== null) { this.clearVillagerAnimalWork(villager); }
+        villager.destination = null;
+        villager.actionTimer = 0;
+        villager.state = "idle";
     }
 
     clearVillagerWaterWork(villager) {
@@ -621,7 +635,7 @@ export class World {
 
     getVillagerAtWorldPosition(x, y) {
         return this.villagers.find((villager) => {
-            return Math.hypot(villager.x - x, villager.y - y) <= villager.radius;
+            return villager.isAdult && Math.hypot(villager.x - x, villager.y - y) <= villager.radius;
         }) || null;
     }
 
@@ -793,6 +807,186 @@ export class World {
 
         return false;
     }
+
+
+    getHouseAtWorldPosition(x, y) {
+        return this.houses.find((house) => Math.hypot(house.x - x, house.y - y) <= house.radius) || null;
+    }
+
+    getPopulationCount() {
+        return (this.hero === null ? 0 : 1) + this.villagers.length;
+    }
+
+    commandFertilityAt(x, y) {
+        const house = this.getHouseAtWorldPosition(x, y);
+        if (house === null) { this.lastFertilityIneligibilityReason = null; return false; }
+        const reason = this.getFertilityIneligibilityReason(house);
+        if (reason !== null) { this.lastFertilityIneligibilityReason = reason; return false; }
+        this.lastFertilityIneligibilityReason = null;
+        this.startFertilityEvent(house);
+        return true;
+    }
+
+    getFertilityIneligibilityReason(house) {
+        if (this.getPopulationCount() >= 32) { return "La popolazione ha raggiunto il limite"; }
+        if (house.fertilityInProgress) { return "La casa è già occupata"; }
+        if (house.fertilityCooldown > 0) { return "La casa ha bisogno di tempo"; }
+        const dependentChildren = house.occupants.filter((occupant) => !occupant.isAdult);
+        if (dependentChildren.length >= 2) { return "La casa ospita già due figli"; }
+        const adults = house.occupants.filter((occupant) => occupant.isAdult);
+        if (adults.length < 2) { return "Servono due adulti nella casa"; }
+        if (adults.some((adult) => !adult.alive || adult.house !== house || this.isBusyForFertility(adult))) { return "Gli adulti non sono disponibili"; }
+        if (!this.areEstablishedHouseholdPartners(adults)) { return "Servono partner stabiliti"; }
+        if (this.hasCloseRelatives(adults)) { return "Parenti stretti non ammessi"; }
+        return null;
+    }
+
+    isBusyForFertility(person) {
+        return person.reservedForPartnership || person.reservedForFertility ||
+            person.targetTree !== null || person.targetWaterSource !== null || person.targetAnimal !== null ||
+            (person.partnerTarget !== undefined && person.partnerTarget !== null);
+    }
+
+    areEstablishedHouseholdPartners(adults) {
+        return adults.every((adult) => adults.some((other) => other !== adult && adult.partners.includes(other)));
+    }
+
+    hasCloseRelatives(people) {
+        return people.some((person, index) => people.slice(index + 1).some((other) => this.isCloseRelative(person, other)));
+    }
+
+    startFertilityEvent(house) {
+        house.participants = house.occupants.filter((occupant) => occupant.isAdult);
+        house.fertilityInProgress = true;
+        house.fertilityPhase = "walking";
+        house.fertilityTimer = 0;
+        house.pendingChild = null;
+        house.participants.forEach((participant) => {
+            if (participant !== this.hero) { this.clearVillagerAllWork(participant); }
+            participant.reservedForFertility = true;
+            participant.destination = this.getHouseEntrance(house);
+            participant.state = "walkingToHouse";
+        });
+        if (house.participants.includes(this.hero)) {
+            this.clearHeroPartnerProposal();
+            this.clearHeroTreeWork();
+            this.clearHeroWaterWork();
+            this.clearHeroAnimalWork();
+            this.heroDestination = this.getHouseEntrance(house);
+        }
+    }
+
+    updateFertilityEvents(delta) {
+        this.houses.forEach((house) => {
+            house.fertilityCooldown = Math.max(0, house.fertilityCooldown - delta);
+            if (!house.fertilityInProgress) { return; }
+            if (this.getFertilityIneligibilityReasonDuringEvent(house) !== null) { this.cancelFertilityEvent(house); return; }
+            if (house.fertilityPhase === "walking") { this.updateFertilityWalking(house, delta); return; }
+            if (house.fertilityPhase === "private") { this.updateFertilityPrivate(house, delta); }
+        });
+    }
+
+    getFertilityIneligibilityReasonDuringEvent(house) {
+        if (house.participants.some((p) => !p.alive || p.house !== house || !p.isAdult)) { return "invalid"; }
+        if (this.hasCloseRelatives(house.participants)) { return "invalid"; }
+        return null;
+    }
+
+    updateFertilityWalking(house, delta) {
+        house.participants.forEach((participant) => this.moveParticipantToHouse(participant, house, delta));
+        if (house.participants.every((participant) => Math.hypot(participant.x - this.getHouseEntrance(house).x, participant.y - this.getHouseEntrance(house).y) <= 4)) {
+            house.fertilityPhase = "private";
+            house.fertilityTimer = 0;
+            house.participants.forEach((participant) => { participant.state = "insideHouse"; participant.destination = null; });
+            if (house.participants.includes(this.hero)) { this.heroDestination = null; }
+        }
+    }
+
+    moveParticipantToHouse(participant, house, delta) {
+        const entrance = this.getHouseEntrance(house);
+        const distanceX = entrance.x - participant.x;
+        const distanceY = entrance.y - participant.y;
+        const distance = Math.hypot(distanceX, distanceY);
+        const step = participant.speed * delta;
+        if (distance <= step || distance === 0) { participant.x = entrance.x; participant.y = entrance.y; return; }
+        participant.x += (distanceX / distance) * step;
+        participant.y += (distanceY / distance) * step;
+    }
+
+    updateFertilityPrivate(house, delta) {
+        house.fertilityTimer += delta;
+        if (house.fertilityTimer >= 5) { this.completeFertilityEvent(house); }
+    }
+
+    completeFertilityEvent(house) {
+        const child = this.createChildForHouse(house);
+        this.villagers.push(child);
+        house.occupants.push(child);
+        house.participants.forEach((parent) => { if (!parent.children.includes(child)) { parent.children.push(child); } });
+        house.participants.forEach((participant, index) => {
+            participant.x = house.x - 18 + index * 18;
+            participant.y = house.y + 48;
+            participant.reservedForFertility = false;
+            participant.state = "idle";
+            participant.idleTimer = this.getRandomVillagerIdleTime();
+        });
+        house.fertilityInProgress = false;
+        house.fertilityPhase = null;
+        house.fertilityTimer = 0;
+        house.fertilityCooldown = 60;
+        house.participants = [];
+        house.pendingChild = null;
+    }
+
+    createChildForHouse(house) {
+        const gender = this.getRandomChildGender();
+        const entrance = this.getHouseEntrance(house);
+        return new Child({ name: this.getRandomChildName(), x: entrance.x + 24, y: entrance.y + 8, gender, house, parents: [...house.participants], spriteKey: this.getChildSpriteKey(gender) });
+    }
+
+    cancelFertilityEvent(house) {
+        house.participants.forEach((participant) => { participant.reservedForFertility = false; participant.destination = null; participant.state = "idle"; });
+        house.fertilityInProgress = false; house.fertilityPhase = null; house.fertilityTimer = 0; house.participants = []; house.pendingChild = null;
+    }
+
+    updateChildren(delta) {
+        this.villagers.forEach((villager) => {
+            if (villager.ageStage === "child") { this.updateChild(villager, delta); }
+        });
+    }
+
+    updateChild(child, delta) {
+        child.ageTimer += delta;
+        if (child.ageTimer >= child.ageDuration) { this.growChildIntoAdult(child); return; }
+        if (child.destination === null) { child.idleTimer -= delta; if (child.idleTimer <= 0) { child.destination = this.getRandomChildDestination(child); child.state = "childWalking"; } return; }
+        this.moveChild(child, delta);
+    }
+
+    moveChild(child, delta) {
+        const dx = child.destination.x - child.x; const dy = child.destination.y - child.y; const distance = Math.hypot(dx, dy); const step = child.speed * delta;
+        if (distance <= step || distance === 0) { child.x = child.destination.x; child.y = child.destination.y; child.destination = null; child.idleTimer = this.getRandomVillagerIdleTime(); child.state = "childIdle"; return; }
+        child.x += (dx / distance) * step; child.y += (dy / distance) * step;
+    }
+
+    getRandomChildDestination(child) {
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+            const angle = Math.random() * Math.PI * 2; const radius = Math.random() * 120;
+            const x = child.house.x + Math.cos(angle) * radius; const y = child.house.y + Math.sin(angle) * radius;
+            if (this.contains(x, y) && this.isWalkableAtWorldPosition(x, y)) { return { x, y }; }
+        }
+        return this.getHouseEntrance(child.house);
+    }
+
+    growChildIntoAdult(child) {
+        child.ageStage = "adult"; child.isAdult = true; child.orientation = this.getRandomAdultOrientation(); child.relationshipStyle = Math.random() < 0.5 ? "monogamo" : "poliamoroso"; child.spriteKey = this.getAdultVillagerSpriteKey(child.gender); child.state = "idle"; child.destination = null;
+    }
+
+    getHouseEntrance(house) { return { x: house.x, y: house.y + 34 }; }
+    getRandomChildName() { return ["Lina", "Nilo", "Sami", "Elia", "Rina"][Math.floor(Math.random() * 5)]; }
+    getRandomChildGender() { return ["uomo", "donna", "non-binario"][Math.floor(Math.random() * 3)]; }
+    getChildSpriteKey(gender) { if (gender === "donna") { return "child_female_01"; } if (gender === "non-binario") { return "child_nonbinary_01"; } return "child_male_01"; }
+    getRandomAdultOrientation() { return ["etero", "gay-lesbica", "bisessuale", "pansessuale"][Math.floor(Math.random() * 4)]; }
+    getAdultVillagerSpriteKey(gender) { if (gender === "donna") { return "villager_female_01"; } if (gender === "non-binario") { return "villager_nonbinary_01"; } return "villager_male_01"; }
 
     isWalkableAtWorldPosition(x, y) {
         return this.terrain.isWalkableAtWorldPosition(x, y);

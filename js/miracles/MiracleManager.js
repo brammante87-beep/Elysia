@@ -46,7 +46,20 @@ export class MiracleManager {
             return this.castHouse(x, y, world);
         }
 
+        if (this.selectedMiracle === "fertility") {
+            return this.castFertility(x, y, world);
+        }
+
         return false;
+    }
+
+    castFertility(x, y, world) {
+        if (!world.commandFertilityAt(x, y)) {
+            return false;
+        }
+
+        this.clearSelection();
+        return true;
     }
 
     castHouse(x, y, world) {

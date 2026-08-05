@@ -23,6 +23,9 @@ export class Hero extends Entity {
         this.partnerTarget = null;
         this.socialTimer = 0;
         this.partnerFeedbackTimer = 0;
+        this.isAdult = true;
+        this.alive = true;
+        this.reservedForFertility = false;
     }
 
     getSpriteKey() {

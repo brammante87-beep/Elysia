@@ -6,5 +6,11 @@ export class House extends Entity {
         this.owner = owner;
         this.occupants = [owner];
         this.radius = 30;
+        this.fertilityInProgress = false;
+        this.fertilityPhase = null;
+        this.fertilityTimer = 0;
+        this.fertilityCooldown = 0;
+        this.participants = [];
+        this.pendingChild = null;
     }
 }
