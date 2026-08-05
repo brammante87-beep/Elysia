@@ -1,58 +1,23 @@
 <!DOCTYPE html>
-<html lang="it">
-
+<html lang="en">
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Elysia</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elysia Alpha 0.1</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/ui.css">
-
 </head>
-
 <body>
+    <canvas id="game" aria-label="Elysia world"></canvas>
+    <div id="ui" aria-live="polite"></div>
 
-    <!-- Canvas del gioco -->
+    <script type="module">
+        import { Game } from "./js/core/Game.js";
 
-    <canvas id="game"></canvas>
-
-    <!-- Interfaccia -->
-
-    <div id="ui"></div>
-
-    <!-- ========================= -->
-    <!-- CORE -->
-    <!-- ========================= -->
-
-    <script src="js/main.js"></script>
-    <script src="js/game.js"></script>
-    <script src="js/engine.js"></script>
-
-    <!-- ========================= -->
-    <!-- MONDO -->
-    <!-- ========================= -->
-
-    <script src="js/world.js"></script>
-
-    <!-- ========================= -->
-    <!-- GIOCATORE -->
-    <!-- ========================= -->
-
-    <script src="js/input.js"></script>
-    <script src="js/miracles.js"></script>
-
-    <!-- ========================= -->
-    <!-- GRAFICA -->
-    <!-- ========================= -->
-
-    <script src="js/renderer.js"></script>
-    <script src="js/ui.js"></script>
-
+        window.addEventListener("load", () => {
+            const game = new Game("game", "ui");
+            game.start();
+        });
+    </script>
 </body>
-
 </html>
