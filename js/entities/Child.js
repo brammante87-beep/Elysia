@@ -1,11 +1,13 @@
 import { Entity } from "./Entity.js";
 
 export class Child extends Entity {
+    static GROWTH_DURATION_SECONDS = 300;
+
     constructor(settings = {}) {
         super(settings.name || "Figlio", settings.x || 0, settings.y || 0, "#fbbf24");
         this.ageStage = "child";
         this.ageTimer = 0;
-        this.ageDuration = 900;
+        this.ageDuration = Child.GROWTH_DURATION_SECONDS;
         this.isAdult = false;
         this.alive = true;
         this.gender = settings.gender || "uomo";
