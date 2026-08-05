@@ -2,6 +2,7 @@ import { Terrain } from "./Terrain.js";
 import { Hero } from "../entities/Hero.js";
 import { Villager } from "../entities/Villager.js";
 import { Tree } from "../entities/Tree.js";
+import { House } from "../entities/House.js";
 
 export class World {
     constructor() {
@@ -11,6 +12,7 @@ export class World {
         this.heroDestination = null;
         this.villagers = [];
         this.trees = [];
+        this.houses = [];
     }
 
     initialize(settings = {}) {
@@ -18,6 +20,7 @@ export class World {
         this.heroDestination = null;
         this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
         this.trees = [];
+        this.houses = [];
         this.villagers = [
             new Villager("Mira", 448, 384),
             new Villager("Taro", 384, 480)
@@ -38,10 +41,21 @@ export class World {
     }
 
     updateHero(delta) {
-        if (this.heroDestination === null) {
+        if (this.hero.targetTree !== null) {
+            this.updateHeroTreeWorker(delta);
             return;
         }
 
+        if (this.heroDestination === null) {
+            this.hero.state = "idle";
+            return;
+        }
+
+        this.hero.state = "walking";
+        this.moveHeroTowardDestination(delta);
+    }
+
+    moveHeroTowardDestination(delta) {
         const distanceX = this.heroDestination.x - this.hero.x;
         const distanceY = this.heroDestination.y - this.hero.y;
         const distance = Math.hypot(distanceX, distanceY);
@@ -51,11 +65,45 @@ export class World {
             this.hero.x = this.heroDestination.x;
             this.hero.y = this.heroDestination.y;
             this.heroDestination = null;
+            this.hero.state = "idle";
             return;
         }
 
         this.hero.x += (distanceX / distance) * step;
         this.hero.y += (distanceY / distance) * step;
+    }
+
+    updateHeroTreeWorker(delta) {
+        const tree = this.hero.targetTree;
+
+        if (!this.trees.includes(tree)) {
+            this.clearHeroTreeWork();
+            return;
+        }
+
+        const stopDistance = this.hero.radius + tree.radius + 4;
+        const distanceX = tree.x - this.hero.x;
+        const distanceY = tree.y - this.hero.y;
+        const distance = Math.hypot(distanceX, distanceY);
+
+        if (distance > stopDistance + 0.5) {
+            this.hero.state = "walking";
+            this.heroDestination = null;
+
+            const step = Math.min(this.hero.speed * delta, distance - stopDistance);
+            this.hero.x += (distanceX / distance) * step;
+            this.hero.y += (distanceY / distance) * step;
+            return;
+        }
+
+        this.hero.state = "cuttingTree";
+        tree.isBeingCut = true;
+        this.hero.actionTimer += delta;
+
+        while (this.hero.actionTimer >= 1 && this.trees.includes(tree)) {
+            this.hero.actionTimer -= 1;
+            this.cutTree(this.hero, tree);
+        }
     }
 
     updateVillager(villager, delta) {
@@ -128,20 +176,29 @@ export class World {
         }
     }
 
-    cutTree(villager, tree) {
+    cutTree(worker, tree) {
         tree.woodRemaining -= 1;
         tree.cutFeedbackTimer = 0.2;
-        villager.wood += 1;
+        worker.wood += 1;
 
         if (tree.woodRemaining <= 0) {
             this.removeTree(tree);
-            this.clearVillagerTreeWork(villager);
+            this.clearTreeWork(worker);
         }
+    }
+
+    clearTreeWork(worker) {
+        if (worker === this.hero) {
+            this.clearHeroTreeWork();
+            return;
+        }
+
+        this.clearVillagerTreeWork(worker);
     }
 
     assignVillagersToTrees() {
         this.trees.forEach((tree) => {
-            if (tree.assignedVillager !== null) {
+            if (tree.assignedVillager !== null || tree.assignedHero !== null) {
                 return;
             }
 
@@ -169,7 +226,7 @@ export class World {
     clearVillagerTreeWork(villager) {
         if (villager.targetTree !== null && villager.targetTree.assignedVillager === villager) {
             villager.targetTree.assignedVillager = null;
-            villager.targetTree.isBeingCut = false;
+            villager.targetTree.isBeingCut = this.isTreeBeingCutByHero(villager.targetTree);
         }
 
         villager.targetTree = null;
@@ -179,9 +236,29 @@ export class World {
         villager.state = "idle";
     }
 
+    clearHeroTreeWork() {
+        if (this.hero.targetTree !== null && this.hero.targetTree.assignedHero === this.hero) {
+            this.hero.targetTree.assignedHero = null;
+            this.hero.targetTree.isBeingCut = this.isTreeBeingCutByVillager(this.hero.targetTree);
+        }
+
+        this.hero.targetTree = null;
+        this.hero.actionTimer = 0;
+        this.hero.state = "idle";
+    }
+
+    isTreeBeingCutByHero(tree) {
+        return tree.assignedHero === this.hero && this.hero.state === "cuttingTree";
+    }
+
+    isTreeBeingCutByVillager(tree) {
+        return tree.assignedVillager !== null && tree.assignedVillager.state === "cuttingTree";
+    }
+
     removeTree(tree) {
         this.trees = this.trees.filter((existingTree) => existingTree !== tree);
         tree.assignedVillager = null;
+        tree.assignedHero = null;
         tree.isBeingCut = false;
     }
 
@@ -196,7 +273,40 @@ export class World {
     }
 
     setHeroDestination(x, y) {
+        this.clearHeroTreeWork();
         this.heroDestination = { x, y };
+        this.hero.state = "walking";
+    }
+
+    commandHeroToCutTree(tree) {
+        if (!this.trees.includes(tree)) {
+            return false;
+        }
+
+        this.clearHeroTreeWork();
+        this.releaseTreeFromVillager(tree);
+        tree.assignedHero = this.hero;
+        tree.isBeingCut = false;
+        this.hero.targetTree = tree;
+        this.heroDestination = null;
+        this.hero.actionTimer = 0;
+        this.hero.state = "walking";
+
+        return true;
+    }
+
+    releaseTreeFromVillager(tree) {
+        if (tree.assignedVillager === null) {
+            return;
+        }
+
+        this.clearVillagerTreeWork(tree.assignedVillager);
+    }
+
+    getTreeAtWorldPosition(x, y) {
+        return this.trees.find((tree) => {
+            return Math.hypot(tree.x - x, tree.y - y) <= tree.radius;
+        }) || null;
     }
 
     isWalkableAtWorldPosition(x, y) {
@@ -219,12 +329,47 @@ export class World {
         return this.contains(x, y) &&
             this.terrain.isGrassAtWorldPosition(x, y) &&
             !this.overlapsAnyTree(tree) &&
+            !this.overlapsAnyHouse(tree) &&
             !this.overlapsEntity(tree, this.hero) &&
             !this.villagers.some((villager) => this.overlapsEntity(tree, villager));
     }
 
+    addChosenHouseAt(x, y) {
+        if (!this.canPlaceHouseAt(x, y)) {
+            return false;
+        }
+
+        const house = new House(x, y, this.hero);
+
+        this.houses.push(house);
+        this.hero.house = house;
+
+        return true;
+    }
+
+    canPlaceHouseAt(x, y) {
+        const house = new House(x, y, this.hero);
+
+        return this.hero.house === null &&
+            this.houses.length === 0 &&
+            this.contains(x, y) &&
+            this.terrain.isGrassAtWorldPosition(x, y) &&
+            !this.overlapsAnyHouse(house) &&
+            !this.overlapsAnyTree(house) &&
+            !this.overlapsEntity(house, this.hero) &&
+            !this.villagers.some((villager) => this.overlapsEntity(house, villager));
+    }
+
+    hasChosenHouse() {
+        return this.hero !== null && this.hero.house !== null;
+    }
+
     overlapsAnyTree(tree) {
         return this.trees.some((existingTree) => this.overlapsEntity(tree, existingTree));
+    }
+
+    overlapsAnyHouse(entity) {
+        return this.houses.some((house) => this.overlapsEntity(entity, house));
     }
 
     overlapsEntity(first, second) {
@@ -252,5 +397,9 @@ export class World {
 
     getTrees() {
         return this.trees;
+    }
+
+    getHouses() {
+        return this.houses;
     }
 }

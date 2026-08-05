@@ -8,5 +8,22 @@ export class Hero extends Entity {
         this.relationshipStyle = personalData.relationshipStyle || "monogamo";
         this.selected = true;
         this.speed = 160;
+        this.targetTree = null;
+        this.state = "idle";
+        this.actionTimer = 0;
+        this.wood = 0;
+        this.house = null;
+    }
+
+    getSpriteKey() {
+        if (this.gender === "donna") {
+            return "chosenFemale";
+        }
+
+        if (this.gender === "non-binario") {
+            return "chosenNonbinary";
+        }
+
+        return "chosenMale";
     }
 }
