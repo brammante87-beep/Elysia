@@ -8,6 +8,7 @@ export class Renderer {
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawTrees();
         this.drawDestinationMarker();
         this.drawEntities();
     }
@@ -52,6 +53,22 @@ export class Renderer {
 
             this.drawEntity(entity);
         });
+    }
+
+    drawTrees() {
+        this.world.getTrees().forEach((tree) => {
+            this.drawTree(tree);
+        });
+    }
+
+    drawTree(tree) {
+        this.context.fillStyle = "#7a4a24";
+        this.context.fillRect(tree.x - 5, tree.y - 2, 10, 26);
+
+        this.context.fillStyle = tree.color;
+        this.context.beginPath();
+        this.context.arc(tree.x, tree.y - 12, tree.radius, 0, Math.PI * 2);
+        this.context.fill();
     }
 
     drawSelectionRing(entity) {

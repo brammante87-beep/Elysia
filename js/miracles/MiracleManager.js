@@ -10,6 +10,7 @@ export class MiracleManager {
             "fertility",
             "animal"
         ];
+        this.selectedMiracle = null;
         this.selectedMiracle = this.availableMiracles[0];
     }
 
@@ -19,5 +20,21 @@ export class MiracleManager {
         }
 
         this.selectedMiracle = miracle;
+    }
+
+    clearSelection() {
+        this.selectedMiracle = null;
+    }
+
+    hasSelectedMiracle() {
+        return this.selectedMiracle !== null;
+    }
+
+    cast(x, y, world) {
+        if (this.selectedMiracle !== "tree") {
+            return false;
+        }
+
+        return world.addTreeAt(x, y);
     }
 }

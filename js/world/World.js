@@ -1,6 +1,7 @@
 import { Terrain } from "./Terrain.js";
 import { Hero } from "../entities/Hero.js";
 import { Villager } from "../entities/Villager.js";
+import { Tree } from "../entities/Tree.js";
 
 export class World {
     constructor() {
@@ -9,6 +10,14 @@ export class World {
         this.hero = null;
         this.heroDestination = null;
         this.villagers = [];
+        this.trees = [];
+    }
+
+    initialize(settings = {}) {
+        this.terrain.generate();
+        this.heroDestination = null;
+        this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
+        this.trees = [];
     }
 
     initialize() {
@@ -92,6 +101,34 @@ export class World {
         return this.terrain.isWalkableAtWorldPosition(x, y);
     }
 
+    addTreeAt(x, y) {
+        if (!this.canPlaceTreeAt(x, y)) {
+            return false;
+        }
+
+        this.trees.push(new Tree(x, y));
+
+        return true;
+    }
+
+    canPlaceTreeAt(x, y) {
+        const tree = new Tree(x, y);
+
+        return this.contains(x, y) &&
+            this.terrain.isGrassAtWorldPosition(x, y) &&
+            !this.overlapsAnyTree(tree) &&
+            !this.overlapsEntity(tree, this.hero) &&
+            !this.villagers.some((villager) => this.overlapsEntity(tree, villager));
+    }
+
+    overlapsAnyTree(tree) {
+        return this.trees.some((existingTree) => this.overlapsEntity(tree, existingTree));
+    }
+
+    overlapsEntity(first, second) {
+        return Math.hypot(first.x - second.x, first.y - second.y) < first.radius + second.radius;
+    }
+
     contains(x, y) {
         return x >= 0 &&
             y >= 0 &&
@@ -109,5 +146,9 @@ export class World {
 
     getEntities() {
         return [this.hero, ...this.villagers];
+    }
+
+    getTrees() {
+        return this.trees;
     }
 }

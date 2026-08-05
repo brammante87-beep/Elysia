@@ -4,6 +4,92 @@
     pointer-events: none;
 }
 
+.menuScreen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+    background: rgba(16, 24, 32, 0.86);
+    pointer-events: auto;
+}
+
+.menuPanel {
+    width: min(440px, 100%);
+    max-height: 100%;
+    padding: 28px;
+    overflow-y: auto;
+    background: #f5efd8;
+    border: 3px solid #7a4a24;
+    border-radius: 18px;
+    color: #2d2013;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+
+.menuPanel h1 {
+    margin-bottom: 24px;
+    color: #3a2818;
+    font-size: 38px;
+    text-align: center;
+}
+
+.menuPanel label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.menuPanel input[type="text"] {
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 2px solid #b28b5d;
+    border-radius: 10px;
+    font: inherit;
+}
+
+.menuPanel fieldset {
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 1px solid #c8a978;
+    border-radius: 12px;
+}
+
+.menuPanel legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.menuPanel fieldset label {
+    margin: 8px 0;
+    font-weight: 400;
+}
+
+.menuPanel input[type="radio"] {
+    margin-right: 8px;
+}
+
+.primaryButton {
+    width: 100%;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 12px;
+    background: #2f8f46;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    touch-action: manipulation;
+}
+
+.primaryButton:hover,
+.primaryButton:focus-visible {
+    background: #27783b;
+}
+
 #miracleToolbar {
     position: absolute;
     left: 50%;
@@ -50,6 +136,13 @@
     #miracleToolbar {
         gap: 8px;
         padding: 8px;
+    }
+
+    .miracleButton {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
     }
 
     .miracleButton {

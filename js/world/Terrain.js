@@ -33,10 +33,24 @@ export class Terrain {
     }
 
     isWalkableAtWorldPosition(x, y) {
+        const tile = this.getTileAtWorldPosition(x, y);
+
+        return tile === "beach" || tile === "grass";
+    }
+
+    isGrassAtWorldPosition(x, y) {
+        return this.getTileAtWorldPosition(x, y) === "grass";
+    }
+
+    getTileAtWorldPosition(x, y) {
         const column = Math.floor(x / this.tileSize);
         const row = Math.floor(y / this.tileSize);
 
         if (!this.containsTile(column, row)) {
+            return null;
+        }
+
+        return this.tiles[row][column];
             return false;
         }
 
