@@ -197,6 +197,8 @@ export class World {
             this.removeTree(tree);
             this.clearTreeWork(worker);
         }
+
+        this.clearVillagerTreeWork(worker);
     }
 
     clearTreeWork(worker) {
