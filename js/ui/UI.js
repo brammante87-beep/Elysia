@@ -158,7 +158,13 @@ export class UI {
         button.dataset.miracle = miracle;
         button.title = this.getMiracleLabel(miracle);
         button.setAttribute("aria-label", this.getMiracleLabel(miracle));
-        button.textContent = this.getMiracleIcon(miracle);
+        const iconSource = this.getMiracleIconSource(miracle);
+
+        if (iconSource === null) {
+            button.textContent = this.getMiracleIcon(miracle);
+        } else {
+            button.appendChild(this.createMiracleIconImage(iconSource, this.getMiracleLabel(miracle)));
+        }
 
         const selectMiracle = (event) => {
             event.preventDefault();
@@ -179,6 +185,17 @@ export class UI {
         return button;
     }
 
+    createMiracleIconImage(source, label) {
+        const image = document.createElement("img");
+
+        image.className = "miracleIconImage";
+        image.src = source;
+        image.alt = label;
+        image.draggable = false;
+
+        return image;
+    }
+
     updateMiracleButtons() {
         this.root.querySelectorAll(".miracleButton").forEach((button) => {
             const selected = button.dataset.miracle === this.miracleManager.selectedMiracle;
@@ -186,6 +203,14 @@ export class UI {
             button.classList.toggle("selected", selected);
             button.setAttribute("aria-pressed", String(selected));
         });
+    }
+
+    getMiracleIconSource(miracle) {
+        const iconSources = {
+            tree: "assets/sprites/ui/tree_icon.svg"
+        };
+
+        return iconSources[miracle] || null;
     }
 
     getMiracleIcon(miracle) {
