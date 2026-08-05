@@ -28,7 +28,7 @@ export class UI {
         this.houseHudOccupants = null;
     }
 
-    showMainMenu(onNewGame) {
+    showMainMenu(options) {
         this.clear();
 
         const screen = document.createElement("div");
@@ -42,6 +42,12 @@ export class UI {
         const title = document.createElement("h1");
         title.textContent = "ELYSIA";
 
+        const continueButton = document.createElement("button");
+        continueButton.type = "button";
+        continueButton.className = "primaryButton";
+        continueButton.textContent = "Continua";
+        continueButton.addEventListener("click", (event) => { event.preventDefault(); options.onContinue(); });
+
         const newGameButton = document.createElement("button");
         newGameButton.type = "button";
         newGameButton.className = "primaryButton";
@@ -49,10 +55,11 @@ export class UI {
 
         newGameButton.addEventListener("click", (event) => {
             event.preventDefault();
-            onNewGame();
+            options.onNewGame();
         });
 
         panel.appendChild(title);
+        if (options.hasSave) { panel.appendChild(continueButton); }
         panel.appendChild(newGameButton);
         screen.appendChild(panel);
         this.root.appendChild(screen);
@@ -149,6 +156,23 @@ export class UI {
 
     getSelectedRadioValue(form, name) {
         return form.querySelector(`input[name="${name}"]:checked`).value;
+    }
+
+    showSaveButton(onSave) {
+        const button = document.createElement("button");
+        button.id = "saveButton";
+        button.type = "button";
+        button.textContent = "Salva";
+        button.addEventListener("click", (event) => { event.preventDefault(); onSave(); });
+        this.root.appendChild(button);
+    }
+
+    showFeedback(text) {
+        const message = document.createElement("div");
+        message.className = "feedbackMessage";
+        message.textContent = text;
+        this.root.appendChild(message);
+        window.setTimeout(() => { message.remove(); }, 2500);
     }
 
     showMiracleToolbar() {

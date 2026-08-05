@@ -15,6 +15,7 @@ export class Renderer {
         this.drawAnimals();
         this.drawDestinationMarker();
         this.drawEntities();
+        this.drawWorldFeedbackMessages();
     }
 
     clear() {
@@ -225,6 +226,10 @@ export class Renderer {
             return;
         }
 
+        if (entity.arrivalMarkerTimer > 0) {
+            this.drawArrivalMarker(entity);
+        }
+
         if (entity.reservedForPartnership) {
             this.drawPartnerTargetHighlight(entity);
         }
@@ -252,6 +257,25 @@ export class Renderer {
         if (entity.state === "socializing" || entity.partnerFeedbackTimer > 0) {
             this.drawHeartFeedback(entity);
         }
+    }
+
+    drawArrivalMarker(entity) {
+        this.context.strokeStyle = "rgba(250, 204, 21, 0.85)";
+        this.context.lineWidth = 4;
+        this.context.beginPath();
+        this.context.arc(entity.x, entity.y, 24, 0, Math.PI * 2);
+        this.context.stroke();
+    }
+
+    drawWorldFeedbackMessages() {
+        this.world.feedbackMessages.forEach((message, index) => {
+            this.context.fillStyle = "rgba(16, 24, 32, 0.82)";
+            this.context.fillRect(18, 72 + index * 32, 360, 26);
+            this.context.fillStyle = "#ffffff";
+            this.context.font = "14px Arial";
+            this.context.textAlign = "left";
+            this.context.fillText(message.text, 28, 90 + index * 32);
+        });
     }
 
     drawPartnerTargetHighlight(entity) {
