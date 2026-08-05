@@ -8,6 +8,7 @@ export class Renderer {
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawDestinationMarker();
         this.drawEntities();
     }
 
@@ -45,8 +46,41 @@ export class Renderer {
 
     drawEntities() {
         this.world.getEntities().forEach((entity) => {
+            if (entity.selected) {
+                this.drawSelectionRing(entity);
+            }
+
             this.drawEntity(entity);
         });
+    }
+
+    drawSelectionRing(entity) {
+        this.context.strokeStyle = "#facc15";
+        this.context.lineWidth = 3;
+        this.context.beginPath();
+        this.context.ellipse(entity.x, entity.y + 14, 18, 8, 0, 0, Math.PI * 2);
+        this.context.stroke();
+    }
+
+    drawDestinationMarker() {
+        const destination = this.world.heroDestination;
+
+        if (destination === null) {
+            return;
+        }
+
+        this.context.strokeStyle = "#ffffff";
+        this.context.lineWidth = 2;
+        this.context.beginPath();
+        this.context.arc(destination.x, destination.y, 10, 0, Math.PI * 2);
+        this.context.stroke();
+
+        this.context.beginPath();
+        this.context.moveTo(destination.x - 14, destination.y);
+        this.context.lineTo(destination.x + 14, destination.y);
+        this.context.moveTo(destination.x, destination.y - 14);
+        this.context.lineTo(destination.x, destination.y + 14);
+        this.context.stroke();
     }
 
     drawEntity(entity) {

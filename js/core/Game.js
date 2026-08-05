@@ -13,7 +13,7 @@ export class Game {
 
         this.world = new World();
         this.renderer = new Renderer(this.canvas, this.context, this.world);
-        this.input = new Input(this.canvas);
+        this.input = new Input(this.canvas, this.world);
         this.ui = new UI(this.uiRoot);
         this.miracleManager = new MiracleManager();
         this.engine = new Engine(this);
