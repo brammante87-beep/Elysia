@@ -14,4 +14,16 @@ export class Hero extends Entity {
         this.wood = 0;
         this.house = null;
     }
+
+    getSpriteKey() {
+        if (this.gender === "donna") {
+            return "chosenFemale";
+        }
+
+        if (this.gender === "non-binario") {
+            return "chosenNonbinary";
+        }
+
+        return "chosenMale";
+    }
 }

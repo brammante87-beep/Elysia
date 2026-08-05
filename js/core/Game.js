@@ -29,7 +29,10 @@ export class Game {
     preloadAssets() {
         this.assetLoader.preloadImages([
             { name: "tree", source: "assets/sprites/trees/tree_01.svg" },
-            { name: "treeHit", source: "assets/sprites/trees/tree_01_hit.svg" }
+            { name: "treeHit", source: "assets/sprites/trees/tree_01_hit.svg" },
+            { name: "chosenMale", source: "assets/sprites/villagers/chosen_male.svg" },
+            { name: "chosenFemale", source: "assets/sprites/villagers/chosen_female.svg" },
+            { name: "chosenNonbinary", source: "assets/sprites/villagers/chosen_nonbinary.svg" }
         ]);
     }
 

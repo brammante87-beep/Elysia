@@ -150,6 +150,40 @@ export class Renderer {
     }
 
     drawEntity(entity) {
+        if (entity === this.world.hero) {
+            this.drawHero(entity);
+        } else {
+            this.drawGeometricEntity(entity);
+        }
+
+        this.drawEntityName(entity);
+
+        if (entity.state === "cuttingTree") {
+            this.drawCuttingFeedback(entity);
+        }
+    }
+
+    drawHero(hero) {
+        const sprite = this.getHeroSprite(hero);
+
+        if (sprite === null) {
+            this.drawGeometricEntity(hero);
+        } else {
+            this.context.drawImage(sprite, hero.x - 32, hero.y - 45, 64, 64);
+        }
+
+        this.drawOrientationAccent(hero);
+    }
+
+    getHeroSprite(hero) {
+        if (this.assetLoader === null) {
+            return null;
+        }
+
+        return this.assetLoader.getImage(hero.getSpriteKey());
+    }
+
+    drawGeometricEntity(entity) {
         this.context.fillStyle = "rgba(0, 0, 0, 0.25)";
         this.context.beginPath();
         this.context.ellipse(entity.x, entity.y + 14, 12, 5, 0, 0, Math.PI * 2);
@@ -159,15 +193,46 @@ export class Renderer {
         this.context.beginPath();
         this.context.arc(entity.x, entity.y, entity.radius, 0, Math.PI * 2);
         this.context.fill();
+    }
 
+    drawEntityName(entity) {
         this.context.fillStyle = "#ffffff";
         this.context.font = "14px Arial";
         this.context.textAlign = "center";
         this.context.fillText(entity.name, entity.x, entity.y - 20);
+    }
 
-        if (entity.state === "cuttingTree") {
-            this.drawCuttingFeedback(entity);
+    drawOrientationAccent(hero) {
+        const colors = this.getOrientationAccentColors(hero.orientation);
+        const stripeWidth = 3;
+        const startX = hero.x + 7;
+        const startY = hero.y - 9;
+
+        this.context.fillStyle = "#2d2013";
+        this.context.beginPath();
+        this.context.arc(startX + colors.length * stripeWidth / 2, startY + 3, colors.length * stripeWidth / 2 + 2, 0, Math.PI * 2);
+        this.context.fill();
+
+        colors.forEach((color, index) => {
+            this.context.fillStyle = color;
+            this.context.fillRect(startX + index * stripeWidth, startY, stripeWidth, 6);
+        });
+    }
+
+    getOrientationAccentColors(orientation) {
+        if (orientation === "gay-lesbica") {
+            return ["#ef4444", "#f59e0b", "#facc15", "#22c55e", "#3b82f6", "#8b5cf6"];
         }
+
+        if (orientation === "bisessuale") {
+            return ["#d60270", "#9b4f96", "#0038a8"];
+        }
+
+        if (orientation === "pansessuale") {
+            return ["#ff1b8d", "#ffd800", "#1bb3ff"];
+        }
+
+        return ["#d1d5db", "#f8fafc"];
     }
 
     drawCuttingFeedback(entity) {
