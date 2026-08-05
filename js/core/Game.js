@@ -6,6 +6,7 @@ import { UI } from "../ui/UI.js";
 import { MiracleManager } from "../miracles/MiracleManager.js";
 import { AssetLoader } from "../assets/AssetLoader.js";
 import { SaveManager } from "./SaveManager.js";
+import { TutorialManager } from "../tutorial/TutorialManager.js";
 
 export class Game {
     constructor(canvasId, uiId) {
@@ -22,6 +23,8 @@ export class Game {
         this.engine = new Engine(this);
         this.world.onAutosaveNeeded = () => this.safeAutosave();
         this.saveManager = new SaveManager();
+        this.pendingNewGameSettings = null;
+        this.tutorialManager = new TutorialManager(this.ui, () => this.beginPendingNewGame());
         this.autosaveTimer = 0;
         this.started = false;
 
@@ -69,8 +72,28 @@ export class Game {
 
         this.saveManager.deleteSave();
         this.ui.showCharacterCreation((settings) => {
-            this.startNewGame(settings);
+            this.prepareIntroduction(settings);
         });
+    }
+
+    prepareIntroduction(settings) {
+        this.pendingNewGameSettings = settings;
+
+        if (!this.tutorialManager.hasBeenSeen()) {
+            this.tutorialManager.start();
+            return;
+        }
+
+        this.ui.showTutorialReplayPrompt({
+            onReplay: () => this.tutorialManager.start(),
+            onContinue: () => this.beginPendingNewGame()
+        });
+    }
+
+    beginPendingNewGame() {
+        const settings = this.pendingNewGameSettings;
+        this.pendingNewGameSettings = null;
+        this.startNewGame(settings);
     }
 
     continueGame() {
