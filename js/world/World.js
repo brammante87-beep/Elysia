@@ -21,6 +21,8 @@ export class World {
         this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
         this.lastFertilityIneligibilityReason = null;
+        this.autonomousHouseBuilder = null;
+        this.nextAutonomousBuilderIndex = 0;
     }
 
     initialize(settings = {}) {
@@ -34,6 +36,8 @@ export class World {
         this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
         this.lastFertilityIneligibilityReason = null;
+        this.autonomousHouseBuilder = null;
+        this.nextAutonomousBuilderIndex = 0;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -65,6 +69,7 @@ export class World {
         this.updateHero(delta);
         this.updateFertilityEvents(delta);
         this.updateChildren(delta);
+        this.updateAutonomousHouseBuilding(delta);
         this.assignVillagersToResources();
         this.updateResourceFeedback(delta);
         this.updatePartnerFeedback(delta);
@@ -72,6 +77,228 @@ export class World {
         this.villagers.forEach((villager) => {
             this.updateVillager(villager, delta);
         });
+    }
+
+    updateAutonomousHouseBuilding(delta) {
+        if (this.autonomousHouseBuilder !== null) {
+            this.updateAutonomousHouseBuilder(delta);
+            return;
+        }
+
+        if (!this.hasChosenHouse() || this.houses.length >= this.getMaximumHouseCountForPopulation(this.getPopulationCount())) {
+            return;
+        }
+
+        const builder = this.getNextAutonomousHouseBuilder();
+
+        if (builder === null) {
+            return;
+        }
+
+        this.reserveAutonomousHouseBuilder(builder);
+    }
+
+    getMaximumHouseCountForPopulation(population) {
+        const thresholds = [
+            { population: 32, houses: 10 },
+            { population: 28, houses: 9 },
+            { population: 24, houses: 8 },
+            { population: 19, houses: 7 },
+            { population: 16, houses: 6 },
+            { population: 13, houses: 5 },
+            { population: 9, houses: 4 },
+            { population: 7, houses: 3 },
+            { population: 5, houses: 2 }
+        ];
+
+        const threshold = thresholds.find((candidate) => population >= candidate.population);
+
+        return threshold === undefined ? 1 : threshold.houses;
+    }
+
+    getNextAutonomousHouseBuilder() {
+        const candidates = this.villagers.filter((villager) => this.canVillagerBuildAutonomousHouse(villager));
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+        const builder = candidates[this.nextAutonomousBuilderIndex % candidates.length];
+        this.nextAutonomousBuilderIndex = (this.nextAutonomousBuilderIndex + 1) % Math.max(1, this.villagers.length);
+
+        return builder;
+    }
+
+    canVillagerBuildAutonomousHouse(villager) {
+        return this.villagers.includes(villager) &&
+            villager !== this.hero &&
+            villager.alive &&
+            villager.isAdult &&
+            villager.wood >= 3 &&
+            villager.house === null &&
+            villager.ownedHouse === null &&
+            !villager.reservedForFertility &&
+            !villager.reservedForPartnership &&
+            villager.state !== "insideHouse" &&
+            !this.isVillagerBuildingHouse(villager) &&
+            villager.targetTree === null &&
+            villager.targetWaterSource === null &&
+            villager.targetAnimal === null;
+    }
+
+    reserveAutonomousHouseBuilder(builder) {
+        const site = this.findAutonomousHouseSite(builder);
+
+        if (site === null) {
+            builder.state = "idle";
+            builder.idleTimer = this.getRandomVillagerIdleTime();
+            return;
+        }
+
+        this.clearVillagerAllWork(builder);
+        this.autonomousHouseBuilder = builder;
+        builder.houseSite = site;
+        builder.houseBuildTimer = 0;
+        builder.destination = null;
+        builder.state = "walkingToHouseSite";
+    }
+
+    updateAutonomousHouseBuilder(delta) {
+        const builder = this.autonomousHouseBuilder;
+
+        if (!this.canContinueAutonomousHouseBuild(builder)) {
+            this.cancelAutonomousHouseBuild(builder);
+            return;
+        }
+
+        if (builder.state === "walkingToHouseSite") {
+            this.moveBuilderToHouseSite(builder, delta);
+            return;
+        }
+
+        if (builder.state === "buildingHouse") {
+            builder.houseBuildTimer += delta;
+
+            if (builder.houseBuildTimer >= 3) {
+                this.completeAutonomousHouseBuild(builder);
+            }
+        }
+    }
+
+    canContinueAutonomousHouseBuild(builder) {
+        return builder !== null &&
+            builder.alive &&
+            builder.isAdult &&
+            builder.wood >= 3 &&
+            builder.house === null &&
+            builder.ownedHouse === null &&
+            builder.houseSite !== null &&
+            this.houses.length < this.getMaximumHouseCountForPopulation(this.getPopulationCount()) &&
+            this.canPlaceAutonomousHouseAt(builder.houseSite.x, builder.houseSite.y, builder);
+    }
+
+    moveBuilderToHouseSite(builder, delta) {
+        const site = builder.houseSite;
+        const distanceX = site.x - builder.x;
+        const distanceY = site.y - builder.y;
+        const distance = Math.hypot(distanceX, distanceY);
+        const stopDistance = builder.radius + 34;
+        const step = Math.min(builder.speed * delta, Math.max(0, distance - stopDistance));
+
+        if (distance <= stopDistance + 0.5 || step === 0) {
+            builder.state = "buildingHouse";
+            builder.houseBuildTimer = 0;
+            return;
+        }
+
+        builder.x += (distanceX / distance) * step;
+        builder.y += (distanceY / distance) * step;
+    }
+
+    completeAutonomousHouseBuild(builder) {
+        if (!this.canContinueAutonomousHouseBuild(builder)) {
+            this.cancelAutonomousHouseBuild(builder);
+            return;
+        }
+
+        const house = new House(builder.houseSite.x, builder.houseSite.y, builder);
+        this.houses.push(house);
+        builder.wood -= 3;
+        builder.house = house;
+        builder.ownedHouse = house;
+        this.releaseAutonomousHouseBuilder(builder);
+    }
+
+    cancelAutonomousHouseBuild(builder) {
+        if (builder !== null) {
+            this.releaseAutonomousHouseBuilder(builder);
+        }
+    }
+
+    releaseAutonomousHouseBuilder(builder) {
+        builder.houseSite = null;
+        builder.houseBuildTimer = 0;
+        builder.destination = null;
+        builder.idleTimer = this.getRandomVillagerIdleTime();
+        builder.state = "idle";
+        this.autonomousHouseBuilder = null;
+    }
+
+    isVillagerBuildingHouse(villager) {
+        return villager.state === "seekingHouseSite" || villager.state === "walkingToHouseSite" || villager.state === "buildingHouse";
+    }
+
+    findAutonomousHouseSite(builder) {
+        for (let attempt = 0; attempt < 50; attempt += 1) {
+            const site = this.getRandomGrassHouseSite();
+
+            if (this.canPlaceAutonomousHouseAt(site.x, site.y, builder)) {
+                return site;
+            }
+        }
+
+        return null;
+    }
+
+    getRandomGrassHouseSite() {
+        const margin = 48;
+        return {
+            x: margin + Math.random() * (this.getWidth() - margin * 2),
+            y: this.tileSize * 5 + margin + Math.random() * (this.getHeight() - this.tileSize * 5 - margin * 2)
+        };
+    }
+
+    canPlaceAutonomousHouseAt(x, y, builder) {
+        const house = new House(x, y, builder);
+
+        return this.contains(x, y) &&
+            this.terrain.isGrassAtWorldPosition(x, y) &&
+            this.houses.every((existingHouse) => Math.hypot(existingHouse.x - x, existingHouse.y - y) >= 120) &&
+            !this.overlapsAnyTree(house) &&
+            !this.overlapsAnyWaterSource(house) &&
+            !this.overlapsAnyAnimal(house) &&
+            !this.overlapsEntity(house, this.hero) &&
+            !this.villagers.some((villager) => villager !== builder && this.overlapsEntity(house, villager));
+    }
+
+    getChosenHouse() {
+        return this.hero === null ? null : this.hero.ownedHouse;
+    }
+
+    getHouseResourceTotals(house) {
+        if (house === null) {
+            return { wood: 0, water: 0, meat: 0, occupants: 0 };
+        }
+
+        const livingOccupants = house.occupants.filter((occupant) => occupant.alive && occupant.house === house);
+
+        return livingOccupants.reduce((totals, occupant) => {
+            totals.wood += occupant.wood || 0;
+            totals.water += occupant.water || 0;
+            totals.meat += occupant.meat || 0;
+            totals.occupants += 1;
+            return totals;
+        }, { wood: 0, water: 0, meat: 0, occupants: 0 });
     }
 
     updateHero(delta) {
@@ -160,7 +387,7 @@ export class World {
     }
 
     updateVillager(villager, delta) {
-        if (!villager.isAdult || villager.reservedForPartnership || villager.reservedForFertility || villager.state === "insideHouse") {
+        if (!villager.isAdult || villager.reservedForPartnership || villager.reservedForFertility || villager.state === "insideHouse" || this.isVillagerBuildingHouse(villager)) {
             return;
         }
 
@@ -380,6 +607,7 @@ export class World {
             return villager.targetTree === null &&
                 villager.targetWaterSource === null &&
                 villager.targetAnimal === null &&
+                !this.isVillagerBuildingHouse(villager) &&
                 !villager.reservedForPartnership &&
                 !villager.reservedForFertility &&
                 villager.isAdult &&
@@ -844,6 +1072,7 @@ export class World {
     isBusyForFertility(person) {
         return person.reservedForPartnership || person.reservedForFertility ||
             person.targetTree !== null || person.targetWaterSource !== null || person.targetAnimal !== null ||
+            this.isVillagerBuildingHouse(person) ||
             (person.partnerTarget !== undefined && person.partnerTarget !== null);
     }
 
@@ -1024,6 +1253,7 @@ export class World {
 
         this.houses.push(house);
         this.hero.house = house;
+        this.hero.ownedHouse = house;
 
         return true;
     }
