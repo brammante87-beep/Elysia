@@ -1,13 +1,15 @@
 export class Renderer {
-    constructor(canvas, context, world) {
+    constructor(canvas, context, world, assetLoader = null) {
         this.canvas = canvas;
         this.context = context;
         this.world = world;
+        this.assetLoader = assetLoader;
     }
 
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawHouses();
         this.drawTrees();
         this.drawDestinationMarker();
         this.drawEntities();
@@ -55,6 +57,33 @@ export class Renderer {
         });
     }
 
+    drawHouses() {
+        this.world.getHouses().forEach((house) => {
+            this.drawHouse(house);
+        });
+    }
+
+    drawHouse(house) {
+        this.context.fillStyle = "rgba(0, 0, 0, 0.22)";
+        this.context.beginPath();
+        this.context.ellipse(house.x, house.y + 21, 31, 10, 0, 0, Math.PI * 2);
+        this.context.fill();
+
+        this.context.fillStyle = "#8a4b24";
+        this.context.beginPath();
+        this.context.moveTo(house.x - 34, house.y - 4);
+        this.context.lineTo(house.x, house.y - 32);
+        this.context.lineTo(house.x + 34, house.y - 4);
+        this.context.closePath();
+        this.context.fill();
+
+        this.context.fillStyle = "#dfc29a";
+        this.context.fillRect(house.x - 25, house.y - 4, 50, 34);
+
+        this.context.fillStyle = "#4b2a18";
+        this.context.fillRect(house.x - 7, house.y + 10, 14, 20);
+    }
+
     drawTrees() {
         this.world.getTrees().forEach((tree) => {
             this.drawTree(tree);
@@ -62,6 +91,26 @@ export class Renderer {
     }
 
     drawTree(tree) {
+        const spriteName = tree.cutFeedbackTimer > 0 ? "treeHit" : "tree";
+        const sprite = this.getTreeSprite(spriteName);
+
+        if (sprite === null) {
+            this.drawGeometricTree(tree);
+            return;
+        }
+
+        this.context.drawImage(sprite, tree.x - 32, tree.y - 46, 64, 64);
+    }
+
+    getTreeSprite(spriteName) {
+        if (this.assetLoader === null) {
+            return null;
+        }
+
+        return this.assetLoader.getImage(spriteName);
+    }
+
+    drawGeometricTree(tree) {
         this.context.fillStyle = "#7a4a24";
         this.context.fillRect(tree.x - 5, tree.y - 2, 10, 26);
 

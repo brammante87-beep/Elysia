@@ -54,6 +54,13 @@ export class Input {
             return;
         }
 
+        const tree = this.world.getTreeAtWorldPosition(x, y);
+
+        if (tree !== null) {
+            this.world.commandHeroToCutTree(tree);
+            return;
+        }
+
         if (!this.world.isWalkableAtWorldPosition(x, y)) {
             return;
         }

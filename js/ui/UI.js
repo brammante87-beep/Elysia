@@ -1,7 +1,8 @@
 export class UI {
-    constructor(root, miracleManager) {
+    constructor(root, miracleManager, world = null) {
         this.root = root;
         this.miracleManager = miracleManager;
+        this.world = world;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -158,11 +159,23 @@ export class UI {
         button.dataset.miracle = miracle;
         button.title = this.getMiracleLabel(miracle);
         button.setAttribute("aria-label", this.getMiracleLabel(miracle));
-        button.textContent = this.getMiracleIcon(miracle);
+        const iconSource = this.getMiracleIconSource(miracle);
+
+        if (iconSource === null) {
+            button.textContent = this.getMiracleIcon(miracle);
+        } else {
+            button.appendChild(this.createMiracleIconImage(iconSource, this.getMiracleLabel(miracle)));
+        }
 
         const selectMiracle = (event) => {
             event.preventDefault();
             event.stopPropagation();
+
+            if (this.isMiracleDisabled(miracle)) {
+                this.miracleManager.clearSelection();
+                this.updateMiracleButtons();
+                return;
+            }
 
             if (this.miracleManager.selectedMiracle === miracle) {
                 this.miracleManager.clearSelection();
@@ -179,13 +192,75 @@ export class UI {
         return button;
     }
 
+    createMiracleIconImage(source, label) {
+        const image = document.createElement("img");
+
+        image.className = "miracleIconImage";
+        image.src = source;
+        image.alt = label;
+        image.draggable = false;
+
+        return image;
+    }
+
     updateMiracleButtons() {
         this.root.querySelectorAll(".miracleButton").forEach((button) => {
-            const selected = button.dataset.miracle === this.miracleManager.selectedMiracle;
+            const disabled = this.isMiracleDisabled(button.dataset.miracle);
 
+            if (disabled && button.dataset.miracle === this.miracleManager.selectedMiracle) {
+                this.miracleManager.clearSelection();
+            }
+
+            const selected = button.dataset.miracle === this.miracleManager.selectedMiracle;
+            const label = this.getMiracleButtonLabel(button.dataset.miracle);
+
+            button.disabled = disabled;
+            button.title = label;
+            button.setAttribute("aria-label", label);
             button.classList.toggle("selected", selected);
+            button.classList.toggle("disabled", disabled);
             button.setAttribute("aria-pressed", String(selected));
         });
+    }
+
+    isMiracleDisabled(miracle) {
+        if (miracle !== "house") {
+            return false;
+        }
+
+        return this.getHouseDisabledReason() !== null;
+    }
+
+    getHouseDisabledReason() {
+        if (this.world === null || this.world.hero === null) {
+            return "Richiede 3 legna";
+        }
+
+        if (this.world.hero.house !== null || this.world.hasChosenHouse()) {
+            return "Casa già costruita";
+        }
+
+        if (this.world.hero.wood < 3) {
+            return "Richiede 3 legna";
+        }
+
+        return null;
+    }
+
+    getMiracleButtonLabel(miracle) {
+        if (miracle === "house") {
+            return this.getHouseDisabledReason() || this.getMiracleLabel(miracle);
+        }
+
+        return this.getMiracleLabel(miracle);
+    }
+
+    getMiracleIconSource(miracle) {
+        const iconSources = {
+            tree: "assets/sprites/ui/tree_icon.svg"
+        };
+
+        return iconSources[miracle] || null;
     }
 
     getMiracleIcon(miracle) {
