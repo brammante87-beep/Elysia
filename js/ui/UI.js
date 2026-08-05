@@ -170,7 +170,6 @@ export class UI {
                 this.miracleManager.select(miracle);
             }
 
-            this.miracleManager.select(miracle);
             this.updateMiracleButtons();
         };
 

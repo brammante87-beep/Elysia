@@ -51,12 +51,6 @@ export class Terrain {
         }
 
         return this.tiles[row][column];
-            return false;
-        }
-
-        const tile = this.tiles[row][column];
-
-        return tile === "beach" || tile === "grass";
     }
 
     getRandomWalkableWorldPosition() {
