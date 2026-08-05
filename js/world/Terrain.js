@@ -31,4 +31,24 @@ export class Terrain {
 
         return "grass";
     }
+
+    isWalkableAtWorldPosition(x, y) {
+        const column = Math.floor(x / this.tileSize);
+        const row = Math.floor(y / this.tileSize);
+
+        if (!this.containsTile(column, row)) {
+            return false;
+        }
+
+        const tile = this.tiles[row][column];
+
+        return tile === "beach" || tile === "grass";
+    }
+
+    containsTile(column, row) {
+        return column >= 0 &&
+            row >= 0 &&
+            column < this.columns &&
+            row < this.rows;
+    }
 }

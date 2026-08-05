@@ -53,6 +53,10 @@ export class World {
         this.heroDestination = { x, y };
     }
 
+    isWalkableAtWorldPosition(x, y) {
+        return this.terrain.isWalkableAtWorldPosition(x, y);
+    }
+
     contains(x, y) {
         return x >= 0 &&
             y >= 0 &&

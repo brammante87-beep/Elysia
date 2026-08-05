@@ -27,6 +27,10 @@ export class Input {
                 return;
             }
 
+            if (!this.world.isWalkableAtWorldPosition(position.x, position.y)) {
+                return;
+            }
+
             this.world.setHeroDestination(position.x, position.y);
         });
     }
