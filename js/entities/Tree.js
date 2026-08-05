@@ -5,6 +5,7 @@ export class Tree extends Entity {
         super("Tree", x, y, "#2f8f46");
         this.woodRemaining = 4;
         this.assignedVillager = null;
+        this.assignedHero = null;
         this.isBeingCut = false;
         this.cutFeedbackTimer = 0;
         this.radius = 18;

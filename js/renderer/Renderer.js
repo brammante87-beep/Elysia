@@ -1,8 +1,9 @@
 export class Renderer {
-    constructor(canvas, context, world) {
+    constructor(canvas, context, world, assetLoader = null) {
         this.canvas = canvas;
         this.context = context;
         this.world = world;
+        this.assetLoader = assetLoader;
     }
 
     render() {
@@ -62,6 +63,26 @@ export class Renderer {
     }
 
     drawTree(tree) {
+        const spriteName = tree.cutFeedbackTimer > 0 ? "treeHit" : "tree";
+        const sprite = this.getTreeSprite(spriteName);
+
+        if (sprite === null) {
+            this.drawGeometricTree(tree);
+            return;
+        }
+
+        this.context.drawImage(sprite, tree.x - 32, tree.y - 46, 64, 64);
+    }
+
+    getTreeSprite(spriteName) {
+        if (this.assetLoader === null) {
+            return null;
+        }
+
+        return this.assetLoader.getImage(spriteName);
+    }
+
+    drawGeometricTree(tree) {
         this.context.fillStyle = "#7a4a24";
         this.context.fillRect(tree.x - 5, tree.y - 2, 10, 26);
 
