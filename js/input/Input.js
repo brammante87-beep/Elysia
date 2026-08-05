@@ -50,7 +50,28 @@ export class Input {
         }
 
         if (this.miracleManager.hasSelectedMiracle()) {
+            this.clearPointerFeedback();
             this.miracleManager.cast(x, y, this.world);
+            return;
+        }
+
+        const tree = this.world.getTreeAtWorldPosition(x, y);
+
+        if (tree !== null) {
+            this.clearPointerFeedback();
+            this.world.commandHeroToCutTree(tree);
+            return;
+        }
+
+        const villager = this.world.getVillagerAtWorldPosition(x, y);
+
+        if (villager !== null) {
+            if (this.world.commandHeroToPartnerWith(villager)) {
+                this.clearPointerFeedback();
+            } else {
+                this.showPointerFeedback(this.world.lastPartnerIneligibilityReason);
+            }
+
             return;
         }
 
@@ -58,7 +79,16 @@ export class Input {
             return;
         }
 
+        this.clearPointerFeedback();
         this.world.setHeroDestination(x, y);
+    }
+
+    showPointerFeedback(message) {
+        this.canvas.title = message || "";
+    }
+
+    clearPointerFeedback() {
+        this.canvas.title = "";
     }
 
     getWorldPosition(event) {

@@ -30,10 +30,29 @@ export class MiracleManager {
     }
 
     cast(x, y, world) {
-        if (this.selectedMiracle !== "tree") {
+        if (this.selectedMiracle === "tree") {
+            return world.addTreeAt(x, y);
+        }
+
+        if (this.selectedMiracle === "house") {
+            return this.castHouse(x, y, world);
+        }
+
+        return false;
+    }
+
+    castHouse(x, y, world) {
+        if (world.hero.wood < 3 || world.hero.house !== null) {
             return false;
         }
 
-        return world.addTreeAt(x, y);
+        if (!world.addChosenHouseAt(x, y)) {
+            return false;
+        }
+
+        world.hero.wood -= 3;
+        this.clearSelection();
+
+        return true;
     }
 }
