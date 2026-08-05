@@ -4,6 +4,8 @@ export class Renderer {
         this.context = context;
         this.world = world;
         this.assetLoader = assetLoader;
+        this.context.imageSmoothingEnabled = true;
+        this.context.imageSmoothingQuality = "high";
     }
 
     render() {
@@ -15,6 +17,8 @@ export class Renderer {
         this.drawAnimals();
         this.drawDestinationMarker();
         this.drawEntities();
+        this.drawEntityNames();
+        this.drawEntityFeedback();
         this.drawWorldFeedbackMessages();
     }
 
@@ -24,6 +28,7 @@ export class Renderer {
 
     drawTerrain() {
         const terrain = this.world.terrain;
+        const animationTime = performance.now() / 1000;
 
         for (let row = 0; row < terrain.rows; row += 1) {
             for (let column = 0; column < terrain.columns; column += 1) {
@@ -34,20 +39,53 @@ export class Renderer {
                     terrain.tileSize,
                     terrain.tileSize
                 );
+                this.drawTerrainDetail(terrain.tiles[row][column], column, row, terrain.tileSize, animationTime);
             }
         }
     }
 
-    getTerrainColor(tileType) {
-        if (tileType === "sea") {
-            return "#4aa3df";
+    drawTerrainDetail(tileType, column, row, tileSize, animationTime) {
+        const x = column * tileSize;
+        const y = row * tileSize;
+        const seed = column * 17 + row * 31;
+
+        if (tileType === "grass") {
+            this.context.fillStyle = seed % 2 === 0 ? "rgba(35, 105, 55, 0.10)" : "rgba(220, 238, 151, 0.10)";
+            this.context.fillRect(x + 8 + seed % 19, y + 10 + seed % 23, 2, 4);
+            this.context.fillRect(x + 31 + seed % 13, y + 33 + seed % 17, 2, 2);
+            return;
         }
 
         if (tileType === "beach") {
-            return "#e9d8a6";
+            this.context.fillStyle = "rgba(126, 91, 52, 0.10)";
+            this.context.fillRect(x + 11 + seed % 27, y + 16 + seed % 19, 2, 2);
+            this.context.fillRect(x + 38 + seed % 13, y + 37 + seed % 11, 1, 1);
+            if (row === 3) {
+                this.context.fillStyle = "rgba(255, 255, 255, 0.18)";
+                this.context.fillRect(x, y, tileSize, 4);
+            }
+            return;
         }
 
-        return "#6abf69";
+        const waveOffset = (animationTime * 7 + seed) % 24;
+        this.context.strokeStyle = "rgba(215, 242, 255, 0.20)";
+        this.context.lineWidth = 1.5;
+        this.context.beginPath();
+        this.context.moveTo(x + waveOffset - 16, y + 18 + seed % 20);
+        this.context.quadraticCurveTo(x + waveOffset - 6, y + 15 + seed % 20, x + waveOffset + 4, y + 18 + seed % 20);
+        this.context.stroke();
+    }
+
+    getTerrainColor(tileType) {
+        if (tileType === "sea") {
+            return "#3d91c9";
+        }
+
+        if (tileType === "beach") {
+            return "#e7c987";
+        }
+
+        return "#5ca55b";
     }
 
     drawEntities() {
@@ -57,6 +95,21 @@ export class Renderer {
             }
 
             this.drawEntity(entity);
+        });
+    }
+
+    drawEntityNames() {
+        this.world.getEntities().forEach((entity) => {
+            if (entity.state !== "insideHouse") { this.drawEntityName(entity); }
+        });
+    }
+
+    drawEntityFeedback() {
+        this.world.getEntities().forEach((entity) => {
+            if (entity.state === "insideHouse") { return; }
+            if (entity.state === "cuttingTree" || entity.state === "huntingAnimal") { this.drawCuttingFeedback(entity); }
+            if (entity.state === "collectingWater") { this.drawWaterFeedback(entity); }
+            if (entity.state === "socializing" || entity.partnerFeedbackTimer > 0) { this.drawHeartFeedback(entity); }
         });
     }
 
@@ -72,19 +125,31 @@ export class Renderer {
         this.context.ellipse(house.x, house.y + 21, 31, 10, 0, 0, Math.PI * 2);
         this.context.fill();
 
-        this.context.fillStyle = "#8a4b24";
+        this.context.fillStyle = "#7b3f24";
         this.context.beginPath();
-        this.context.moveTo(house.x - 34, house.y - 4);
-        this.context.lineTo(house.x, house.y - 32);
-        this.context.lineTo(house.x + 34, house.y - 4);
+        this.context.moveTo(house.x - 35, house.y - 4);
+        this.context.lineTo(house.x, house.y - 35);
+        this.context.lineTo(house.x + 35, house.y - 4);
         this.context.closePath();
         this.context.fill();
 
-        this.context.fillStyle = "#dfc29a";
+        this.context.fillStyle = "#e4bd86";
         this.context.fillRect(house.x - 25, house.y - 4, 50, 34);
+
+        this.context.fillStyle = "#8ed1df";
+        this.context.fillRect(house.x - 19, house.y + 5, 10, 9);
+        this.context.fillRect(house.x + 9, house.y + 5, 10, 9);
+        this.context.strokeStyle = "rgba(75, 42, 24, 0.65)";
+        this.context.lineWidth = 2;
+        this.context.strokeRect(house.x - 19, house.y + 5, 10, 9);
+        this.context.strokeRect(house.x + 9, house.y + 5, 10, 9);
 
         this.context.fillStyle = "#4b2a18";
         this.context.fillRect(house.x - 7, house.y + 10, 14, 20);
+        this.context.fillStyle = "#d7a849";
+        this.context.beginPath();
+        this.context.arc(house.x + 4, house.y + 21, 1.5, 0, Math.PI * 2);
+        this.context.fill();
 
         if (house.fertilityPhase === "private") {
             this.drawHouseFertilityFeedback(house);
@@ -161,17 +226,25 @@ export class Renderer {
         this.context.beginPath();
         this.context.ellipse(source.x, source.y + 8, 22, 8, 0, 0, Math.PI * 2);
         this.context.fill();
-        this.context.fillStyle = source.useFeedbackTimer > 0 ? "#7dd3fc" : source.color;
+        this.context.strokeStyle = "#8b9290";
+        this.context.lineWidth = 5;
         this.context.beginPath();
         this.context.ellipse(source.x, source.y, source.radius, source.radius * 0.55, 0, 0, Math.PI * 2);
+        this.context.stroke();
+        this.context.fillStyle = source.useFeedbackTimer > 0 ? "#7dd3fc" : "#38a9d1";
         this.context.fill();
+        this.context.strokeStyle = "rgba(255, 255, 255, 0.45)";
+        this.context.lineWidth = 1.5;
+        this.context.beginPath();
+        this.context.ellipse(source.x, source.y, source.radius * 0.55, source.radius * 0.22, 0, 0, Math.PI * 2);
+        this.context.stroke();
     }
 
     drawAnimals() {
         this.world.getAnimals().forEach((animal) => {
             const sprite = this.getSprite(animal.hitFeedbackTimer > 0 ? "deerHit" : "deer");
             if (sprite === null) { this.drawGeometricAnimal(animal); return; }
-            this.context.drawImage(sprite, animal.x - 32, animal.y - 45, 64, 64);
+            this.context.drawImage(sprite, animal.x - 30, animal.y - 43, 60, 60);
         });
     }
 
@@ -226,10 +299,6 @@ export class Renderer {
             return;
         }
 
-        if (entity.arrivalMarkerTimer > 0) {
-            this.drawArrivalMarker(entity);
-        }
-
         if (entity.reservedForPartnership) {
             this.drawPartnerTargetHighlight(entity);
         }
@@ -240,23 +309,7 @@ export class Renderer {
             this.drawVillager(entity);
         }
 
-        this.drawEntityName(entity);
-
-        if (entity.state === "cuttingTree") {
-            this.drawCuttingFeedback(entity);
-        }
-
-        if (entity.state === "collectingWater") {
-            this.drawWaterFeedback(entity);
-        }
-
-        if (entity.state === "huntingAnimal") {
-            this.drawCuttingFeedback(entity);
-        }
-
-        if (entity.state === "socializing" || entity.partnerFeedbackTimer > 0) {
-            this.drawHeartFeedback(entity);
-        }
+        if (entity.arrivalMarkerTimer > 0) { this.drawArrivalMarker(entity); }
     }
 
     drawArrivalMarker(entity) {
@@ -312,7 +365,11 @@ export class Renderer {
         if (sprite === null) {
             this.drawGeometricEntity(villager);
         } else {
-            this.context.drawImage(sprite, villager.x - 32, villager.y - 45, 64, 64);
+            if (villager.ageStage === "child") {
+                this.context.drawImage(sprite, villager.x - 26, villager.y - 35, 52, 52);
+            } else {
+                this.context.drawImage(sprite, villager.x - 32, villager.y - 45, 64, 64);
+            }
         }
 
         this.drawOrientationAccent(villager);
@@ -339,10 +396,22 @@ export class Renderer {
     }
 
     drawEntityName(entity) {
-        this.context.fillStyle = "#ffffff";
-        this.context.font = "14px Arial";
+        const nameY = entity.y - this.getEntityNameOffset(entity);
+        this.context.font = "600 14px Arial, sans-serif";
         this.context.textAlign = "center";
-        this.context.fillText(entity.name, entity.x, entity.y - 20);
+        this.context.textBaseline = "alphabetic";
+        const width = this.context.measureText(entity.name).width;
+        this.context.fillStyle = "rgba(15, 23, 31, 0.68)";
+        this.context.fillRect(entity.x - width / 2 - 4, nameY - 13, width + 8, 17);
+        this.context.fillStyle = "#ffffff";
+        this.context.shadowColor = "rgba(0, 0, 0, 0.8)";
+        this.context.shadowBlur = 2;
+        this.context.fillText(entity.name, entity.x, nameY);
+        this.context.shadowBlur = 0;
+    }
+
+    getEntityNameOffset(entity) {
+        return entity.ageStage === "child" ? 42 : 52;
     }
 
     drawOrientationAccent(entity) {
