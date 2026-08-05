@@ -11,6 +11,7 @@ export class Villager extends Entity {
         this.spriteKey = settings.spriteKey || "villager_male_01";
         this.partners = [];
         this.house = null;
+        this.ownedHouse = null;
         this.alive = true;
         this.parents = [];
         this.children = [];
@@ -28,5 +29,7 @@ export class Villager extends Entity {
         this.water = 0;
         this.meat = 0;
         this.actionTimer = 0;
+        this.houseSite = null;
+        this.houseBuildTimer = 0;
     }
 }

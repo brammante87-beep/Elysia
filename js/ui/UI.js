@@ -3,6 +3,12 @@ export class UI {
         this.root = root;
         this.miracleManager = miracleManager;
         this.world = world;
+        this.houseHud = null;
+        this.houseHudTitle = null;
+        this.houseHudWood = null;
+        this.houseHudWater = null;
+        this.houseHudMeat = null;
+        this.houseHudOccupants = null;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -14,6 +20,12 @@ export class UI {
 
     clear() {
         this.root.innerHTML = "";
+        this.houseHud = null;
+        this.houseHudTitle = null;
+        this.houseHudWood = null;
+        this.houseHudWater = null;
+        this.houseHudMeat = null;
+        this.houseHudOccupants = null;
     }
 
     showMainMenu(onNewGame) {
@@ -150,6 +162,70 @@ export class UI {
 
         this.root.appendChild(toolbar);
         this.updateMiracleButtons();
+    }
+
+    showHouseHud() {
+        if (this.houseHud !== null) {
+            return;
+        }
+
+        this.houseHud = document.createElement("section");
+        this.houseHud.id = "chosenHouseHud";
+        this.houseHud.setAttribute("aria-label", "Risorse della Casa del Prescelto");
+
+        this.houseHudTitle = document.createElement("h2");
+        this.houseHudTitle.textContent = "Nessuna casa";
+        this.houseHud.appendChild(this.houseHudTitle);
+
+        const resources = document.createElement("div");
+        resources.className = "houseHudResources";
+
+        this.houseHudWood = this.createHouseHudValue(resources, "🪵", "Legna");
+        this.houseHudWater = this.createHouseHudValue(resources, "💧", "Acqua");
+        this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Carne");
+        this.houseHudOccupants = this.createHouseHudValue(resources, "👥", "Occupanti");
+
+        this.houseHud.appendChild(resources);
+        this.root.appendChild(this.houseHud);
+        this.updateHouseHud();
+    }
+
+    createHouseHudValue(parent, icon, label) {
+        const item = document.createElement("p");
+        const text = document.createElement("span");
+
+        item.appendChild(document.createTextNode(`${icon} ${label}: `));
+        text.textContent = "0";
+        item.appendChild(text);
+        parent.appendChild(item);
+
+        return text;
+    }
+
+    updateHouseHud() {
+        if (this.houseHud === null) {
+            return;
+        }
+
+        const house = this.world === null ? null : this.world.getChosenHouse();
+
+        if (house === null) {
+            this.houseHudTitle.textContent = "Nessuna casa";
+            this.houseHud.hidden = false;
+            this.setHouseHudTotals({ wood: 0, water: 0, meat: 0, occupants: 0 });
+            return;
+        }
+
+        this.houseHudTitle.textContent = "Casa del Prescelto";
+        this.houseHud.hidden = false;
+        this.setHouseHudTotals(this.world.getHouseResourceTotals(house));
+    }
+
+    setHouseHudTotals(totals) {
+        this.houseHudWood.textContent = String(totals.wood);
+        this.houseHudWater.textContent = String(totals.water);
+        this.houseHudMeat.textContent = String(totals.meat);
+        this.houseHudOccupants.textContent = String(totals.occupants);
     }
 
     createMiracleButton(miracle) {

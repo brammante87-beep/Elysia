@@ -15,6 +15,7 @@ export class Child extends Entity {
         this.children = [];
         this.partners = [];
         this.house = settings.house || null;
+        this.ownedHouse = null;
         this.spriteKey = settings.spriteKey || "child_male_01";
         this.state = "childIdle";
         this.destination = null;
@@ -24,5 +25,10 @@ export class Child extends Entity {
         this.targetWaterSource = null;
         this.targetAnimal = null;
         this.actionTimer = 0;
+        this.wood = 0;
+        this.water = 0;
+        this.meat = 0;
+        this.houseSite = null;
+        this.houseBuildTimer = 0;
     }
 }

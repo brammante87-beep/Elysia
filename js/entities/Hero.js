@@ -17,6 +17,7 @@ export class Hero extends Entity {
         this.water = 0;
         this.meat = 0;
         this.house = null;
+        this.ownedHouse = null;
         this.partners = [];
         this.parents = [];
         this.children = [];

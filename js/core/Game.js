@@ -66,12 +66,14 @@ export class Game {
         this.world.initialize(settings);
         this.ui.clear();
         this.ui.showMiracleToolbar();
+        this.ui.showHouseHud();
         this.engine.start();
     }
 
     update(delta) {
         this.world.update(delta);
         this.ui.updateMiracleButtons();
+        this.ui.updateHouseHud();
     }
 
     render() {
