@@ -1,14 +1,16 @@
 import { Entity } from "./Entity.js";
 
 export class Villager extends Entity {
-    constructor(name, x, y, personalData = {}) {
-        super(name, x, y, "#f59e0b");
-        this.gender = personalData.gender || "uomo";
-        this.orientation = personalData.orientation || "etero";
-        this.relationshipStyle = personalData.relationshipStyle || "monogamo";
+    constructor(settings = {}) {
+        super(settings.name || "Villager", settings.x || 0, settings.y || 0, "#f59e0b");
+        this.gender = settings.gender || "uomo";
+        this.orientation = settings.orientation || "etero";
+        this.relationshipStyle = settings.relationshipStyle || "monogamo";
+        this.age = settings.age || 18;
+        this.isAdult = this.age >= 18;
+        this.spriteKey = settings.spriteKey || "villager_male_01";
         this.partners = [];
         this.house = null;
-        this.isAdult = true;
         this.alive = true;
         this.parents = [];
         this.children = [];

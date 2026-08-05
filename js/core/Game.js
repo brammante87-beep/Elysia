@@ -32,7 +32,13 @@ export class Game {
             { name: "treeHit", source: "assets/sprites/trees/tree_01_hit.svg" },
             { name: "chosenMale", source: "assets/sprites/villagers/chosen_male.svg" },
             { name: "chosenFemale", source: "assets/sprites/villagers/chosen_female.svg" },
-            { name: "chosenNonbinary", source: "assets/sprites/villagers/chosen_nonbinary.svg" }
+            { name: "chosenNonbinary", source: "assets/sprites/villagers/chosen_nonbinary.svg" },
+            { name: "villager_male_01", source: "assets/sprites/villagers/villager_male_01.svg" },
+            { name: "villager_male_02", source: "assets/sprites/villagers/villager_male_02.svg" },
+            { name: "villager_female_01", source: "assets/sprites/villagers/villager_female_01.svg" },
+            { name: "villager_female_02", source: "assets/sprites/villagers/villager_female_02.svg" },
+            { name: "villager_nonbinary_01", source: "assets/sprites/villagers/villager_nonbinary_01.svg" },
+            { name: "villager_nonbinary_02", source: "assets/sprites/villagers/villager_nonbinary_02.svg" }
         ]);
     }
 
