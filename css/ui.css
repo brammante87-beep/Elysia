@@ -1,296 +1,147 @@
-/*
-=========================================
-ELYSIA
-User Interface
-=========================================
-*/
-
-/*=======================================
-MENU
-=======================================*/
-
-#mainMenu{
-
-    position:absolute;
-
-    inset:0;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    background:rgba(0,0,0,.65);
-
-    pointer-events:auto;
-
+#ui {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
 }
 
-/*=======================================
-FINESTRA
-=======================================*/
-
-.window{
-
-    width:420px;
-
-    max-width:90vw;
-
-    background:#f4f0df;
-
-    border:4px solid #6b5134;
-
-    border-radius:16px;
-
-    padding:30px;
-
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
-
+.menuScreen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+    background: rgba(16, 24, 32, 0.86);
+    pointer-events: auto;
 }
 
-/*=======================================
-TITOLI
-=======================================*/
-
-.window h1{
-
-    text-align:center;
-
-    font-size:42px;
-
-    color:#4d3218;
-
-    margin-bottom:10px;
-
+.menuPanel {
+    width: min(440px, 100%);
+    max-height: 100%;
+    padding: 28px;
+    overflow-y: auto;
+    background: #f5efd8;
+    border: 3px solid #7a4a24;
+    border-radius: 18px;
+    color: #2d2013;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
 }
 
-.window h2{
-
-    text-align:center;
-
-    color:#876340;
-
-    margin-bottom:25px;
-
+.menuPanel h1 {
+    margin-bottom: 24px;
+    color: #3a2818;
+    font-size: 38px;
+    text-align: center;
 }
 
-.window h3{
-
-    margin-top:20px;
-
-    margin-bottom:10px;
-
-    color:#5a4126;
-
+.menuPanel label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
-/*=======================================
-INPUT
-=======================================*/
-
-.window input[type=text]{
-
-    width:100%;
-
-    padding:12px;
-
-    font-size:18px;
-
-    border:2px solid #9d835e;
-
-    border-radius:8px;
-
-    outline:none;
-
-    margin-bottom:15px;
-
+.menuPanel input[type="text"] {
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 2px solid #b28b5d;
+    border-radius: 10px;
+    font: inherit;
 }
 
-.window input[type=text]:focus{
-
-    border-color:#4ea3ff;
-
+.menuPanel fieldset {
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 1px solid #c8a978;
+    border-radius: 12px;
 }
 
-/*=======================================
-RADIO
-=======================================*/
-
-.window label{
-
-    display:block;
-
-    padding:6px 0;
-
-    cursor:pointer;
-
-    color:#3f3225;
-
+.menuPanel legend {
+    padding: 0 6px;
+    font-weight: 700;
 }
 
-.window input[type=radio]{
-
-    margin-right:8px;
-
+.menuPanel fieldset label {
+    margin: 8px 0;
+    font-weight: 400;
 }
 
-/*=======================================
-SEPARATORE
-=======================================*/
-
-.window hr{
-
-    margin:20px 0;
-
-    border:none;
-
-    border-top:1px solid #d5c5a4;
-
+.menuPanel input[type="radio"] {
+    margin-right: 8px;
 }
 
-/*=======================================
-BOTTONE
-=======================================*/
-
-#startGame{
-
-    width:100%;
-
-    margin-top:25px;
-
-    padding:14px;
-
-    border:none;
-
-    border-radius:10px;
-
-    background:#5aa657;
-
-    color:white;
-
-    font-size:20px;
-
-    cursor:pointer;
-
-    transition:.2s;
-
+.primaryButton {
+    width: 100%;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 12px;
+    background: #2f8f46;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    touch-action: manipulation;
 }
 
-#startGame:hover{
-
-    background:#468d44;
-
+.primaryButton:hover,
+.primaryButton:focus-visible {
+    background: #27783b;
 }
 
-#startGame:active{
-
-    transform:scale(.98);
-
+#miracleToolbar {
+    position: absolute;
+    left: 50%;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    display: flex;
+    gap: 10px;
+    max-width: calc(100vw - 24px);
+    padding: 10px;
+    overflow-x: auto;
+    background: rgba(16, 24, 32, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+    transform: translateX(-50%);
 }
 
-/*=======================================
-HUD INFERIORE
-=======================================*/
-
-#bottomBar{
-
-    position:absolute;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    bottom:20px;
-
-    display:flex;
-
-    gap:12px;
-
-    padding:12px;
-
-    background:rgba(20,20,20,.75);
-
-    border-radius:14px;
-
-    pointer-events:auto;
-
+.miracleButton {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border: 2px solid rgba(255, 255, 255, 0.24);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 28px;
+    line-height: 1;
+    touch-action: manipulation;
 }
 
-/*=======================================
-PULSANTI MIRACOLI
-=======================================*/
-
-.miracleButton{
-
-    width:60px;
-
-    height:60px;
-
-    border-radius:12px;
-
-    border:2px solid rgba(255,255,255,.15);
-
-    background:#2b2b2b;
-
-    color:white;
-
-    font-size:30px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    cursor:pointer;
-
-    transition:.2s;
-
+.miracleButton.selected {
+    border-color: #facc15;
+    background: rgba(250, 204, 21, 0.28);
+    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
 }
 
-.miracleButton:hover{
-
-    background:#3d3d3d;
-
+.miracleButton:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
 }
 
-.miracleButton.selected{
-
-    border-color:#ffd34d;
-
-    background:#5a4a14;
-
-}
-
-/*=======================================
-RESPONSIVE
-=======================================*/
-
-@media (max-width:700px){
-
-    .window{
-
-        width:95vw;
-
-        padding:20px;
-
+@media (max-width: 600px) {
+    #miracleToolbar {
+        gap: 8px;
+        padding: 8px;
     }
 
-    .window h1{
-
-        font-size:32px;
-
+    .miracleButton {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
     }
-
-    .miracleButton{
-
-        width:50px;
-
-        height:50px;
-
-        font-size:24px;
-
-    }
-
 }
