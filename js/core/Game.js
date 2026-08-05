@@ -17,7 +17,7 @@ export class Game {
         this.renderer = new Renderer(this.canvas, this.context, this.world, this.assetLoader);
         this.miracleManager = new MiracleManager();
         this.input = new Input(this.canvas, this.world, this.miracleManager);
-        this.ui = new UI(this.uiRoot, this.miracleManager);
+        this.ui = new UI(this.uiRoot, this.miracleManager, this.world);
         this.engine = new Engine(this);
         this.started = false;
 
@@ -55,6 +55,7 @@ export class Game {
 
     update(delta) {
         this.world.update(delta);
+        this.ui.updateMiracleButtons();
     }
 
     render() {

@@ -9,6 +9,7 @@ export class Renderer {
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawHouses();
         this.drawTrees();
         this.drawDestinationMarker();
         this.drawEntities();
@@ -54,6 +55,33 @@ export class Renderer {
 
             this.drawEntity(entity);
         });
+    }
+
+    drawHouses() {
+        this.world.getHouses().forEach((house) => {
+            this.drawHouse(house);
+        });
+    }
+
+    drawHouse(house) {
+        this.context.fillStyle = "rgba(0, 0, 0, 0.22)";
+        this.context.beginPath();
+        this.context.ellipse(house.x, house.y + 21, 31, 10, 0, 0, Math.PI * 2);
+        this.context.fill();
+
+        this.context.fillStyle = "#8a4b24";
+        this.context.beginPath();
+        this.context.moveTo(house.x - 34, house.y - 4);
+        this.context.lineTo(house.x, house.y - 32);
+        this.context.lineTo(house.x + 34, house.y - 4);
+        this.context.closePath();
+        this.context.fill();
+
+        this.context.fillStyle = "#dfc29a";
+        this.context.fillRect(house.x - 25, house.y - 4, 50, 34);
+
+        this.context.fillStyle = "#4b2a18";
+        this.context.fillRect(house.x - 7, house.y + 10, 14, 20);
     }
 
     drawTrees() {

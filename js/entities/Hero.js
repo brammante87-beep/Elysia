@@ -12,5 +12,6 @@ export class Hero extends Entity {
         this.state = "idle";
         this.actionTimer = 0;
         this.wood = 0;
+        this.house = null;
     }
 }

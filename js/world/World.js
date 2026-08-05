@@ -2,6 +2,7 @@ import { Terrain } from "./Terrain.js";
 import { Hero } from "../entities/Hero.js";
 import { Villager } from "../entities/Villager.js";
 import { Tree } from "../entities/Tree.js";
+import { House } from "../entities/House.js";
 
 export class World {
     constructor() {
@@ -11,6 +12,7 @@ export class World {
         this.heroDestination = null;
         this.villagers = [];
         this.trees = [];
+        this.houses = [];
     }
 
     initialize(settings = {}) {
@@ -18,6 +20,7 @@ export class World {
         this.heroDestination = null;
         this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
         this.trees = [];
+        this.houses = [];
         this.villagers = [
             new Villager("Mira", 448, 384),
             new Villager("Taro", 384, 480)
@@ -326,12 +329,47 @@ export class World {
         return this.contains(x, y) &&
             this.terrain.isGrassAtWorldPosition(x, y) &&
             !this.overlapsAnyTree(tree) &&
+            !this.overlapsAnyHouse(tree) &&
             !this.overlapsEntity(tree, this.hero) &&
             !this.villagers.some((villager) => this.overlapsEntity(tree, villager));
     }
 
+    addChosenHouseAt(x, y) {
+        if (!this.canPlaceHouseAt(x, y)) {
+            return false;
+        }
+
+        const house = new House(x, y, this.hero);
+
+        this.houses.push(house);
+        this.hero.house = house;
+
+        return true;
+    }
+
+    canPlaceHouseAt(x, y) {
+        const house = new House(x, y, this.hero);
+
+        return this.hero.house === null &&
+            this.houses.length === 0 &&
+            this.contains(x, y) &&
+            this.terrain.isGrassAtWorldPosition(x, y) &&
+            !this.overlapsAnyHouse(house) &&
+            !this.overlapsAnyTree(house) &&
+            !this.overlapsEntity(house, this.hero) &&
+            !this.villagers.some((villager) => this.overlapsEntity(house, villager));
+    }
+
+    hasChosenHouse() {
+        return this.hero !== null && this.hero.house !== null;
+    }
+
     overlapsAnyTree(tree) {
         return this.trees.some((existingTree) => this.overlapsEntity(tree, existingTree));
+    }
+
+    overlapsAnyHouse(entity) {
+        return this.houses.some((house) => this.overlapsEntity(entity, house));
     }
 
     overlapsEntity(first, second) {
@@ -359,5 +397,9 @@ export class World {
 
     getTrees() {
         return this.trees;
+    }
+
+    getHouses() {
+        return this.houses;
     }
 }

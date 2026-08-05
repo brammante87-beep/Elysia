@@ -1,7 +1,8 @@
 export class UI {
-    constructor(root, miracleManager) {
+    constructor(root, miracleManager, world = null) {
         this.root = root;
         this.miracleManager = miracleManager;
+        this.world = world;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -170,6 +171,12 @@ export class UI {
             event.preventDefault();
             event.stopPropagation();
 
+            if (this.isMiracleDisabled(miracle)) {
+                this.miracleManager.clearSelection();
+                this.updateMiracleButtons();
+                return;
+            }
+
             if (this.miracleManager.selectedMiracle === miracle) {
                 this.miracleManager.clearSelection();
             } else {
@@ -198,11 +205,54 @@ export class UI {
 
     updateMiracleButtons() {
         this.root.querySelectorAll(".miracleButton").forEach((button) => {
-            const selected = button.dataset.miracle === this.miracleManager.selectedMiracle;
+            const disabled = this.isMiracleDisabled(button.dataset.miracle);
 
+            if (disabled && button.dataset.miracle === this.miracleManager.selectedMiracle) {
+                this.miracleManager.clearSelection();
+            }
+
+            const selected = button.dataset.miracle === this.miracleManager.selectedMiracle;
+            const label = this.getMiracleButtonLabel(button.dataset.miracle);
+
+            button.disabled = disabled;
+            button.title = label;
+            button.setAttribute("aria-label", label);
             button.classList.toggle("selected", selected);
+            button.classList.toggle("disabled", disabled);
             button.setAttribute("aria-pressed", String(selected));
         });
+    }
+
+    isMiracleDisabled(miracle) {
+        if (miracle !== "house") {
+            return false;
+        }
+
+        return this.getHouseDisabledReason() !== null;
+    }
+
+    getHouseDisabledReason() {
+        if (this.world === null || this.world.hero === null) {
+            return "Richiede 3 legna";
+        }
+
+        if (this.world.hero.house !== null || this.world.hasChosenHouse()) {
+            return "Casa già costruita";
+        }
+
+        if (this.world.hero.wood < 3) {
+            return "Richiede 3 legna";
+        }
+
+        return null;
+    }
+
+    getMiracleButtonLabel(miracle) {
+        if (miracle === "house") {
+            return this.getHouseDisabledReason() || this.getMiracleLabel(miracle);
+        }
+
+        return this.getMiracleLabel(miracle);
     }
 
     getMiracleIconSource(miracle) {
