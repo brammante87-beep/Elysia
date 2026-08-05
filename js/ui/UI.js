@@ -130,6 +130,88 @@ export class UI {
         this.root.appendChild(screen);
     }
 
+    showTutorialReplayPrompt(options) {
+        this.clear();
+
+        const screen = document.createElement("div");
+        screen.className = "menuScreen";
+
+        const panel = document.createElement("section");
+        panel.className = "menuPanel tutorialReplayPanel";
+
+        const title = document.createElement("h1");
+        title.textContent = "Vuoi rivedere l'introduzione?";
+        panel.appendChild(title);
+        panel.appendChild(this.createActionButton("Sì", options.onReplay));
+        panel.appendChild(this.createActionButton("No", options.onContinue));
+        screen.appendChild(panel);
+        this.root.appendChild(screen);
+    }
+
+    showTutorial(options) {
+        this.clear();
+
+        const screen = document.createElement("div");
+        screen.id = "tutorialScreen";
+        screen.setAttribute("aria-label", "Introduzione a Elysia");
+
+        const landscape = document.createElement("div");
+        landscape.className = "tutorialLandscape";
+        landscape.setAttribute("aria-hidden", "true");
+
+        const skipButton = this.createActionButton("Salta introduzione", options.onSkip);
+        skipButton.className = "tutorialSkip";
+
+        const panel = document.createElement("section");
+        panel.className = "tutorialPanel";
+
+        const progress = document.createElement("p");
+        progress.className = "tutorialProgress";
+        progress.textContent = `${options.pageNumber} / ${options.pageCount}`;
+
+        const title = document.createElement("h1");
+        title.textContent = options.page.title;
+
+        const text = document.createElement("p");
+        text.className = "tutorialText";
+        text.textContent = options.page.text;
+
+        const navigation = document.createElement("div");
+        navigation.className = "tutorialNavigation";
+
+        if (options.pageNumber > 1) {
+            const backButton = this.createActionButton("Indietro", options.onBack);
+            backButton.className = "tutorialButton tutorialBack";
+            navigation.appendChild(backButton);
+        }
+
+        const nextLabel = options.pageNumber === options.pageCount ? "Inizia il viaggio" : "Avanti";
+        const nextButton = this.createActionButton(nextLabel, options.onNext);
+        nextButton.className = "tutorialButton tutorialNext";
+        navigation.appendChild(nextButton);
+
+        panel.appendChild(progress);
+        panel.appendChild(title);
+        panel.appendChild(text);
+        panel.appendChild(navigation);
+        screen.appendChild(landscape);
+        screen.appendChild(skipButton);
+        screen.appendChild(panel);
+        this.root.appendChild(screen);
+    }
+
+    createActionButton(label, action) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "primaryButton";
+        button.textContent = label;
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            action();
+        });
+        return button;
+    }
+
     createRadioGroup(title, name, options) {
         const fieldset = document.createElement("fieldset");
         const legend = document.createElement("legend");
