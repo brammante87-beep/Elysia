@@ -11,6 +11,8 @@ export class Renderer {
         this.drawTerrain();
         this.drawHouses();
         this.drawTrees();
+        this.drawWaterSources();
+        this.drawAnimals();
         this.drawDestinationMarker();
         this.drawEntities();
     }
@@ -120,6 +122,51 @@ export class Renderer {
         this.context.fill();
     }
 
+
+    drawWaterSources() {
+        this.world.getWaterSources().forEach((source) => {
+            const sprite = this.getSprite(source.useFeedbackTimer > 0 ? "waterSourceUse" : "waterSource");
+            if (sprite === null) { this.drawGeometricWaterSource(source); return; }
+            this.context.drawImage(sprite, source.x - 32, source.y - 38, 64, 64);
+        });
+    }
+
+    drawGeometricWaterSource(source) {
+        this.context.fillStyle = "rgba(0, 0, 0, 0.18)";
+        this.context.beginPath();
+        this.context.ellipse(source.x, source.y + 8, 22, 8, 0, 0, Math.PI * 2);
+        this.context.fill();
+        this.context.fillStyle = source.useFeedbackTimer > 0 ? "#7dd3fc" : source.color;
+        this.context.beginPath();
+        this.context.ellipse(source.x, source.y, source.radius, source.radius * 0.55, 0, 0, Math.PI * 2);
+        this.context.fill();
+    }
+
+    drawAnimals() {
+        this.world.getAnimals().forEach((animal) => {
+            const sprite = this.getSprite(animal.hitFeedbackTimer > 0 ? "deerHit" : "deer");
+            if (sprite === null) { this.drawGeometricAnimal(animal); return; }
+            this.context.drawImage(sprite, animal.x - 32, animal.y - 45, 64, 64);
+        });
+    }
+
+    drawGeometricAnimal(animal) {
+        this.context.fillStyle = "rgba(0, 0, 0, 0.22)";
+        this.context.beginPath();
+        this.context.ellipse(animal.x, animal.y + 15, 20, 7, 0, 0, Math.PI * 2);
+        this.context.fill();
+        this.context.fillStyle = animal.hitFeedbackTimer > 0 ? "#c08457" : animal.color;
+        this.context.fillRect(animal.x - 16, animal.y - 10, 28, 18);
+        this.context.beginPath();
+        this.context.arc(animal.x + 16, animal.y - 14, 8, 0, Math.PI * 2);
+        this.context.fill();
+    }
+
+    getSprite(spriteName) {
+        if (this.assetLoader === null) { return null; }
+        return this.assetLoader.getImage(spriteName);
+    }
+
     drawSelectionRing(entity) {
         this.context.strokeStyle = "#facc15";
         this.context.lineWidth = 3;
@@ -163,6 +210,14 @@ export class Renderer {
         this.drawEntityName(entity);
 
         if (entity.state === "cuttingTree") {
+            this.drawCuttingFeedback(entity);
+        }
+
+        if (entity.state === "collectingWater") {
+            this.drawWaterFeedback(entity);
+        }
+
+        if (entity.state === "huntingAnimal") {
             this.drawCuttingFeedback(entity);
         }
 
@@ -280,6 +335,13 @@ export class Renderer {
         this.context.moveTo(x, y + 6);
         this.context.bezierCurveTo(x - 10, y, x - 8, y - 9, x, y - 4);
         this.context.bezierCurveTo(x + 8, y - 9, x + 10, y, x, y + 6);
+        this.context.fill();
+    }
+
+    drawWaterFeedback(entity) {
+        this.context.fillStyle = "#7dd3fc";
+        this.context.beginPath();
+        this.context.arc(entity.x + 18, entity.y - 18, 4, 0, Math.PI * 2);
         this.context.fill();
     }
 

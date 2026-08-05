@@ -63,6 +63,22 @@ export class Input {
             return;
         }
 
+        const waterSource = this.world.getWaterSourceAtWorldPosition(x, y);
+
+        if (waterSource !== null) {
+            this.clearPointerFeedback();
+            this.world.commandHeroToCollectWater(waterSource);
+            return;
+        }
+
+        const animal = this.world.getAnimalAtWorldPosition(x, y);
+
+        if (animal !== null) {
+            this.clearPointerFeedback();
+            this.world.commandHeroToHuntAnimal(animal);
+            return;
+        }
+
         const villager = this.world.getVillagerAtWorldPosition(x, y);
 
         if (villager !== null) {

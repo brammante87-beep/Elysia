@@ -3,6 +3,8 @@ import { Hero } from "../entities/Hero.js";
 import { Villager } from "../entities/Villager.js";
 import { Tree } from "../entities/Tree.js";
 import { House } from "../entities/House.js";
+import { WaterSource } from "../entities/WaterSource.js";
+import { Animal } from "../entities/Animal.js";
 
 export class World {
     constructor() {
@@ -12,7 +14,10 @@ export class World {
         this.heroDestination = null;
         this.villagers = [];
         this.trees = [];
+        this.waterSources = [];
+        this.animals = [];
         this.houses = [];
+        this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
     }
 
@@ -21,7 +26,10 @@ export class World {
         this.heroDestination = null;
         this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
         this.trees = [];
+        this.waterSources = [];
+        this.animals = [];
         this.houses = [];
+        this.nextResourceAssignmentIndex = 0;
         this.lastPartnerIneligibilityReason = null;
         this.villagers = [
             new Villager({
@@ -52,8 +60,8 @@ export class World {
 
     update(delta) {
         this.updateHero(delta);
-        this.assignVillagersToTrees();
-        this.updateTreeFeedback(delta);
+        this.assignVillagersToResources();
+        this.updateResourceFeedback(delta);
         this.updatePartnerFeedback(delta);
 
         this.villagers.forEach((villager) => {
@@ -69,6 +77,16 @@ export class World {
 
         if (this.hero.targetTree !== null) {
             this.updateHeroTreeWorker(delta);
+            return;
+        }
+
+        if (this.hero.targetWaterSource !== null) {
+            this.updateHeroWaterWorker(delta);
+            return;
+        }
+
+        if (this.hero.targetAnimal !== null) {
+            this.updateHeroAnimalWorker(delta);
             return;
         }
 
@@ -126,8 +144,8 @@ export class World {
         tree.isBeingCut = true;
         this.hero.actionTimer += delta;
 
-        while (this.hero.actionTimer >= 1 && this.trees.includes(tree)) {
-            this.hero.actionTimer -= 1;
+        if (this.hero.actionTimer >= 1 && this.trees.includes(tree)) {
+            this.hero.actionTimer = 0;
             this.cutTree(this.hero, tree);
         }
     }
@@ -139,6 +157,16 @@ export class World {
 
         if (villager.targetTree !== null) {
             this.updateTreeWorker(villager, delta);
+            return;
+        }
+
+        if (villager.targetWaterSource !== null) {
+            this.updateWaterWorker(villager, delta);
+            return;
+        }
+
+        if (villager.targetAnimal !== null) {
+            this.updateAnimalWorker(villager, delta);
             return;
         }
 
@@ -200,8 +228,8 @@ export class World {
         tree.isBeingCut = true;
         villager.actionTimer += delta;
 
-        while (villager.actionTimer >= 1 && this.trees.includes(tree)) {
-            villager.actionTimer -= 1;
+        if (villager.actionTimer >= 1 && this.trees.includes(tree)) {
+            villager.actionTimer = 0;
             this.cutTree(villager, tree);
         }
     }
@@ -213,10 +241,73 @@ export class World {
 
         if (tree.woodRemaining <= 0) {
             this.removeTree(tree);
-            this.clearTreeWork(worker);
         }
 
-        this.clearVillagerTreeWork(worker);
+        this.clearTreeWork(worker);
+    }
+
+    updateHeroWaterWorker(delta) {
+        this.updateResourceWorker(this.hero, this.hero.targetWaterSource, this.waterSources, "collectingWater", "useWaterSource", "clearHeroWaterWork", delta);
+    }
+
+    updateHeroAnimalWorker(delta) {
+        this.updateResourceWorker(this.hero, this.hero.targetAnimal, this.animals, "huntingAnimal", "huntAnimal", "clearHeroAnimalWork", delta);
+    }
+
+    updateWaterWorker(villager, delta) {
+        this.updateResourceWorker(villager, villager.targetWaterSource, this.waterSources, "collectingWater", "useWaterSource", "clearVillagerWaterWork", delta);
+    }
+
+    updateAnimalWorker(villager, delta) {
+        this.updateResourceWorker(villager, villager.targetAnimal, this.animals, "huntingAnimal", "huntAnimal", "clearVillagerAnimalWork", delta);
+    }
+
+    updateResourceWorker(worker, resource, collection, workState, completeMethod, clearMethod, delta = 0) {
+        if (!collection.includes(resource)) {
+            this[clearMethod](worker);
+            return;
+        }
+
+        const stopDistance = worker.radius + resource.radius + 4;
+        const distanceX = resource.x - worker.x;
+        const distanceY = resource.y - worker.y;
+        const distance = Math.hypot(distanceX, distanceY);
+
+        if (distance > stopDistance + 0.5) {
+            worker.state = "walking";
+            worker.destination = null;
+            if (worker === this.hero) { this.heroDestination = null; }
+            const step = Math.min(worker.speed * delta, distance - stopDistance);
+            worker.x += (distanceX / distance) * step;
+            worker.y += (distanceY / distance) * step;
+            return;
+        }
+
+        worker.state = workState;
+        if (resource instanceof WaterSource) { resource.isBeingUsed = true; }
+        if (resource instanceof Animal) { resource.isBeingHunted = true; }
+        worker.actionTimer += delta;
+
+        if (worker.actionTimer >= 1 && collection.includes(resource)) {
+            worker.actionTimer = 0;
+            this[completeMethod](worker, resource);
+        }
+    }
+
+    useWaterSource(worker, source) {
+        source.waterRemaining -= 1;
+        source.useFeedbackTimer = 0.2;
+        worker.water += 1;
+        if (source.waterRemaining <= 0) { this.removeWaterSource(source); }
+        this.clearWaterWork(worker);
+    }
+
+    huntAnimal(worker, animal) {
+        animal.meatRemaining -= 1;
+        animal.hitFeedbackTimer = 0.2;
+        worker.meat += 1;
+        if (animal.meatRemaining <= 0) { this.removeAnimal(animal); }
+        this.clearAnimalWork(worker);
     }
 
     clearTreeWork(worker) {
@@ -228,29 +319,58 @@ export class World {
         this.clearVillagerTreeWork(worker);
     }
 
-    assignVillagersToTrees() {
-        this.trees.forEach((tree) => {
-            if (tree.assignedVillager !== null || tree.assignedHero !== null) {
+    assignVillagersToResources() {
+        const jobTypes = ["tree", "water", "animal"];
+
+        for (let offset = 0; offset < jobTypes.length; offset += 1) {
+            const jobType = jobTypes[(this.nextResourceAssignmentIndex + offset) % jobTypes.length];
+
+            if (this.assignVillagerToResourceType(jobType)) {
+                this.nextResourceAssignmentIndex = (this.nextResourceAssignmentIndex + offset + 1) % jobTypes.length;
                 return;
             }
+        }
+    }
 
-            const villager = this.getAvailableVillager();
+    assignVillagerToResourceType(jobType) {
+        const villager = this.getAvailableVillager();
 
-            if (villager === null) {
-                return;
-            }
+        if (villager === null) {
+            return false;
+        }
 
+        if (jobType === "tree") {
+            const tree = this.trees.find((candidate) => candidate.assignedVillager === null && candidate.assignedHero === null) || null;
+            if (tree === null) { return false; }
             tree.assignedVillager = villager;
             villager.targetTree = tree;
-            villager.destination = null;
-            villager.actionTimer = 0;
-            villager.state = "walking";
-        });
+        }
+
+        if (jobType === "water") {
+            const source = this.waterSources.find((candidate) => candidate.assignedVillager === null && candidate.assignedHero === null) || null;
+            if (source === null) { return false; }
+            source.assignedVillager = villager;
+            villager.targetWaterSource = source;
+        }
+
+        if (jobType === "animal") {
+            const animal = this.animals.find((candidate) => candidate.assignedVillager === null && candidate.assignedHero === null) || null;
+            if (animal === null) { return false; }
+            animal.assignedVillager = villager;
+            villager.targetAnimal = animal;
+        }
+
+        villager.destination = null;
+        villager.actionTimer = 0;
+        villager.state = "walking";
+        return true;
     }
 
     getAvailableVillager() {
         return this.villagers.find((villager) => {
             return villager.targetTree === null &&
+                villager.targetWaterSource === null &&
+                villager.targetAnimal === null &&
                 !villager.reservedForPartnership &&
                 villager.state === "idle";
         }) || null;
@@ -263,10 +383,10 @@ export class World {
         }
 
         villager.targetTree = null;
-        villager.destination = null;
+        villager.destination = this.terrain.getRandomWalkableWorldPosition();
         villager.actionTimer = 0;
         villager.idleTimer = this.getRandomVillagerIdleTime();
-        villager.state = "idle";
+        villager.state = "walking";
     }
 
     clearHeroTreeWork() {
@@ -280,6 +400,67 @@ export class World {
         this.hero.state = "idle";
     }
 
+
+    clearWaterWork(worker) {
+        if (worker === this.hero) { this.clearHeroWaterWork(); return; }
+        this.clearVillagerWaterWork(worker);
+    }
+
+    clearAnimalWork(worker) {
+        if (worker === this.hero) { this.clearHeroAnimalWork(); return; }
+        this.clearVillagerAnimalWork(worker);
+    }
+
+    clearVillagerAllWork(villager) {
+        this.clearVillagerTreeWork(villager);
+        this.clearVillagerWaterWork(villager);
+        this.clearVillagerAnimalWork(villager);
+    }
+
+    clearVillagerWaterWork(villager) {
+        if (villager.targetWaterSource !== null && villager.targetWaterSource.assignedVillager === villager) {
+            villager.targetWaterSource.assignedVillager = null;
+            villager.targetWaterSource.isBeingUsed = this.isWaterSourceUsedByHero(villager.targetWaterSource);
+        }
+        villager.targetWaterSource = null;
+        villager.destination = this.terrain.getRandomWalkableWorldPosition();
+        villager.actionTimer = 0;
+        villager.idleTimer = this.getRandomVillagerIdleTime();
+        villager.state = "walking";
+    }
+
+    clearHeroWaterWork() {
+        if (this.hero.targetWaterSource !== null && this.hero.targetWaterSource.assignedHero === this.hero) {
+            this.hero.targetWaterSource.assignedHero = null;
+            this.hero.targetWaterSource.isBeingUsed = this.isWaterSourceUsedByVillager(this.hero.targetWaterSource);
+        }
+        this.hero.targetWaterSource = null;
+        this.hero.actionTimer = 0;
+        if (this.hero.state === "collectingWater") { this.hero.state = "idle"; }
+    }
+
+    clearVillagerAnimalWork(villager) {
+        if (villager.targetAnimal !== null && villager.targetAnimal.assignedVillager === villager) {
+            villager.targetAnimal.assignedVillager = null;
+            villager.targetAnimal.isBeingHunted = this.isAnimalHuntedByHero(villager.targetAnimal);
+        }
+        villager.targetAnimal = null;
+        villager.destination = this.terrain.getRandomWalkableWorldPosition();
+        villager.actionTimer = 0;
+        villager.idleTimer = this.getRandomVillagerIdleTime();
+        villager.state = "walking";
+    }
+
+    clearHeroAnimalWork() {
+        if (this.hero.targetAnimal !== null && this.hero.targetAnimal.assignedHero === this.hero) {
+            this.hero.targetAnimal.assignedHero = null;
+            this.hero.targetAnimal.isBeingHunted = this.isAnimalHuntedByVillager(this.hero.targetAnimal);
+        }
+        this.hero.targetAnimal = null;
+        this.hero.actionTimer = 0;
+        if (this.hero.state === "huntingAnimal") { this.hero.state = "idle"; }
+    }
+
     isTreeBeingCutByHero(tree) {
         return tree.assignedHero === this.hero && this.hero.state === "cuttingTree";
     }
@@ -288,6 +469,15 @@ export class World {
         return tree.assignedVillager !== null && tree.assignedVillager.state === "cuttingTree";
     }
 
+
+    isWaterSourceUsedByHero(source) { return source.assignedHero === this.hero && this.hero.state === "collectingWater"; }
+
+    isWaterSourceUsedByVillager(source) { return source.assignedVillager !== null && source.assignedVillager.state === "collectingWater"; }
+
+    isAnimalHuntedByHero(animal) { return animal.assignedHero === this.hero && this.hero.state === "huntingAnimal"; }
+
+    isAnimalHuntedByVillager(animal) { return animal.assignedVillager !== null && animal.assignedVillager.state === "huntingAnimal"; }
+
     removeTree(tree) {
         this.trees = this.trees.filter((existingTree) => existingTree !== tree);
         tree.assignedVillager = null;
@@ -295,9 +485,34 @@ export class World {
         tree.isBeingCut = false;
     }
 
-    updateTreeFeedback(delta) {
+
+    removeWaterSource(source) {
+        this.waterSources = this.waterSources.filter((existingSource) => existingSource !== source);
+        if (source.assignedVillager !== null) { source.assignedVillager.targetWaterSource = null; }
+        if (source.assignedHero !== null) { source.assignedHero.targetWaterSource = null; }
+        source.assignedVillager = null;
+        source.assignedHero = null;
+        source.isBeingUsed = false;
+    }
+
+    removeAnimal(animal) {
+        this.animals = this.animals.filter((existingAnimal) => existingAnimal !== animal);
+        if (animal.assignedVillager !== null) { animal.assignedVillager.targetAnimal = null; }
+        if (animal.assignedHero !== null) { animal.assignedHero.targetAnimal = null; }
+        animal.assignedVillager = null;
+        animal.assignedHero = null;
+        animal.isBeingHunted = false;
+    }
+
+    updateResourceFeedback(delta) {
         this.trees.forEach((tree) => {
             tree.cutFeedbackTimer = Math.max(0, tree.cutFeedbackTimer - delta);
+        });
+        this.waterSources.forEach((source) => {
+            source.useFeedbackTimer = Math.max(0, source.useFeedbackTimer - delta);
+        });
+        this.animals.forEach((animal) => {
+            animal.hitFeedbackTimer = Math.max(0, animal.hitFeedbackTimer - delta);
         });
     }
 
@@ -315,6 +530,8 @@ export class World {
     setHeroDestination(x, y) {
         this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
+        this.clearHeroWaterWork();
+        this.clearHeroAnimalWork();
         this.heroDestination = { x, y };
         this.hero.state = "walking";
     }
@@ -326,6 +543,8 @@ export class World {
 
         this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
+        this.clearHeroWaterWork();
+        this.clearHeroAnimalWork();
         this.releaseTreeFromVillager(tree);
         tree.assignedHero = this.hero;
         tree.isBeingCut = false;
@@ -343,6 +562,55 @@ export class World {
         }
 
         this.clearVillagerTreeWork(tree.assignedVillager);
+    }
+
+
+    commandHeroToCollectWater(source) {
+        if (!this.waterSources.includes(source)) { return false; }
+        this.clearHeroPartnerProposal();
+        this.clearHeroTreeWork();
+        this.clearHeroWaterWork();
+        this.clearHeroAnimalWork();
+        this.releaseWaterSourceFromVillager(source);
+        source.assignedHero = this.hero;
+        source.isBeingUsed = false;
+        this.hero.targetWaterSource = source;
+        this.heroDestination = null;
+        this.hero.actionTimer = 0;
+        this.hero.state = "walking";
+        return true;
+    }
+
+    commandHeroToHuntAnimal(animal) {
+        if (!this.animals.includes(animal)) { return false; }
+        this.clearHeroPartnerProposal();
+        this.clearHeroTreeWork();
+        this.clearHeroWaterWork();
+        this.clearHeroAnimalWork();
+        this.releaseAnimalFromVillager(animal);
+        animal.assignedHero = this.hero;
+        animal.isBeingHunted = false;
+        this.hero.targetAnimal = animal;
+        this.heroDestination = null;
+        this.hero.actionTimer = 0;
+        this.hero.state = "walking";
+        return true;
+    }
+
+    releaseWaterSourceFromVillager(source) {
+        if (source.assignedVillager !== null) { this.clearVillagerWaterWork(source.assignedVillager); }
+    }
+
+    releaseAnimalFromVillager(animal) {
+        if (animal.assignedVillager !== null) { this.clearVillagerAnimalWork(animal.assignedVillager); }
+    }
+
+    getWaterSourceAtWorldPosition(x, y) {
+        return this.waterSources.find((source) => Math.hypot(source.x - x, source.y - y) <= source.radius) || null;
+    }
+
+    getAnimalAtWorldPosition(x, y) {
+        return this.animals.find((animal) => Math.hypot(animal.x - x, animal.y - y) <= animal.radius) || null;
     }
 
     getTreeAtWorldPosition(x, y) {
@@ -370,7 +638,9 @@ export class World {
 
         this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
-        this.clearVillagerTreeWork(villager);
+        this.clearHeroWaterWork();
+        this.clearHeroAnimalWork();
+        this.clearVillagerAllWork(villager);
         this.hero.partnerTarget = villager;
         this.hero.socialTimer = 0;
         this.heroDestination = null;
@@ -544,6 +814,8 @@ export class World {
         return this.contains(x, y) &&
             this.terrain.isGrassAtWorldPosition(x, y) &&
             !this.overlapsAnyTree(tree) &&
+            !this.overlapsAnyWaterSource(tree) &&
+            !this.overlapsAnyAnimal(tree) &&
             !this.overlapsAnyHouse(tree) &&
             !this.overlapsEntity(tree, this.hero) &&
             !this.villagers.some((villager) => this.overlapsEntity(tree, villager));
@@ -571,8 +843,44 @@ export class World {
             this.terrain.isGrassAtWorldPosition(x, y) &&
             !this.overlapsAnyHouse(house) &&
             !this.overlapsAnyTree(house) &&
+            !this.overlapsAnyWaterSource(house) &&
+            !this.overlapsAnyAnimal(house) &&
             !this.overlapsEntity(house, this.hero) &&
             !this.villagers.some((villager) => this.overlapsEntity(house, villager));
+    }
+
+
+    addWaterSourceAt(x, y) {
+        if (!this.canPlaceWaterSourceAt(x, y)) { return false; }
+        this.waterSources.push(new WaterSource(x, y));
+        return true;
+    }
+
+    canPlaceWaterSourceAt(x, y) {
+        const source = new WaterSource(x, y);
+        return this.canPlaceResourceAt(source, x, y);
+    }
+
+    addAnimalAt(x, y) {
+        if (!this.canPlaceAnimalAt(x, y)) { return false; }
+        this.animals.push(new Animal("Deer", x, y));
+        return true;
+    }
+
+    canPlaceAnimalAt(x, y) {
+        const animal = new Animal("Deer", x, y);
+        return this.canPlaceResourceAt(animal, x, y);
+    }
+
+    canPlaceResourceAt(resource, x, y) {
+        return this.contains(x, y) &&
+            this.terrain.isGrassAtWorldPosition(x, y) &&
+            !this.overlapsAnyTree(resource) &&
+            !this.overlapsAnyWaterSource(resource) &&
+            !this.overlapsAnyAnimal(resource) &&
+            !this.overlapsAnyHouse(resource) &&
+            !this.overlapsEntity(resource, this.hero) &&
+            !this.villagers.some((villager) => this.overlapsEntity(resource, villager));
     }
 
     hasChosenHouse() {
@@ -581,6 +889,14 @@ export class World {
 
     overlapsAnyTree(tree) {
         return this.trees.some((existingTree) => this.overlapsEntity(tree, existingTree));
+    }
+
+    overlapsAnyWaterSource(entity) {
+        return this.waterSources.some((source) => this.overlapsEntity(entity, source));
+    }
+
+    overlapsAnyAnimal(entity) {
+        return this.animals.some((animal) => this.overlapsEntity(entity, animal));
     }
 
     overlapsAnyHouse(entity) {
@@ -616,5 +932,13 @@ export class World {
 
     getHouses() {
         return this.houses;
+    }
+
+    getWaterSources() {
+        return this.waterSources;
+    }
+
+    getAnimals() {
+        return this.animals;
     }
 }

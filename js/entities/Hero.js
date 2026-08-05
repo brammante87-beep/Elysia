@@ -9,6 +9,8 @@ export class Hero extends Entity {
         this.selected = true;
         this.speed = 160;
         this.targetTree = null;
+        this.targetWaterSource = null;
+        this.targetAnimal = null;
         this.state = "idle";
         this.actionTimer = 0;
         this.wood = 0;
