@@ -18,13 +18,16 @@ export class World {
             new Villager("Mira", 448, 384),
             new Villager("Taro", 384, 480)
         ];
+        this.villagers.forEach((villager) => {
+            villager.idleTimer = this.getRandomVillagerIdleTime();
+        });
     }
 
     update(delta) {
         this.updateHero(delta);
 
         this.villagers.forEach((villager) => {
-            villager.update(delta);
+            this.updateVillager(villager, delta);
         });
     }
 
@@ -47,6 +50,38 @@ export class World {
 
         this.hero.x += (distanceX / distance) * step;
         this.hero.y += (distanceY / distance) * step;
+    }
+
+    updateVillager(villager, delta) {
+        if (villager.destination === null) {
+            villager.idleTimer -= delta;
+
+            if (villager.idleTimer <= 0) {
+                villager.destination = this.terrain.getRandomWalkableWorldPosition();
+            }
+
+            return;
+        }
+
+        const distanceX = villager.destination.x - villager.x;
+        const distanceY = villager.destination.y - villager.y;
+        const distance = Math.hypot(distanceX, distanceY);
+        const step = villager.speed * delta;
+
+        if (distance <= step) {
+            villager.x = villager.destination.x;
+            villager.y = villager.destination.y;
+            villager.destination = null;
+            villager.idleTimer = this.getRandomVillagerIdleTime();
+            return;
+        }
+
+        villager.x += (distanceX / distance) * step;
+        villager.y += (distanceY / distance) * step;
+    }
+
+    getRandomVillagerIdleTime() {
+        return 1 + Math.random() * 3;
     }
 
     setHeroDestination(x, y) {

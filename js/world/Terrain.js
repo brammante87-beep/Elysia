@@ -45,6 +45,31 @@ export class Terrain {
         return tile === "beach" || tile === "grass";
     }
 
+    getRandomWalkableWorldPosition() {
+        let column = 0;
+        let row = 0;
+
+        do {
+            column = Math.floor(Math.random() * this.columns);
+            row = Math.floor(Math.random() * this.rows);
+        } while (!this.isWalkableTile(column, row));
+
+        return {
+            x: column * this.tileSize + this.tileSize / 2,
+            y: row * this.tileSize + this.tileSize / 2
+        };
+    }
+
+    isWalkableTile(column, row) {
+        if (!this.containsTile(column, row)) {
+            return false;
+        }
+
+        const tile = this.tiles[row][column];
+
+        return tile === "beach" || tile === "grass";
+    }
+
     containsTile(column, row) {
         return column >= 0 &&
             row >= 0 &&
