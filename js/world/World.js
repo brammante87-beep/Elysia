@@ -23,6 +23,7 @@ export class World {
         this.lastFertilityIneligibilityReason = null;
         this.autonomousHouseBuilder = null;
         this.nextAutonomousBuilderIndex = 0;
+        this.nextAutonomousPartnerIndex = 0;
     }
 
     initialize(settings = {}) {
@@ -38,6 +39,7 @@ export class World {
         this.lastFertilityIneligibilityReason = null;
         this.autonomousHouseBuilder = null;
         this.nextAutonomousBuilderIndex = 0;
+        this.nextAutonomousPartnerIndex = 0;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -70,6 +72,7 @@ export class World {
         this.updateFertilityEvents(delta);
         this.updateChildren(delta);
         this.updateAutonomousHouseBuilding(delta);
+        this.updateAutonomousPartnerSearch(delta);
         this.assignVillagersToResources();
         this.updateResourceFeedback(delta);
         this.updatePartnerFeedback(delta);
@@ -246,6 +249,227 @@ export class World {
 
     isVillagerBuildingHouse(villager) {
         return villager.state === "seekingHouseSite" || villager.state === "walkingToHouseSite" || villager.state === "buildingHouse";
+    }
+
+    updateAutonomousPartnerSearch(delta) {
+        this.villagers.forEach((villager) => {
+            if (villager.relationshipGoal === "FindPartner") {
+                this.updateAutonomousPartnerSeeker(villager, delta);
+            }
+        });
+
+        const owner = this.getNextAutonomousPartnerOwner();
+
+        if (owner !== null) {
+            this.startAutonomousPartnerSearch(owner);
+        }
+    }
+
+    getNextAutonomousPartnerOwner() {
+        const candidates = this.villagers.filter((villager) => this.canVillagerStartAutonomousPartnerSearch(villager));
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+        const owner = candidates[this.nextAutonomousPartnerIndex % candidates.length];
+        this.nextAutonomousPartnerIndex = (this.nextAutonomousPartnerIndex + 1) % Math.max(1, this.villagers.length);
+
+        return owner;
+    }
+
+    canVillagerStartAutonomousPartnerSearch(villager) {
+        return this.villagers.includes(villager) &&
+            villager !== this.hero &&
+            villager.alive &&
+            villager.isAdult &&
+            villager.ownedHouse !== null &&
+            villager.ownedHouse.owner === villager &&
+            villager.house === villager.ownedHouse &&
+            this.hasAutonomousPartnerCapacity(villager) &&
+            this.hasPartnershipResources(villager) &&
+            !villager.reservedForFertility &&
+            !villager.reservedForPartnership &&
+            !villager.reservedForAutonomousPartnership &&
+            villager.relationshipGoal !== "FindPartner" &&
+            villager.state !== "insideHouse" &&
+            !this.isVillagerBuildingHouse(villager) &&
+            villager.targetTree === null &&
+            villager.targetWaterSource === null &&
+            villager.targetAnimal === null;
+    }
+
+    hasAutonomousPartnerCapacity(villager) {
+        if (villager.partners.length === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    hasPartnershipResources(villager) {
+        return villager.wood >= 3 && villager.water >= 3 && villager.meat >= 3;
+    }
+
+    startAutonomousPartnerSearch(owner) {
+        const candidates = this.villagers.filter((candidate) => this.isEligibleAutonomousPartner(owner, candidate));
+
+        if (candidates.length === 0) {
+            return false;
+        }
+
+        const candidate = candidates[Math.floor(Math.random() * candidates.length)];
+        this.clearVillagerAllWork(owner);
+        this.clearVillagerAllWork(candidate);
+        owner.relationshipGoal = "FindPartner";
+        owner.partnerTarget = candidate;
+        owner.socialTimer = 0;
+        owner.reservedForAutonomousPartnership = true;
+        owner.reservedForPartnership = true;
+        owner.state = "seekingPartner";
+        candidate.reservedForAutonomousPartnership = true;
+        candidate.reservedForPartnership = true;
+        candidate.destination = null;
+        candidate.state = "awaitingPartner";
+
+        return true;
+    }
+
+    updateAutonomousPartnerSeeker(owner, delta) {
+        const candidate = owner.partnerTarget;
+
+        if (!this.canContinueAutonomousPartnerSearch(owner, candidate)) {
+            this.cancelAutonomousPartnerSearch(owner, candidate);
+            return;
+        }
+
+        const stopDistance = owner.radius + candidate.radius + 4;
+        const distanceX = candidate.x - owner.x;
+        const distanceY = candidate.y - owner.y;
+        const distance = Math.hypot(distanceX, distanceY);
+
+        if (distance > stopDistance + 0.5) {
+            owner.state = "seekingPartner";
+            candidate.state = "awaitingPartner";
+
+            const step = Math.min(owner.speed * delta, distance - stopDistance);
+            owner.x += (distanceX / distance) * step;
+            owner.y += (distanceY / distance) * step;
+            return;
+        }
+
+        owner.state = "socializing";
+        candidate.state = "socializing";
+        owner.socialTimer += delta;
+
+        if (owner.socialTimer >= 2) {
+            this.completeAutonomousPartnership(owner, candidate);
+        }
+    }
+
+    canContinueAutonomousPartnerSearch(owner, candidate) {
+        return this.canVillagerStartAutonomousPartnerSearchDuringReservation(owner) &&
+            this.isEligibleAutonomousPartnerDuringReservation(owner, candidate);
+    }
+
+    canVillagerStartAutonomousPartnerSearchDuringReservation(villager) {
+        return this.villagers.includes(villager) &&
+            villager !== this.hero &&
+            villager.alive &&
+            villager.isAdult &&
+            villager.ownedHouse !== null &&
+            this.houses.includes(villager.ownedHouse) &&
+            villager.ownedHouse.owner === villager &&
+            villager.house === villager.ownedHouse &&
+            this.hasAutonomousPartnerCapacity(villager) &&
+            this.hasPartnershipResources(villager) &&
+            !villager.reservedForFertility &&
+            villager.relationshipGoal === "FindPartner" &&
+            villager.partnerTarget !== null &&
+            villager.reservedForAutonomousPartnership &&
+            villager.reservedForPartnership &&
+            !this.isVillagerBuildingHouse(villager);
+    }
+
+    completeAutonomousPartnership(owner, candidate) {
+        if (!this.canContinueAutonomousPartnerSearch(owner, candidate)) {
+            this.cancelAutonomousPartnerSearch(owner, candidate);
+            return false;
+        }
+
+        owner.wood -= 3;
+        owner.water -= 3;
+        owner.meat -= 3;
+        owner.partners.push(candidate);
+        candidate.partners.push(owner);
+        candidate.house = owner.ownedHouse;
+
+        if (!owner.ownedHouse.occupants.includes(candidate)) {
+            owner.ownedHouse.occupants.push(candidate);
+        }
+
+        owner.partnerFeedbackTimer = 1.5;
+        candidate.partnerFeedbackTimer = 1.5;
+        this.cancelAutonomousPartnerSearch(owner, candidate);
+
+        return true;
+    }
+
+    cancelAutonomousPartnerSearch(owner, candidate) {
+        [owner, candidate].forEach((person) => {
+            if (person === null || person === undefined) {
+                return;
+            }
+
+            person.relationshipGoal = null;
+            person.partnerTarget = null;
+            person.socialTimer = 0;
+            person.reservedForAutonomousPartnership = false;
+            person.reservedForPartnership = false;
+            person.destination = null;
+            person.idleTimer = this.getRandomVillagerIdleTime();
+            person.state = "idle";
+        });
+    }
+
+    isEligibleAutonomousPartner(owner, candidate) {
+        if (!this.villagers.includes(candidate) || candidate === owner || candidate === this.hero || !candidate.alive || !candidate.isAdult) {
+            return false;
+        }
+
+        return candidate.ownedHouse === null &&
+            candidate.house === null &&
+            !candidate.reservedForFertility &&
+            !candidate.reservedForPartnership &&
+            !candidate.reservedForAutonomousPartnership &&
+            candidate.state !== "insideHouse" &&
+            !this.isVillagerBuildingHouse(candidate) &&
+            candidate.partners.length === 0 &&
+            !owner.partners.includes(candidate) &&
+            !candidate.partners.includes(owner) &&
+            !this.isCloseRelative(owner, candidate) &&
+            this.areCharactersMutuallyCompatible(owner, candidate);
+    }
+
+    isEligibleAutonomousPartnerDuringReservation(owner, candidate) {
+        if (!this.villagers.includes(candidate) || candidate === owner || candidate === this.hero || !candidate.alive || !candidate.isAdult) {
+            return false;
+        }
+
+        return candidate.ownedHouse === null &&
+            candidate.house === null &&
+            !candidate.reservedForFertility &&
+            candidate.reservedForPartnership &&
+            candidate.reservedForAutonomousPartnership &&
+            candidate.relationshipGoal === null &&
+            candidate.partnerTarget === null &&
+            (candidate.state === "awaitingPartner" || candidate.state === "socializing") &&
+            !this.isVillagerBuildingHouse(candidate) &&
+            candidate.partners.length === 0 &&
+            !owner.partners.includes(candidate) &&
+            !candidate.partners.includes(owner) &&
+            !this.isCloseRelative(owner, candidate) &&
+            this.areCharactersMutuallyCompatible(owner, candidate);
     }
 
     findAutonomousHouseSite(builder) {
@@ -609,7 +833,9 @@ export class World {
                 villager.targetAnimal === null &&
                 !this.isVillagerBuildingHouse(villager) &&
                 !villager.reservedForPartnership &&
+                !villager.reservedForAutonomousPartnership &&
                 !villager.reservedForFertility &&
+                villager.relationshipGoal === null &&
                 villager.isAdult &&
                 villager.state === "idle";
         }) || null;
@@ -997,7 +1223,11 @@ export class World {
             return "Ha già una relazione esclusiva";
         }
 
-        if (!this.isOrientationCompatible(this.hero, villager)) {
+        if (villager.reservedForAutonomousPartnership || villager.reservedForFertility || this.isVillagerBuildingHouse(villager)) {
+            return "Non disponibile";
+        }
+
+        if (!this.areCharactersMutuallyCompatible(this.hero, villager)) {
             return "Non compatibile con l'orientamento";
         }
 
@@ -1008,29 +1238,36 @@ export class World {
         return first.parents.includes(second) ||
             first.children.includes(second) ||
             second.parents.includes(first) ||
-            second.children.includes(first);
+            second.children.includes(first) ||
+            first.parents.some((parent) => second.parents.includes(parent));
     }
 
-    isOrientationCompatible(hero, villager) {
-        if (hero.orientation === "pansessuale") {
+    areCharactersMutuallyCompatible(first, second) {
+        return this.isOrientationCompatible(first, second) && this.isOrientationCompatible(second, first);
+    }
+
+    isOrientationCompatible(person, candidate) {
+        if (person.orientation === "pansessuale") {
             return true;
         }
 
-        if (hero.gender === "non-binario") {
+        if (person.gender === "non-binario") {
             return true;
         }
 
-        if (hero.orientation === "bisessuale") {
-            return villager.gender === "uomo" || villager.gender === "donna";
+        if (person.orientation === "bisessuale") {
+            return candidate.gender === "uomo" || candidate.gender === "donna" || candidate.gender === "non-binario";
         }
 
-        if (hero.orientation === "gay-lesbica") {
-            return villager.gender === hero.gender;
+        if (person.orientation === "gay-lesbica") {
+            return candidate.gender === person.gender;
         }
 
-        if (hero.orientation === "etero") {
-            return (hero.gender === "uomo" && villager.gender === "donna") ||
-                (hero.gender === "donna" && villager.gender === "uomo");
+        if (person.orientation === "etero") {
+            return (person.gender === "uomo" && candidate.gender === "donna") ||
+                (person.gender === "donna" && candidate.gender === "uomo") ||
+                person.gender === "non-binario" ||
+                candidate.gender === "non-binario";
         }
 
         return false;

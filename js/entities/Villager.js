@@ -16,7 +16,11 @@ export class Villager extends Entity {
         this.parents = [];
         this.children = [];
         this.reservedForPartnership = false;
+        this.reservedForAutonomousPartnership = false;
         this.reservedForFertility = false;
+        this.relationshipGoal = null;
+        this.partnerTarget = null;
+        this.socialTimer = 0;
         this.partnerFeedbackTimer = 0;
         this.destination = null;
         this.speed = 90;

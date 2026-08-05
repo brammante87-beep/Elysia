@@ -14,6 +14,10 @@ export class Child extends Entity {
         this.parents = settings.parents || [];
         this.children = [];
         this.partners = [];
+        this.relationshipGoal = null;
+        this.partnerTarget = null;
+        this.socialTimer = 0;
+        this.reservedForAutonomousPartnership = false;
         this.house = settings.house || null;
         this.ownedHouse = null;
         this.spriteKey = settings.spriteKey || "child_male_01";
