@@ -161,8 +161,9 @@ export class World {
             villager.alive &&
             villager.isAdult &&
             villager.wood >= 3 &&
-            villager.house === null &&
             villager.ownedHouse === null &&
+            (villager.house === null || this.isAdultChildLivingWithParents(villager)) &&
+            !this.hero.partners.includes(villager) &&
             !villager.reservedForFertility &&
             !villager.reservedForPartnership &&
             villager.state !== "insideHouse" &&
@@ -216,8 +217,9 @@ export class World {
             builder.alive &&
             builder.isAdult &&
             builder.wood >= 3 &&
-            builder.house === null &&
             builder.ownedHouse === null &&
+            (builder.house === null || this.isAdultChildLivingWithParents(builder)) &&
+            !this.hero.partners.includes(builder) &&
             builder.houseSite !== null &&
             this.houses.length < this.getMaximumHouseCountForPopulation(this.getPopulationCount()) &&
             this.canPlaceAutonomousHouseAt(builder.houseSite.x, builder.houseSite.y, builder);
@@ -247,10 +249,14 @@ export class World {
             return;
         }
 
+        const previousHouse = builder.house;
         const house = new House(builder.houseSite.x, builder.houseSite.y, builder);
         this.assignHouseId(house);
         this.houses.push(house);
         builder.wood -= 3;
+        if (previousHouse !== null) {
+            previousHouse.occupants = previousHouse.occupants.filter((occupant) => occupant !== builder);
+        }
         builder.house = house;
         builder.ownedHouse = house;
         this.releaseAutonomousHouseBuilder(builder);
@@ -274,6 +280,14 @@ export class World {
 
     isVillagerBuildingHouse(villager) {
         return villager.state === "seekingHouseSite" || villager.state === "walkingToHouseSite" || villager.state === "buildingHouse";
+    }
+
+    isAdultChildLivingWithParents(villager) {
+        return villager.isAdult &&
+            villager.parents.length > 0 &&
+            villager.house !== null &&
+            villager.ownedHouse === null &&
+            villager.parents.some((parent) => villager.house.owner === parent || villager.house.occupants.includes(parent));
     }
 
     updateAutonomousPartnerSearch(delta) {
