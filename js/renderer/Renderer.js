@@ -65,7 +65,7 @@ export class Renderer {
         this.context.fillStyle = "#7a4a24";
         this.context.fillRect(tree.x - 5, tree.y - 2, 10, 26);
 
-        this.context.fillStyle = tree.color;
+        this.context.fillStyle = tree.cutFeedbackTimer > 0 ? "#8ee68e" : tree.color;
         this.context.beginPath();
         this.context.arc(tree.x, tree.y - 12, tree.radius, 0, Math.PI * 2);
         this.context.fill();
@@ -115,5 +115,18 @@ export class Renderer {
         this.context.font = "14px Arial";
         this.context.textAlign = "center";
         this.context.fillText(entity.name, entity.x, entity.y - 20);
+
+        if (entity.state === "cuttingTree") {
+            this.drawCuttingFeedback(entity);
+        }
+    }
+
+    drawCuttingFeedback(entity) {
+        this.context.strokeStyle = "#d1d5db";
+        this.context.lineWidth = 3;
+        this.context.beginPath();
+        this.context.moveTo(entity.x + 10, entity.y - 12);
+        this.context.lineTo(entity.x + 22, entity.y - 24);
+        this.context.stroke();
     }
 }
