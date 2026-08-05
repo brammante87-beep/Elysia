@@ -176,6 +176,88 @@ class UI {
 
         this.game.start(settings);
 
+        this.showBottomBar();
+
+    }
+
+    //----------------------------------
+
+    showBottomBar(){
+
+        const ui=document.getElementById("ui");
+
+        ui.innerHTML=`
+
+        <div id="bottomBar"></div>
+
+        `;
+
+        const bottomBar=document.getElementById("bottomBar");
+
+        this.game.miracles.list.forEach(name=>{
+
+            const button=document.createElement("button");
+
+            button.className="miracleButton";
+
+            button.dataset.miracle=name;
+
+            button.title=name;
+
+            button.textContent=this.getMiracleIcon(name);
+
+            button.onclick=()=>{
+
+                this.game.miracles.select(name);
+
+                this.updateMiracleButtons();
+
+            };
+
+            bottomBar.appendChild(button);
+
+        });
+
+        this.updateMiracleButtons();
+
+    }
+
+    //----------------------------------
+
+    updateMiracleButtons(){
+
+        document
+            .querySelectorAll(".miracleButton")
+            .forEach(button=>{
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.miracle===this.game.miracles.selected
+                );
+
+            });
+
+    }
+
+    //----------------------------------
+
+    getMiracleIcon(name){
+
+        const icons={
+
+            tree:"🌳",
+            water:"💧",
+            flower:"🌸",
+            light:"✨",
+            lightning:"⚡",
+            house:"🏠",
+            fertility:"💞",
+            animal:"🐾"
+
+        };
+
+        return icons[name] || name;
+
     }
 
 }

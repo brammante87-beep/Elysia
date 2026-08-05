@@ -122,13 +122,13 @@ class World {
 
             color:"#4ea3ff",
 
-            x:14*this.tileSize,
+            x:5*this.tileSize,
 
-            y:12*this.tileSize,
+            y:8*this.tileSize,
 
-            targetX:14*this.tileSize,
+            targetX:5*this.tileSize,
 
-            targetY:12*this.tileSize,
+            targetY:8*this.tileSize,
 
             speed:150,
 
@@ -174,9 +174,9 @@ class World {
 
                 1,
 
-                18,
+                7,
 
-                12
+                8
 
             )
 
@@ -188,9 +188,9 @@ class World {
 
                 2,
 
-                20,
+                6,
 
-                15
+                7
 
             )
 
@@ -310,9 +310,9 @@ class World {
 
         if(!this.lastMiracle) return;
 
-        this.lastMiracle.time-=delta;
+        this.lastMiracle.life-=delta;
 
-        if(this.lastMiracle.time<=0){
+        if(this.lastMiracle.life<=0){
 
             this.lastMiracle=null;
 

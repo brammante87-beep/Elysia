@@ -164,7 +164,7 @@ class Input {
         // Prima prova la UI
         //--------------------------------
 
-        if(this.game.ui.click(x,y))
+        if(this.game.ui.click && this.game.ui.click(x,y))
 
             return;
 
