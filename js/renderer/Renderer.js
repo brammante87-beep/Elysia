@@ -84,6 +84,30 @@ export class Renderer {
 
         this.context.fillStyle = "#4b2a18";
         this.context.fillRect(house.x - 7, house.y + 10, 14, 20);
+
+        if (house.fertilityPhase === "private") {
+            this.drawHouseFertilityFeedback(house);
+        }
+    }
+
+    drawHouseFertilityFeedback(house) {
+        this.context.strokeStyle = "rgba(251, 191, 36, 0.75)";
+        this.context.lineWidth = 5;
+        this.context.beginPath();
+        this.context.ellipse(house.x, house.y + 2, 42, 36, 0, 0, Math.PI * 2);
+        this.context.stroke();
+
+        this.drawSmallHeart(house.x - 18, house.y - 43);
+        this.drawSmallHeart(house.x + 18, house.y - 39);
+    }
+
+    drawSmallHeart(x, y) {
+        this.context.fillStyle = "#f472b6";
+        this.context.beginPath();
+        this.context.moveTo(x, y + 6);
+        this.context.bezierCurveTo(x - 8, y, x - 6, y - 8, x, y - 3);
+        this.context.bezierCurveTo(x + 6, y - 8, x + 8, y, x, y + 6);
+        this.context.fill();
     }
 
     drawTrees() {
@@ -197,6 +221,10 @@ export class Renderer {
     }
 
     drawEntity(entity) {
+        if (entity.state === "insideHouse") {
+            return;
+        }
+
         if (entity.reservedForPartnership) {
             this.drawPartnerTargetHighlight(entity);
         }

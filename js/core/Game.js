@@ -42,7 +42,10 @@ export class Game {
             { name: "villager_female_01", source: "assets/sprites/villagers/villager_female_01.svg" },
             { name: "villager_female_02", source: "assets/sprites/villagers/villager_female_02.svg" },
             { name: "villager_nonbinary_01", source: "assets/sprites/villagers/villager_nonbinary_01.svg" },
-            { name: "villager_nonbinary_02", source: "assets/sprites/villagers/villager_nonbinary_02.svg" }
+            { name: "villager_nonbinary_02", source: "assets/sprites/villagers/villager_nonbinary_02.svg" },
+            { name: "child_male_01", source: "assets/sprites/children/child_male_01.svg" },
+            { name: "child_female_01", source: "assets/sprites/children/child_female_01.svg" },
+            { name: "child_nonbinary_01", source: "assets/sprites/children/child_nonbinary_01.svg" }
         ]);
     }
 
