@@ -15,6 +15,8 @@ export class Game {
         this.renderer = new Renderer(this.canvas, this.context, this.world);
         this.miracleManager = new MiracleManager();
         this.input = new Input(this.canvas, this.world, this.miracleManager);
+        this.input = new Input(this.canvas, this.world);
+        this.miracleManager = new MiracleManager();
         this.ui = new UI(this.uiRoot, this.miracleManager);
         this.engine = new Engine(this);
 
@@ -32,6 +34,7 @@ export class Game {
 
     startNewGame(settings) {
         this.world.initialize(settings);
+        this.world.initialize();
         this.ui.clear();
         this.ui.showMiracleToolbar();
         this.engine.start();

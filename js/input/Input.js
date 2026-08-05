@@ -6,6 +6,11 @@ export class Input {
         this.pointerX = 0;
         this.pointerY = 0;
         this.ignoreNextClick = false;
+    constructor(canvas, world) {
+        this.canvas = canvas;
+        this.world = world;
+        this.pointerX = 0;
+        this.pointerY = 0;
 
         this.bindEvents();
     }
@@ -59,6 +64,18 @@ export class Input {
         }
 
         this.world.setHeroDestination(x, y);
+    }
+
+            if (!this.world.contains(position.x, position.y)) {
+                return;
+            }
+
+            if (!this.world.isWalkableAtWorldPosition(position.x, position.y)) {
+                return;
+            }
+
+            this.world.setHeroDestination(position.x, position.y);
+        });
     }
 
     getWorldPosition(event) {

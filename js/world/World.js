@@ -18,6 +18,11 @@ export class World {
         this.heroDestination = null;
         this.hero = new Hero(settings.name || "Prescelto", 320, 384, settings);
         this.trees = [];
+    }
+
+    initialize() {
+        this.terrain.generate();
+        this.hero = new Hero("Prescelto", 320, 384);
         this.villagers = [
             new Villager("Mira", 448, 384),
             new Villager("Taro", 384, 480)

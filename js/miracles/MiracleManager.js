@@ -11,6 +11,7 @@ export class MiracleManager {
             "animal"
         ];
         this.selectedMiracle = null;
+        this.selectedMiracle = this.availableMiracles[0];
     }
 
     select(miracle) {
