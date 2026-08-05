@@ -34,6 +34,14 @@ export class MiracleManager {
             return world.addTreeAt(x, y);
         }
 
+        if (this.selectedMiracle === "water") {
+            return world.addWaterSourceAt(x, y);
+        }
+
+        if (this.selectedMiracle === "animal") {
+            return world.addAnimalAt(x, y);
+        }
+
         if (this.selectedMiracle === "house") {
             return this.castHouse(x, y, world);
         }

@@ -257,7 +257,9 @@ export class UI {
 
     getMiracleIconSource(miracle) {
         const iconSources = {
-            tree: "assets/sprites/ui/tree_icon.svg"
+            tree: "assets/sprites/ui/tree_icon.svg",
+            water: "assets/sprites/ui/water_icon.svg",
+            animal: "assets/sprites/ui/animal_icon.svg"
         };
 
         return iconSources[miracle] || null;

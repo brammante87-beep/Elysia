@@ -30,6 +30,10 @@ export class Game {
         this.assetLoader.preloadImages([
             { name: "tree", source: "assets/sprites/trees/tree_01.svg" },
             { name: "treeHit", source: "assets/sprites/trees/tree_01_hit.svg" },
+            { name: "waterSource", source: "assets/sprites/water/water_source_01.svg" },
+            { name: "waterSourceUse", source: "assets/sprites/water/water_source_01_use.svg" },
+            { name: "deer", source: "assets/sprites/animals/deer_01.svg" },
+            { name: "deerHit", source: "assets/sprites/animals/deer_01_hit.svg" },
             { name: "chosenMale", source: "assets/sprites/villagers/chosen_male.svg" },
             { name: "chosenFemale", source: "assets/sprites/villagers/chosen_female.svg" },
             { name: "chosenNonbinary", source: "assets/sprites/villagers/chosen_nonbinary.svg" },

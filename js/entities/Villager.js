@@ -21,7 +21,11 @@ export class Villager extends Entity {
         this.idleTimer = 0;
         this.state = "idle";
         this.targetTree = null;
+        this.targetWaterSource = null;
+        this.targetAnimal = null;
         this.wood = 0;
+        this.water = 0;
+        this.meat = 0;
         this.actionTimer = 0;
     }
 }
