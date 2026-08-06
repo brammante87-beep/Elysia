@@ -464,6 +464,7 @@ export class UI {
         const selectMiracle = (event) => {
             event.preventDefault();
             event.stopPropagation();
+            const selectedBefore = this.miracleManager.selectedMiracle;
 
             if (this.isMiracleDisabled(miracle)) {
                 this.miracleManager.clearSelection();
@@ -478,6 +479,14 @@ export class UI {
             }
 
             this.updateMiracleButtons();
+            if (globalThis.ELYSIA_DEBUG === true) {
+                console.debug("[Elysia/UI] toolbar button clicked", {
+                    datasetMiracle: button.dataset.miracle,
+                    selectedMiracleBefore: selectedBefore,
+                    selectedMiracleAfter: this.miracleManager.selectedMiracle,
+                    worldEra: this.world?.getCurrentEra() || null
+                });
+            }
         };
 
         button.addEventListener("click", selectMiracle);

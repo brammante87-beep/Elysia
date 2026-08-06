@@ -34,6 +34,7 @@ export class MiracleManager {
     }
 
     cast(x, y, world) {
+        this.debug("MiracleManager.cast entered", { selectedMiracle: this.selectedMiracle, x, y, worldEra: world.getCurrentEra() });
         if (!this.isMiracleAvailable(this.selectedMiracle, world.getCurrentEra())) { this.clearSelection(); return false; }
         if (this.selectedMiracle === "tree") {
             return world.addTreeAt(x, y);
@@ -72,6 +73,10 @@ export class MiracleManager {
             this.clearSelection();
         }
         return false;
+    }
+
+    debug(message, details) {
+        if (globalThis.ELYSIA_DEBUG === true) { console.debug(`[Elysia/Miracles] ${message}`, details); }
     }
 
     castFertility(x, y, world) {

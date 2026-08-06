@@ -104,6 +104,32 @@ test("selected Lightning reaches a Villager near a House exactly once and preser
     assert.equal(miracles.selectedMiracle, null);
 });
 
+test("Lightning targets the visible upper body introduced by the character sprites", () => {
+    const { world, miracles } = createVillage();
+    const villager = world.villagers[0];
+    const input = new Input(new TestCanvas(), world, miracles);
+
+    miracles.select("lightning");
+    input.handleWorldClick(villager.x + 25, villager.y - 38);
+
+    assert.equal(villager.lightningWarnings, 1);
+    assert.equal(world.lightningEffects.at(-1).x, villager.x);
+    assert.equal(world.lightningEffects.at(-1).y, villager.y);
+});
+
+test("invalid Flower exposes the exact placement rejection", () => {
+    const { world, miracles } = createVillage();
+    const house = new House(420, 400, world.hero);
+    world.houses.push(house);
+    const input = new Input(new TestCanvas(), world, miracles);
+
+    miracles.select("flower");
+    input.handleWorldClick(house.x, house.y);
+
+    assert.equal(world.lastFlowerPlacementReason, "House");
+    assert.equal(world.feedbackMessages.at(-1).text, "Qui il fiore non può crescere");
+});
+
 test("third browser-path Lightning strike kills and dead Villagers gain no warnings", () => {
     const { world, miracles } = createVillage();
     const villager = world.villagers[0];

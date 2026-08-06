@@ -15,7 +15,12 @@
         import { Game } from "./js/core/Game.js";
 
         window.addEventListener("load", () => {
+            if (globalThis.ELYSIA_DEBUG === true) {
+                window.addEventListener("error", (event) => console.error("[Elysia] window.onerror", event.error?.stack || event.message, event.error));
+                window.addEventListener("unhandledrejection", (event) => console.error("[Elysia] unhandledrejection", event.reason?.stack || event.reason));
+            }
             const game = new Game("game", "ui");
+            if (globalThis.ELYSIA_DEBUG === true) { globalThis.elysiaGame = game; }
             game.start();
         });
     </script>

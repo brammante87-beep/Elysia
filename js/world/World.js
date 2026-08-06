@@ -70,6 +70,7 @@ export class World {
         this.lastAutonomousResourceDecision = null;
         this.usedNames = new Set();
         this.lightningEffects = [];
+        this.lastFlowerPlacementReason = null;
         this.raiders = [];
         this.treeRespawnTimer = this.getRandomTreeRespawnDelay();
         this.animalRespawnTimer = this.getRandomAnimalRespawnDelay();
@@ -125,6 +126,7 @@ export class World {
         this.autonomousResourceDebugEnabled = false;
         this.lastAutonomousResourceDecision = null;
         this.lightningEffects = [];
+        this.lastFlowerPlacementReason = null;
         this.raiders = [];
         this.treeRespawnTimer = this.getRandomTreeRespawnDelay();
         this.animalRespawnTimer = this.getRandomAnimalRespawnDelay();
@@ -1903,8 +1905,13 @@ export class World {
 
     getVillagerAtWorldPosition(x, y) {
         return this.villagers.find((villager) => {
-            return villager.alive && villager.isAdult && Math.hypot(villager.x - x, villager.y - y) <= villager.radius;
+            return villager.alive && villager.isAdult && this.isAdultCharacterSpriteAtPosition(villager, x, y);
         }) || null;
+    }
+
+    isAdultCharacterSpriteAtPosition(character, x, y) {
+        return x >= character.x - 32 && x <= character.x + 32 &&
+            y >= character.y - 45 && y <= character.y + 19;
     }
 
     commandHeroToPartnerWith(villager) {
@@ -2534,11 +2541,28 @@ export class World {
 
     addFlowerAt(x, y) {
         const flower = new Flower(x, y);
-        if (!this.canPlaceResourceAt(flower, x, y) || this.overlapsAnyFruitTree(flower) || this.overlapsAnyFlower(flower) || this.overlapsVillageWallOrGate(flower)) {
+        this.lastFlowerPlacementReason = this.getFlowerPlacementRejection(flower, x, y);
+        if (this.lastFlowerPlacementReason !== null) {
             this.feedbackMessages.push({ text: "Qui il fiore non può crescere", timer: 3 }); return false;
         }
         this.assignResourceId(flower); this.flowers.push(flower);
         this.feedbackMessages.push({ text: "Un fiore è sbocciato", timer: 3 }); return true;
+    }
+
+    getFlowerPlacementRejection(flower, x, y) {
+        if (!this.contains(x, y)) { return "bounds"; }
+        if (!this.terrain.isGrassAtWorldPosition(x, y)) { return "terrain"; }
+        if (this.overlapsAnyHouse(flower)) { return "House"; }
+        if (this.overlapsAnyTree(flower)) { return "Tree"; }
+        if (this.overlapsAnyWaterSource(flower)) { return "WaterSource"; }
+        if (this.overlapsAnyAnimal(flower)) { return "Animal"; }
+        if (this.villageWell && this.overlapsEntity(flower, this.villageWell)) { return "Well"; }
+        if (this.overlapsAnyFruitTree(flower)) { return "FruitTree"; }
+        if (this.overlapsAnyFlower(flower)) { return "Flower"; }
+        if (this.villagers.some((villager) => villager.alive && this.overlapsEntity(flower, villager))) { return "Villager"; }
+        if (this.hero && this.hero.alive && this.overlapsEntity(flower, this.hero)) { return "Hero"; }
+        if (this.overlapsVillageWallOrGate(flower)) { return "palisade or gate"; }
+        return null;
     }
 
     updateFruitTrees(delta) {
