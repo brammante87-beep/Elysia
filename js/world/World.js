@@ -49,6 +49,7 @@ export class World {
         this.dayPhase = "day";
         this.phaseTimer = 0;
         this.nightlyConsumptionProcessed = false;
+        this.lastResourceCommandReason = null;
     }
 
     initialize(settings = {}) {
@@ -83,6 +84,7 @@ export class World {
         this.dayPhase = "day";
         this.phaseTimer = 0;
         this.nightlyConsumptionProcessed = false;
+        this.lastResourceCommandReason = null;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -259,7 +261,21 @@ export class World {
     getLivingHouseResidents(house) { return [...new Set(house.occupants)].filter((person) => person && person.alive && person.house === house); }
     getTimeUntilNight() { return this.dayPhase === "day" ? Math.max(0, this.dayDuration - this.phaseTimer) : 0; }
     getDayPhaseLabel() { return { day: "Giorno", nightApproaching: "La notte si avvicina", night: "Notte" }[this.dayPhase]; }
-    getHouseName(house) { const names = this.getLivingHouseResidents(house).filter((person) => person.isAdult).map((person) => person.name); return names.length > 0 ? `Casa di ${names.join(" e ")}` : "Casa"; }
+    getHouseName(house) {
+        const adults = this.getOrderedLivingHouseAdults(house);
+        if (adults.length === 0) { return "Casa vuota"; }
+        if (adults.length === 1) { return `Casa di ${adults[0].name}`; }
+        if (adults.length === 2) { return `Casa di ${adults[0].name} e ${adults[1].name}`; }
+        return `Casa di ${adults[0].name}, ${adults[1].name} e altri`;
+    }
+
+    getOrderedLivingHouseAdults(house) {
+        const residents = this.getLivingHouseResidents(house).filter((person) => person.isAdult);
+        if (residents.length === 0) { return []; }
+        const owner = residents.includes(house?.owner) ? [house.owner] : [];
+        const partners = owner.length === 0 ? [] : owner[0].partners.filter((person) => residents.includes(person));
+        return [...new Set([...owner, ...partners, ...residents])];
+    }
     formatMissingResources(missing) { const labels = []; if (missing.wood > 0) { labels.push("legna"); } if (missing.water > 0) { labels.push("acqua"); } if (missing.food > 0) { labels.push("cibo"); } return labels.length <= 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} e ${labels.at(-1)}`; }
     addEvent(text) { this.eventLog.push(text); this.eventLog = this.eventLog.slice(-20); }
 
@@ -760,6 +776,21 @@ export class World {
         return { title: house === null ? "Nessuna casa" : this.getHouseName(house), totals, cost, phaseText, lastNightText: this.getLastNightText(house) };
     }
 
+    getResourceCollectionTarget(house, type) {
+        if (house === null || !["wood", "water", "meat"].includes(type)) { return null; }
+        const configuredTarget = house.resourceCollectionTargets?.[type];
+        return Number.isFinite(configuredTarget) ? configuredTarget : House.RESOURCE_COLLECTION_TARGETS[type];
+    }
+
+    isHouseResourceAtTarget(house, type) {
+        const target = this.getResourceCollectionTarget(house, type);
+        return target !== null && Number(house.storage?.[type]) >= target;
+    }
+
+    shouldStopHouseholdGathering(person, type) {
+        return this.canDepositAtHome(person) && this.isHouseResourceAtTarget(person.house, type);
+    }
+
     getLastNightText(house) {
         const result = house?.lastNightResult;
         if (result === null || result === undefined) { return "Ultima notte: nessun dato"; }
@@ -831,6 +862,11 @@ export class World {
 
     updateHeroTreeWorker(delta) {
         const tree = this.hero.targetTree;
+
+        if (this.shouldStopHouseholdGathering(this.hero, "wood")) {
+            this.clearHeroTreeWork();
+            return;
+        }
 
         if (!this.trees.includes(tree)) {
             this.clearHeroTreeWork();
@@ -920,6 +956,11 @@ export class World {
     updateTreeWorker(villager, delta) {
         const tree = villager.targetTree;
 
+        if (this.shouldStopHouseholdGathering(villager, "wood")) {
+            this.clearVillagerTreeWork(villager);
+            return;
+        }
+
         if (!this.trees.includes(tree)) {
             this.clearVillagerTreeWork(villager);
             return;
@@ -979,6 +1020,11 @@ export class World {
     }
 
     updateResourceWorker(worker, resource, collection, workState, completeMethod, clearMethod, delta = 0) {
+        const resourceType = resource instanceof WaterSource ? "water" : "meat";
+        if (this.shouldStopHouseholdGathering(worker, resourceType)) {
+            this[clearMethod](worker);
+            return;
+        }
         if (!collection.includes(resource)) {
             this[clearMethod](worker);
             return;
@@ -1059,8 +1105,9 @@ export class World {
 
     shouldReturnHome(person) {
         const alreadyReturning = person.state === "returningHome" || person.state === "depositingResources";
+        const targetReached = person.carrying.amount > 0 && this.isHouseResourceAtTarget(person.house, person.carrying.type);
         return this.canDepositAtHome(person) &&
-            (alreadyReturning || person.carrying.amount >= person.carryingCapacity);
+            (alreadyReturning || targetReached || person.carrying.amount >= person.carryingCapacity);
     }
 
     normalizeInvalidHomeState(person) {
@@ -1146,6 +1193,7 @@ export class World {
             hero.reservedForFertility || hero.targetTree || hero.targetWaterSource || hero.targetAnimal || (this.heroDestination !== null && !hero.autonomousAction)) { return false; }
         const jobs = hero.carrying.type === null ? ["wood", "water", "meat"] : [hero.carrying.type];
         for (const job of jobs) {
+            if (this.isHouseResourceAtTarget(hero.house, job)) { continue; }
             const collection = job === "wood" ? this.trees : job === "water" ? this.waterSources : this.animals;
             const resource = collection.find((item) => item.assignedHero === null && item.assignedVillager === null);
             if (resource === undefined) { continue; }
@@ -1217,6 +1265,7 @@ export class World {
                 !villager.reservedForFertility &&
                 villager.relationshipGoal === null &&
                 villager.isAdult &&
+                !this.shouldStopHouseholdGathering(villager, resourceType) &&
                 villager.carrying.amount < villager.carryingCapacity &&
                 (villager.carrying.type === null || villager.carrying.type === resourceType) &&
                 villager.state === "idle";
@@ -1394,6 +1443,10 @@ export class World {
     }
 
     commandHeroToCutTree(tree) {
+        this.lastResourceCommandReason = null;
+        if (this.shouldStopHouseholdGathering(this.hero, "wood")) {
+            return this.rejectCappedResourceCommand("wood", "legna");
+        }
         if (!this.trees.includes(tree) || !this.canCarryResource(this.hero, "wood")) {
             return false;
         }
@@ -1424,6 +1477,8 @@ export class World {
 
 
     commandHeroToCollectWater(source) {
+        this.lastResourceCommandReason = null;
+        if (this.shouldStopHouseholdGathering(this.hero, "water")) { return this.rejectCappedResourceCommand("water", "acqua"); }
         if (!this.waterSources.includes(source) || !this.canCarryResource(this.hero, "water")) { return false; }
         this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
@@ -1441,6 +1496,8 @@ export class World {
     }
 
     commandHeroToHuntAnimal(animal) {
+        this.lastResourceCommandReason = null;
+        if (this.shouldStopHouseholdGathering(this.hero, "meat")) { return this.rejectCappedResourceCommand("meat", "carne"); }
         if (!this.animals.includes(animal) || !this.canCarryResource(this.hero, "meat")) { return false; }
         this.clearHeroPartnerProposal();
         this.clearHeroTreeWork();
@@ -1455,6 +1512,14 @@ export class World {
         this.hero.state = "walking";
         this.hero.autonomousAction = false;
         return true;
+    }
+
+    rejectCappedResourceCommand(type, label) {
+        const target = this.getResourceCollectionTarget(this.hero.house, type);
+        const text = `La casa ha già raggiunto l'obiettivo di ${target} per ${label}.`;
+        this.lastResourceCommandReason = text;
+        this.feedbackMessages.push({ text, timer: 4 });
+        return false;
     }
 
     releaseWaterSourceFromVillager(source) {
@@ -2095,9 +2160,9 @@ export class World {
 
     serialize() { return { world: { schemaVersion: 4, dayNumber: this.dayNumber, timeOfDay: this.timeOfDay, dayPhase: this.dayPhase, phaseTimer: this.phaseTimer, nightlyConsumptionProcessed: this.nightlyConsumptionProcessed, eventLog: this.eventLog, worldEra: this.worldEra, villageUnlocked: this.villageUnlocked, villageUnlockedAtPopulation: this.villageUnlockedAtPopulation, eraTransitionSequence: this.eraTransitionSequence, terrain: { columns: this.terrain.columns, rows: this.terrain.rows, tileSize: this.tileSize, tiles: this.terrain.tiles }, heroDestination: this.heroDestination, nextResourceAssignmentIndex: this.nextResourceAssignmentIndex, nextAutonomousBuilderIndex: this.nextAutonomousBuilderIndex, nextAutonomousPartnerIndex: this.nextAutonomousPartnerIndex, nextEntityId: this.nextEntityId, nextHouseId: this.nextHouseId, nextResourceId: this.nextResourceId, arrivalsUsed: this.arrivalsUsed, maxArrivals: this.maxArrivals, arrivalCooldown: this.arrivalCooldown, nextArrivalCheckTimer: this.nextArrivalCheckTimer, feedbackMessages: this.feedbackMessages, hero: this.serializePerson(this.hero, "hero"), villagers: this.villagers.map((v) => this.serializePerson(v, v.ageStage === "child" ? "child" : "villager")), houses: this.houses.map((h) => this.serializeHouse(h)), trees: this.trees.map((t) => this.serializeResource(t, "tree")), waterSources: this.waterSources.map((w) => this.serializeResource(w, "water")), animals: this.animals.map((a) => this.serializeResource(a, "animal")) } }; }
     serializePerson(p, type) { return { id: p.id, type, name: p.name, x: p.x, y: p.y, destination: p.destination, state: p.state === "insideHouse" ? p.state : "idle", gender: p.gender, orientation: p.orientation, relationshipStyle: p.relationshipStyle, age: p.age, ageStage: p.ageStage || "adult", ageTimer: p.ageTimer || 0, ageDuration: p.ageDuration || Child.GROWTH_DURATION_SECONDS, spriteKey: p.spriteKey || (p.getSpriteKey ? p.getSpriteKey() : null), wood: p.wood || 0, water: p.water || 0, meat: p.meat || 0, alive: p.alive, isAdult: p.isAdult, partnerIds: p.partners.map((x) => x.id).filter(Boolean), parentIds: p.parents.map((x) => x.id).filter(Boolean), childIds: p.children.map((x) => x.id).filter(Boolean), houseId: p.house ? p.house.id : null, ownedHouseId: p.ownedHouse ? p.ownedHouse.id : null, reservedForFertility: false, reservedForPartnership: false, arrivalMarkerTimer: p.arrivalMarkerTimer || 0, autonomyUnlocked: p === this.hero && p.autonomyUnlocked === true, carrying: { type: p.carrying.type, amount: p.carrying.amount } }; }
-    serializeHouse(h) { return { id: h.id, x: h.x, y: h.y, ownerId: h.owner ? h.owner.id : null, occupantIds: h.occupants.map((o) => o.id).filter(Boolean), fertilityInProgress: false, fertilityPhase: null, fertilityTimer: 0, fertilityCooldown: h.fertilityCooldown, storage: { ...h.storage }, lastNightResult: h.lastNightResult, participantIds: [] }; }
+    serializeHouse(h) { return { id: h.id, x: h.x, y: h.y, ownerId: h.owner ? h.owner.id : null, occupantIds: h.occupants.map((o) => o.id).filter(Boolean), fertilityInProgress: false, fertilityPhase: null, fertilityTimer: 0, fertilityCooldown: h.fertilityCooldown, storage: { ...h.storage }, resourceCollectionTargets: { ...h.resourceCollectionTargets }, lastNightResult: h.lastNightResult, participantIds: [] }; }
     serializeResource(r, type) { return { id: r.id, type, name: r.name, x: r.x, y: r.y, woodRemaining: r.woodRemaining, waterRemaining: r.waterRemaining, meatRemaining: r.meatRemaining, cutFeedbackTimer: r.cutFeedbackTimer || 0, useFeedbackTimer: r.useFeedbackTimer || 0, hitFeedbackTimer: r.hitFeedbackTimer || 0 }; }
-    loadFromData(data) { if (!data || !data.world || !data.world.hero) { return false; } const w = data.world; this.tileSize = w.terrain.tileSize; this.terrain = new Terrain(w.terrain.columns, w.terrain.rows, w.terrain.tileSize); this.terrain.tiles = w.terrain.tiles; this.hero = this.createPersonFromData(w.hero); this.villagers = w.villagers.map((v) => this.createPersonFromData(v)); this.houses = w.houses.map((h) => { const house = new House(h.x, h.y, null); house.id = h.id; house.occupants = []; house.fertilityCooldown = h.fertilityCooldown || 0; house.storage = { wood: h.storage?.wood || 0, water: h.storage?.water || 0, meat: h.storage?.meat || 0 }; house.lastNightResult = h.lastNightResult || null; return house; }); this.trees = w.trees.map((t) => { const tree = new Tree(t.x, t.y); tree.id = t.id; tree.woodRemaining = t.woodRemaining; tree.cutFeedbackTimer = t.cutFeedbackTimer || 0; return tree; }); this.waterSources = w.waterSources.map((r) => { const source = new WaterSource(r.x, r.y); source.id = r.id; source.waterRemaining = r.waterRemaining; source.useFeedbackTimer = r.useFeedbackTimer || 0; return source; }); this.animals = w.animals.map((r) => { const animal = new Animal(r.name, r.x, r.y); animal.id = r.id; animal.meatRemaining = r.meatRemaining; animal.hitFeedbackTimer = r.hitFeedbackTimer || 0; return animal; }); this.rebuildReferences(w); this.migrateHouseholdResources(w); this.heroDestination = w.heroDestination; this.getEntities().forEach((person) => this.normalizeInvalidHomeState(person)); this.nextResourceAssignmentIndex = w.nextResourceAssignmentIndex || 0; this.nextAutonomousBuilderIndex = w.nextAutonomousBuilderIndex || 0; this.nextAutonomousPartnerIndex = w.nextAutonomousPartnerIndex || 0; this.nextEntityId = w.nextEntityId || 1; this.nextHouseId = w.nextHouseId || 1; this.nextResourceId = w.nextResourceId || 1; this.arrivalsUsed = w.arrivalsUsed || 0; this.maxArrivals = w.maxArrivals || 3; this.arrivalCooldown = w.arrivalCooldown ?? 300; this.nextArrivalCheckTimer = w.nextArrivalCheckTimer ?? 30; this.arrivalInProgress = false; this.autonomousHouseBuilder = null; this.feedbackMessages = w.feedbackMessages || []; this.eventLog = (w.eventLog || []).slice(-20); this.loadDayNightState(w); this.loadEraProgression(w); return true; }
+    loadFromData(data) { if (!data || !data.world || !data.world.hero) { return false; } const w = data.world; this.tileSize = w.terrain.tileSize; this.terrain = new Terrain(w.terrain.columns, w.terrain.rows, w.terrain.tileSize); this.terrain.tiles = w.terrain.tiles; this.hero = this.createPersonFromData(w.hero); this.villagers = w.villagers.map((v) => this.createPersonFromData(v)); this.houses = w.houses.map((h) => { const house = new House(h.x, h.y, null, h.resourceCollectionTargets); house.id = h.id; house.occupants = []; house.fertilityCooldown = h.fertilityCooldown || 0; house.storage = { wood: h.storage?.wood || 0, water: h.storage?.water || 0, meat: h.storage?.meat || 0 }; house.lastNightResult = h.lastNightResult || null; return house; }); this.trees = w.trees.map((t) => { const tree = new Tree(t.x, t.y); tree.id = t.id; tree.woodRemaining = t.woodRemaining; tree.cutFeedbackTimer = t.cutFeedbackTimer || 0; return tree; }); this.waterSources = w.waterSources.map((r) => { const source = new WaterSource(r.x, r.y); source.id = r.id; source.waterRemaining = r.waterRemaining; source.useFeedbackTimer = r.useFeedbackTimer || 0; return source; }); this.animals = w.animals.map((r) => { const animal = new Animal(r.name, r.x, r.y); animal.id = r.id; animal.meatRemaining = r.meatRemaining; animal.hitFeedbackTimer = r.hitFeedbackTimer || 0; return animal; }); this.rebuildReferences(w); this.migrateHouseholdResources(w); this.heroDestination = w.heroDestination; this.getEntities().forEach((person) => this.normalizeInvalidHomeState(person)); this.nextResourceAssignmentIndex = w.nextResourceAssignmentIndex || 0; this.nextAutonomousBuilderIndex = w.nextAutonomousBuilderIndex || 0; this.nextAutonomousPartnerIndex = w.nextAutonomousPartnerIndex || 0; this.nextEntityId = w.nextEntityId || 1; this.nextHouseId = w.nextHouseId || 1; this.nextResourceId = w.nextResourceId || 1; this.arrivalsUsed = w.arrivalsUsed || 0; this.maxArrivals = w.maxArrivals || 3; this.arrivalCooldown = w.arrivalCooldown ?? 300; this.nextArrivalCheckTimer = w.nextArrivalCheckTimer ?? 30; this.arrivalInProgress = false; this.autonomousHouseBuilder = null; this.feedbackMessages = w.feedbackMessages || []; this.eventLog = (w.eventLog || []).slice(-20); this.loadDayNightState(w); this.loadEraProgression(w); return true; }
     loadDayNightState(worldData) {
         this.dayNumber = Math.max(1, Number(worldData.dayNumber) || 1);
         this.dayPhase = ["day", "nightApproaching", "night"].includes(worldData.dayPhase) ? worldData.dayPhase : "day";

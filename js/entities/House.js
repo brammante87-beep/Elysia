@@ -1,7 +1,9 @@
 import { Entity } from "./Entity.js";
 
 export class House extends Entity {
-    constructor(x, y, owner) {
+    static RESOURCE_COLLECTION_TARGETS = { wood: 30, water: 30, meat: 30 };
+
+    constructor(x, y, owner, resourceCollectionTargets = House.RESOURCE_COLLECTION_TARGETS) {
         super("House", x, y, "#d9b88f");
         this.owner = owner;
         this.occupants = [owner];
@@ -13,6 +15,7 @@ export class House extends Entity {
         this.participants = [];
         this.pendingChild = null;
         this.storage = { wood: 0, water: 0, meat: 0 };
+        this.resourceCollectionTargets = { ...House.RESOURCE_COLLECTION_TARGETS, ...resourceCollectionTargets };
         this.depositFeedback = null;
         this.lastNightResult = null;
     }

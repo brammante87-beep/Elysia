@@ -63,7 +63,7 @@ export class Input {
 
         if (tree !== null) {
             this.clearPointerFeedback();
-            this.world.commandHeroToCutTree(tree);
+            if (!this.world.commandHeroToCutTree(tree)) { this.showPointerFeedback(this.world.lastResourceCommandReason); }
             return;
         }
 
@@ -71,7 +71,7 @@ export class Input {
 
         if (waterSource !== null) {
             this.clearPointerFeedback();
-            this.world.commandHeroToCollectWater(waterSource);
+            if (!this.world.commandHeroToCollectWater(waterSource)) { this.showPointerFeedback(this.world.lastResourceCommandReason); }
             return;
         }
 
@@ -79,7 +79,7 @@ export class Input {
 
         if (animal !== null) {
             this.clearPointerFeedback();
-            this.world.commandHeroToHuntAnimal(animal);
+            if (!this.world.commandHeroToHuntAnimal(animal)) { this.showPointerFeedback(this.world.lastResourceCommandReason); }
             return;
         }
 
