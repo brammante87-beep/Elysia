@@ -5,6 +5,8 @@ import { Villager } from "../js/entities/Villager.js";
 import { MiracleManager } from "../js/miracles/MiracleManager.js";
 import { Input } from "../js/input/Input.js";
 import { UI } from "../js/ui/UI.js";
+import { Renderer } from "../js/renderer/Renderer.js";
+import { Flower } from "../js/entities/Flower.js";
 
 class TestClassList {
     constructor(element) { this.element = element; }
@@ -59,6 +61,17 @@ class TestElement extends EventTarget {
 
 class TestDocument {
     createElement(tagName) { return new TestElement(tagName); }
+}
+
+class FlowerRenderContext {
+    constructor() { this.arcCount = 0; this.drawImageCount = 0; }
+    beginPath() {}
+    moveTo() {}
+    lineTo() {}
+    stroke() {}
+    fill() {}
+    arc() { this.arcCount += 1; }
+    drawImage() { this.drawImageCount += 1; }
 }
 
 class CommunityEraMiracleProgressionTest {
@@ -120,11 +133,53 @@ class CommunityEraMiracleProgressionTest {
 
     verifyFlower() {
         const position = this.findValidFlowerPosition();
-        this.activate("flower");
-        assert.equal(this.miracles.selectedMiracle, "flower");
-        this.clickCanvas(position.x, position.y);
-        assert.equal(this.world.flowers.length, 1);
-        assert.equal(this.miracles.selectedMiracle, null);
+        const diagnostics = [];
+        const originalDebug = console.debug;
+        globalThis.ELYSIA_DEBUG = true;
+        console.debug = (message) => diagnostics.push(message);
+        try {
+            const countBefore = this.world.flowers.length;
+            this.activate("flower");
+            assert.equal(this.miracles.selectedMiracle, "flower");
+            this.clickCanvas(position.x, position.y);
+            assert.equal(this.world.flowers.length, countBefore + 1);
+            assert.equal(this.world.flowers[0].x, position.x);
+            assert.equal(this.world.flowers[0].y, position.y);
+            assert.equal(this.world.feedbackMessages.at(-1).text, "Un fiore è sbocciato");
+            assert.equal(this.world.lastFlowerPlacementReason, null);
+            assert.equal(this.miracles.selectedMiracle, null);
+
+            const context = new FlowerRenderContext();
+            const missingAssets = { getImage: () => null };
+            new Renderer(this.canvas, context, this.world, missingAssets).drawFlowers();
+            assert.ok(context.arcCount >= 6, "Canvas fallback must draw visible petals and a center");
+            assert.equal(context.drawImageCount, 0, "missing sprite must not be drawn");
+
+            const saved = structuredClone(this.world.serialize());
+            assert.deepEqual(saved.world.flowers.map(({ id, x, y }) => ({ id, x, y })), [{ id: this.world.flowers[0].id, x: position.x, y: position.y }]);
+            const loaded = new World();
+            assert.equal(loaded.loadFromData(saved), true);
+            assert.equal(loaded.flowers.length, 1);
+            assert.ok(loaded.flowers[0] instanceof Flower);
+            const loadedContext = new FlowerRenderContext();
+            new Renderer(this.canvas, loadedContext, loaded, missingAssets).drawFlowers();
+            assert.ok(loadedContext.arcCount >= 6);
+
+            const house = this.world.houses[0];
+            const flowerCount = this.world.flowers.length;
+            this.activate("flower");
+            this.clickCanvas(house.x, house.y);
+            assert.equal(this.world.flowers.length, flowerCount);
+            assert.equal(this.world.feedbackMessages.at(-1).text, "Qui il fiore non può crescere");
+            assert.equal(this.world.lastFlowerPlacementReason, "House");
+            assert.equal(this.miracles.selectedMiracle, "flower");
+        } finally {
+            console.debug = originalDebug;
+            delete globalThis.ELYSIA_DEBUG;
+        }
+        ["Flower toolbar selected", "Flower world click received", "Flower coordinates converted", "Flower validation result", "Flower instance created", "Flower pushed to world.flowers", "Flower rendered", "Flower deselected"].forEach((message) => {
+            assert.ok(diagnostics.includes(message), `missing diagnostic: ${message}`);
+        });
         assert.equal(this.hasUnavailableFeedback(), false);
     }
 
@@ -180,7 +235,7 @@ class CommunityEraMiracleProgressionTest {
         for (let y = 352; y < this.world.getHeight(); y += 16) {
             for (let x = 16; x < this.world.getWidth(); x += 16) {
                 const before = this.world.flowers.length;
-                if (!this.world.addFlowerAt(x, y)) { continue; }
+                if (!this.world.placeFlowerAt(x, y).success) { continue; }
                 this.world.flowers.splice(before, 1);
                 this.world.feedbackMessages.pop();
                 return { x, y };

@@ -2539,35 +2539,45 @@ export class World {
         return true;
     }
 
-    addFlowerAt(x, y) {
-        const flower = new Flower(x, y);
-        this.lastFlowerPlacementReason = this.getFlowerPlacementRejection(flower, x, y);
-        if (this.lastFlowerPlacementReason !== null) {
-            this.feedbackMessages.push({ text: "Qui il fiore non può crescere", timer: 3 }); return false;
+    placeFlowerAt(x, y) {
+        const rejection = this.validateFlowerPosition(x, y);
+        this.lastFlowerPlacementReason = rejection.reason;
+        this.debugFlower("Flower validation result", rejection);
+        if (!rejection.success) {
+            this.feedbackMessages.push({ text: "Qui il fiore non può crescere", timer: 3 });
+            return { success: false, flower: null, reason: rejection.reason };
         }
-        this.assignResourceId(flower); this.flowers.push(flower);
-        this.feedbackMessages.push({ text: "Un fiore è sbocciato", timer: 3 }); return true;
+        const flower = new Flower(x, y);
+        this.assignResourceId(flower);
+        this.debugFlower("Flower instance created", { id: flower.id, x, y });
+        this.flowers.push(flower);
+        this.debugFlower("Flower pushed to world.flowers", { length: this.flowers.length });
+        this.feedbackMessages.push({ text: "Un fiore è sbocciato", timer: 3 });
+        return { success: true, flower, reason: null };
     }
 
-    getFlowerPlacementRejection(flower, x, y) {
-        if (!this.contains(x, y)) { return "bounds"; }
-        if (!this.terrain.isGrassAtWorldPosition(x, y)) { return "terrain"; }
-        if (this.overlapsAnyHouse(flower)) { return "House"; }
-        if (this.overlapsAnyTree(flower)) { return "Tree"; }
-        if (this.overlapsAnyWaterSource(flower)) { return "WaterSource"; }
-        if (this.overlapsAnyAnimal(flower)) { return "Animal"; }
-        if (this.villageWell && this.overlapsEntity(flower, this.villageWell)) { return "Well"; }
-        if (this.overlapsAnyFruitTree(flower)) { return "FruitTree"; }
-        if (this.overlapsAnyFlower(flower)) { return "Flower"; }
-        if (this.villagers.some((villager) => villager.alive && this.overlapsEntity(flower, villager))) { return "Villager"; }
-        if (this.hero && this.hero.alive && this.overlapsEntity(flower, this.hero)) { return "Hero"; }
-        if (this.overlapsVillageWallOrGate(flower)) { return "palisade or gate"; }
-        return null;
+    validateFlowerPosition(x, y) {
+        if (!Number.isFinite(x) || !Number.isFinite(y) || !this.contains(x, y)) { return { success: false, reason: "bounds" }; }
+        if (!this.terrain.isWalkableAtWorldPosition(x, y) && !this.terrain.isGrassAtWorldPosition(x, y)) { return { success: false, reason: "terrain" }; }
+        const flower = new Flower(x, y);
+        if (this.overlapsAnyHouse(flower)) { return { success: false, reason: "House" }; }
+        if (this.overlapsAnyTree(flower)) { return { success: false, reason: "Tree" }; }
+        if (this.overlapsAnyWaterSource(flower)) { return { success: false, reason: "WaterSource" }; }
+        if (this.overlapsAnyAnimal(flower)) { return { success: false, reason: "Animal" }; }
+        if (this.villageWell && this.overlapsEntity(flower, this.villageWell)) { return { success: false, reason: "Well" }; }
+        if (this.overlapsAnyFruitTree(flower)) { return { success: false, reason: "FruitTree" }; }
+        if (this.overlapsAnyFlower(flower)) { return { success: false, reason: "Flower" }; }
+        if (this.villagers.some((villager) => villager.alive && this.overlapsEntity(flower, villager))) { return { success: false, reason: "Villager" }; }
+        if (this.hero && this.hero.alive && this.overlapsEntity(flower, this.hero)) { return { success: false, reason: "Hero" }; }
+        if (this.overlapsVillageWallOrGate(flower)) { return { success: false, reason: "palisade or gate" }; }
+        return { success: true, reason: null };
     }
+
+    debugFlower(message, details) { if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); } }
 
     updateFruitTrees(delta) {
         this.fruitTrees.forEach((tree) => tree.update(delta));
-        this.flowers.forEach((flower) => { flower.observationFeedbackTimer = Math.max(0, flower.observationFeedbackTimer - delta); });
+        this.flowers.forEach((flower) => flower.update(delta));
         this.assignFlowerObserver();
     }
 
@@ -2877,7 +2887,7 @@ export class World {
     canSpawnArrivalAt(probe, x, y) { return this.contains(x, y) && this.terrain.isGrassAtWorldPosition(x, y) && !this.overlapsAnyHouse(probe) && !this.overlapsAnyTree(probe) && !this.overlapsAnyWaterSource(probe) && !this.overlapsAnyAnimal(probe) && !this.overlapsEntity(probe, this.hero) && !this.villagers.some((v) => this.overlapsEntity(probe, v)); }
     getArrivalDestination(spawn) { const center = { x: this.getWidth() / 2, y: this.tileSize * 7 }; const dx = center.x - spawn.x; const dy = center.y - spawn.y; const distance = Math.max(1, Math.hypot(dx, dy)); return { x: spawn.x + (dx / distance) * 96, y: spawn.y + (dy / distance) * 96 }; }
 
-    serialize() { return { world: { schemaVersion: 9, usedNames: this.getUsedNames(), villageTransformationCompleted: this.villageTransformationCompleted, villageBounds: this.villageBounds, villageGate: this.villageGate, villageWell: this.villageWell ? { id: this.villageWell.id, x: this.villageWell.x, y: this.villageWell.y, radius: this.villageWell.radius, maximumUsers: this.villageWell.maximumUsers, useFeedbackTimer: this.villageWell.useFeedbackTimer } : null, dayNumber: this.dayNumber, timeOfDay: this.timeOfDay, dayPhase: this.dayPhase, phaseTimer: this.phaseTimer, nightlyConsumptionProcessed: this.nightlyConsumptionProcessed, eventLog: this.eventLog, worldEra: this.worldEra, villageUnlocked: this.villageUnlocked, villageUnlockedAtPopulation: this.villageUnlockedAtPopulation, eraTransitionSequence: this.eraTransitionSequence, terrain: { columns: this.terrain.columns, rows: this.terrain.rows, tileSize: this.tileSize, tiles: this.terrain.tiles }, heroDestination: this.heroDestination, nextResourceAssignmentIndex: this.nextResourceAssignmentIndex, nextAutonomousBuilderIndex: this.nextAutonomousBuilderIndex, nextAutonomousPartnerIndex: this.nextAutonomousPartnerIndex, nextEntityId: this.nextEntityId, nextHouseId: this.nextHouseId, nextResourceId: this.nextResourceId, arrivalsUsed: this.arrivalsUsed, maxArrivals: 6, arrivalCooldown: this.arrivalCooldown, nextArrivalCheckTimer: this.nextArrivalCheckTimer, arrivalInProgress: this.arrivalInProgress, animalSpawnTimer: this.animalRespawnTimer, treeRespawnTimer: this.treeRespawnTimer, animalRespawnTimer: this.animalRespawnTimer, feedbackMessages: this.feedbackMessages, hero: this.serializePerson(this.hero, "hero"), villagers: this.villagers.map((v) => this.serializePerson(v, v.ageStage === "child" ? "child" : "villager")), houses: this.houses.map((h) => this.serializeHouse(h)), trees: this.trees.map((t) => this.serializeResource(t, "tree")), waterSources: this.waterSources.map((w) => this.serializeResource(w, "water")), animals: this.animals.map((a) => this.serializeResource(a, "animal")), flowers: this.flowers.map((f) => ({ id: f.id, x: f.x, y: f.y, observerIds: [...f.observerIds], observationProgress: f.observationProgress, evolved: f.evolved, spriteVariant: f.spriteVariant })), fruitTrees: this.fruitTrees.map((t) => ({ id: t.id, x: t.x, y: t.y, apples: t.apples, regrowthTimer: t.regrowthTimer, spriteVariant: t.spriteVariant })) } }; }
+serialize() { return { world: { schemaVersion: 9, usedNames: this.getUsedNames(), villageTransformationCompleted: this.villageTransformationCompleted, villageBounds: this.villageBounds, villageGate: this.villageGate, villageWell: this.villageWell ? { id: this.villageWell.id, x: this.villageWell.x, y: this.villageWell.y, radius: this.villageWell.radius, maximumUsers: this.villageWell.maximumUsers, useFeedbackTimer: this.villageWell.useFeedbackTimer } : null, dayNumber: this.dayNumber, timeOfDay: this.timeOfDay, dayPhase: this.dayPhase, phaseTimer: this.phaseTimer, nightlyConsumptionProcessed: this.nightlyConsumptionProcessed, eventLog: this.eventLog, worldEra: this.worldEra, villageUnlocked: this.villageUnlocked, villageUnlockedAtPopulation: this.villageUnlockedAtPopulation, eraTransitionSequence: this.eraTransitionSequence, terrain: { columns: this.terrain.columns, rows: this.terrain.rows, tileSize: this.tileSize, tiles: this.terrain.tiles }, heroDestination: this.heroDestination, nextResourceAssignmentIndex: this.nextResourceAssignmentIndex, nextAutonomousBuilderIndex: this.nextAutonomousBuilderIndex, nextAutonomousPartnerIndex: this.nextAutonomousPartnerIndex, nextEntityId: this.nextEntityId, nextHouseId: this.nextHouseId, nextResourceId: this.nextResourceId, arrivalsUsed: this.arrivalsUsed, maxArrivals: 6, arrivalCooldown: this.arrivalCooldown, nextArrivalCheckTimer: this.nextArrivalCheckTimer, arrivalInProgress: this.arrivalInProgress, animalSpawnTimer: this.animalRespawnTimer, treeRespawnTimer: this.treeRespawnTimer, animalRespawnTimer: this.animalRespawnTimer, feedbackMessages: this.feedbackMessages, hero: this.serializePerson(this.hero, "hero"), villagers: this.villagers.map((v) => this.serializePerson(v, v.ageStage === "child" ? "child" : "villager")), houses: this.houses.map((h) => this.serializeHouse(h)), trees: this.trees.map((t) => this.serializeResource(t, "tree")), waterSources: this.waterSources.map((w) => this.serializeResource(w, "water")), animals: this.animals.map((a) => this.serializeResource(a, "animal")), flowers: this.flowers.map((f) => f.serialize()), fruitTrees: this.fruitTrees.map((t) => ({ id: t.id, x: t.x, y: t.y, apples: t.apples, regrowthTimer: t.regrowthTimer, spriteVariant: t.spriteVariant })) } }; }
     serializePerson(p, type) { return { id: p.id, type, name: p.name, x: p.x, y: p.y, destination: p.destination, state: p.reservedForFertility || p.state === "insideHouse" || p.state === "arriving" ? p.state : "idle", gender: p.gender, orientation: p.orientation, relationshipStyle: p.relationshipStyle, age: p.age, ageStage: p.ageStage || "adult", ageTimer: p.ageTimer || 0, ageDuration: p.ageDuration || Child.GROWTH_DURATION_SECONDS, spriteKey: p.spriteKey || (p.getSpriteKey ? p.getSpriteKey() : null), wood: p.wood || 0, water: p.water || 0, meat: p.meat || 0, alive: p.alive, isAdult: p.isAdult, partnerIds: p.partners.map((x) => x.id).filter(Boolean), parentIds: p.parents.map((x) => x.id).filter(Boolean), childIds: p.children.map((x) => x.id).filter(Boolean), houseId: p.house ? p.house.id : null, ownedHouseId: p.ownedHouse ? p.ownedHouse.id : null, reservedForFertility: p.reservedForFertility, reservedForPartnership: false, intendedPartnerId: p.intendedPartnerId || null, arrivalMarkerTimer: p.arrivalMarkerTimer || 0, autonomyUnlocked: p === this.hero && p.autonomyUnlocked === true, carrying: { type: p.carrying.type, amount: p.carrying.amount }, lightningWarnings: p.lightningWarnings || 0 }; }
     serializeHouse(h) { return { id: h.id, x: h.x, y: h.y, ownerId: h.owner ? h.owner.id : null, occupantIds: h.occupants.map((o) => o.id).filter(Boolean), fertilityInProgress: h.fertilityInProgress, fertilityPhase: h.fertilityPhase, fertilityTimer: h.fertilityTimer, fertilityCooldown: h.fertilityCooldown, storage: { ...h.storage }, resourceCollectionTargets: { ...h.resourceCollectionTargets }, lastNightResult: h.lastNightResult, capacity: h.capacity, upgraded: h.upgraded, visualVariant: h.visualVariant, participantIds: h.participants.map((p) => p.id).filter(Boolean) }; }
     serializeResource(r, type) { return { id: r.id, type, name: r.name, x: r.x, y: r.y, woodRemaining: r.woodRemaining, waterRemaining: r.waterRemaining, meatRemaining: r.meatRemaining, cutFeedbackTimer: r.cutFeedbackTimer || 0, useFeedbackTimer: r.useFeedbackTimer || 0, hitFeedbackTimer: r.hitFeedbackTimer || 0 }; }

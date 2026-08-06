@@ -46,6 +46,11 @@ export class Input {
 
     handleWorldClick(x, y) {
         this.debug("handleWorldClick entered", { x, y, worldEra: this.world.getCurrentEra() });
+        if (this.miracleManager.selectedMiracle === "flower") {
+            this.debugFlower("Flower world click received", { x, y });
+            this.handleSelectedMiracleClick(x, y);
+            return;
+        }
         if (!this.world.contains(x, y)) {
             return;
         }
@@ -169,6 +174,7 @@ export class Input {
             x: (event.clientX - rectangle.left) * scaleX,
             y: (event.clientY - rectangle.top) * scaleY
         };
+        if (this.miracleManager.selectedMiracle === "flower") { this.debugFlower("Flower coordinates converted", position); }
         this.debug("canvas pointer converted", {
             pointer: { x: event.clientX, y: event.clientY },
             world: position
@@ -178,5 +184,9 @@ export class Input {
 
     debug(message, details) {
         if (globalThis.ELYSIA_DEBUG === true) { console.debug(`[Elysia/Input] ${message}`, details); }
+    }
+
+    debugFlower(message, details) {
+        if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); }
     }
 }

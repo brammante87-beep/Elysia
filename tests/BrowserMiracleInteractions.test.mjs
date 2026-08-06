@@ -31,7 +31,7 @@ function findValidFlowerPosition(world) {
     for (let y = 352; y < world.getHeight(); y += 16) {
         for (let x = 16; x < world.getWidth(); x += 16) {
             const before = world.flowers.length;
-            if (world.addFlowerAt(x, y)) {
+            if (world.placeFlowerAt(x, y).success) {
                 world.flowers.splice(before, 1);
                 world.feedbackMessages.pop();
                 return { x, y };
@@ -148,7 +148,7 @@ test("third browser-path Lightning strike kills and dead Villagers gain no warni
 test("Flowers and Lightning warnings retain save compatibility", () => {
     const { world } = createVillage();
     const position = findValidFlowerPosition(world);
-    assert.equal(world.addFlowerAt(position.x, position.y), true);
+    assert.equal(world.placeFlowerAt(position.x, position.y).success, true);
     world.villagers[0].lightningWarnings = 2;
     const loaded = new World();
     assert.equal(loaded.loadFromData(world.serialize()), true);
