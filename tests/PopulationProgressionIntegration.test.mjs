@@ -8,6 +8,7 @@ class PopulationProgressionIntegrationTest {
         this.milestones = new Set();
         this.savedAtSeventeen = null;
         this.transformationSequenceAtThirtyTwo = null;
+        this.transformationSequenceAtFifteen = null;
     }
 
     run() {
@@ -40,6 +41,10 @@ class PopulationProgressionIntegrationTest {
             this.invokeEligibleFertility(world);
             world.update(0.25);
             const population = world.getPopulationCount();
+            if (population >= World.VILLAGE_UNLOCK_POPULATION && world.worldEra === "village" && this.transformationSequenceAtFifteen === null) {
+                assert.equal(world.villageTransformationCompleted, true);
+                this.transformationSequenceAtFifteen = world.eraTransitionSequence;
+            }
             [17, 19, 24, 28, 32].forEach((milestone) => { if (population >= milestone) { this.milestones.add(milestone); } });
             unchangedFor = population === previousPopulation ? unchangedFor + 0.25 : 0;
             previousPopulation = population;
@@ -88,6 +93,7 @@ class PopulationProgressionIntegrationTest {
         [17, 19, 24, 28, 32].forEach((milestone) => assert(this.milestones.has(milestone), `missing milestone ${milestone}`));
         world.update(1);
         assert.equal(world.worldEra, "village");
+        assert.equal(this.transformationSequenceAtFifteen, 1, "Village transformation must occur at 15");
         this.transformationSequenceAtThirtyTwo = world.eraTransitionSequence;
         world.update(60);
         assert.equal(world.getPopulationCount(), 32);

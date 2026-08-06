@@ -7,7 +7,8 @@ Elysia is planned as a god-game village simulation. The player will eventually i
 Progression uses stable internal Era keys. The three planned Eras are `tribe`
 (**L'Alba della Vita**), `village` (**La Comunità**) and `faith` (**La Fede**).
 The current Alpha 1.3 milestone implements only the permanent Tribe-to-Village
-transition, triggered when the living population reaches 32.
+transition, triggered when the living population reaches 15. The separate
+global population maximum remains 32.
 
 Entering the Village Era currently records the milestone, gives temporary
 feedback, and saves the game. It deliberately does not transform buildings or
@@ -24,4 +25,4 @@ future Village systems.
 Palisade, gate, well, Faith, toolbar replacement, and raiders are not implemented.
 
 ## Alpha 1.5: trasformazione in Villaggio
-A 32 abitanti viventi la trasformazione avviene una sola volta: il perimetro stabile dell'insediamento riceve una palizzata con un unico cancello aperto e un Pozzo permanente. Le Case esistenti diventano strutture migliorate e passano da 4 a 6 posti senza espellere occupanti legacy.
+A 15 abitanti viventi la trasformazione avviene una sola volta: il perimetro stabile dell'insediamento riceve una palizzata con un unico cancello aperto e un Pozzo permanente. Le Case esistenti diventano strutture migliorate e passano da 4 a 6 posti senza espellere occupanti legacy. La popolazione può continuare a crescere fino al limite globale di 32.
