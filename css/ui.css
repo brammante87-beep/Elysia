@@ -200,6 +200,14 @@
     font-weight: 700;
 }
 
+.houseOccupantList {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
 @media (max-width: 600px) {
     #chosenHouseHud {
         align-items: flex-start;
