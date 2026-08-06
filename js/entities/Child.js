@@ -36,5 +36,8 @@ export class Child extends Entity {
         this.meat = 0;
         this.houseSite = null;
         this.houseBuildTimer = 0;
+        this.carrying = { type: null, amount: 0 };
+        this.carryingCapacity = 3;
+        this.depositTimer = 0;
     }
 }

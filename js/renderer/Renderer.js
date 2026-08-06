@@ -154,6 +154,7 @@ export class Renderer {
         if (house.fertilityPhase === "private") {
             this.drawHouseFertilityFeedback(house);
         }
+        if (house.depositFeedback !== null) { this.drawDepositFeedback(house); }
     }
 
     drawHouseFertilityFeedback(house) {
@@ -310,6 +311,33 @@ export class Renderer {
         }
 
         if (entity.arrivalMarkerTimer > 0) { this.drawArrivalMarker(entity); }
+        if (entity.carrying && entity.carrying.amount > 0) { this.drawCarryingFeedback(entity); }
+    }
+
+    drawCarryingFeedback(entity) {
+        const x = entity.x - 18;
+        const y = entity.y + 8;
+        const type = entity.carrying.type;
+        this.context.lineWidth = 2;
+        if (type === "wood") {
+            this.context.strokeStyle = "#6f3d20";
+            for (let index = 0; index < entity.carrying.amount; index += 1) {
+                this.context.beginPath(); this.context.moveTo(x - 3, y - index * 3); this.context.lineTo(x + 8, y - 5 - index * 3); this.context.stroke();
+            }
+        } else if (type === "water") {
+            this.context.fillStyle = "#55c8ef"; this.context.fillRect(x - 2, y - 8, 10, 11);
+            this.context.strokeStyle = "#d7f4ff"; this.context.strokeRect(x - 2, y - 8, 10, 11);
+        } else if (type === "meat") {
+            this.context.fillStyle = "#b84d4d"; this.context.beginPath(); this.context.ellipse(x + 3, y - 3, 7, 5, -0.35, 0, Math.PI * 2); this.context.fill();
+        }
+    }
+
+    drawDepositFeedback(house) {
+        const feedback = house.depositFeedback;
+        this.context.fillStyle = feedback.type === "water" ? "#7dd3fc" : feedback.type === "meat" ? "#ef7777" : "#d39b5f";
+        this.context.font = "bold 13px Arial";
+        this.context.textAlign = "center";
+        this.context.fillText(`+${feedback.amount}`, house.x, house.y - 42 - (1.25 - feedback.timer) * 12);
     }
 
     drawArrivalMarker(entity) {
