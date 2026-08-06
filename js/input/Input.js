@@ -45,6 +45,7 @@ export class Input {
     }
 
     handleWorldClick(x, y) {
+        this.debug("handleWorldClick entered", { x, y, worldEra: this.world.getCurrentEra() });
         if (!this.world.contains(x, y)) {
             return;
         }
@@ -120,9 +121,23 @@ export class Input {
     }
 
     handleSelectedMiracleClick(x, y) {
+        this.debug("handleSelectedMiracleClick entered", { x, y });
         this.clearPointerFeedback();
         const selectedMiracle = this.miracleManager.selectedMiracle;
-        const castSucceeded = this.miracleManager.cast(x, y, this.world);
+        let castSucceeded = false;
+        try {
+            castSucceeded = this.miracleManager.cast(x, y, this.world);
+        } catch (error) {
+            this.debug("miracle exception", { error, stack: error && error.stack });
+            throw error;
+        }
+        this.debug("miracle cast result", {
+            selectedMiracle,
+            castSucceeded,
+            feedback: this.world.feedbackMessages.at(-1)?.text || null,
+            selectedMiracleAfterCast: this.miracleManager.selectedMiracle,
+            flowerPlacementReason: this.world.lastFlowerPlacementReason
+        });
 
         if (castSucceeded) {
             return true;
@@ -150,9 +165,18 @@ export class Input {
         const scaleX = this.canvas.width / rectangle.width;
         const scaleY = this.canvas.height / rectangle.height;
 
-        return {
+        const position = {
             x: (event.clientX - rectangle.left) * scaleX,
             y: (event.clientY - rectangle.top) * scaleY
         };
+        this.debug("canvas pointer converted", {
+            pointer: { x: event.clientX, y: event.clientY },
+            world: position
+        });
+        return position;
+    }
+
+    debug(message, details) {
+        if (globalThis.ELYSIA_DEBUG === true) { console.debug(`[Elysia/Input] ${message}`, details); }
     }
 }
