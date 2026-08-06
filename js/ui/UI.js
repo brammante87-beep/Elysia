@@ -481,7 +481,6 @@ export class UI {
         };
 
         button.addEventListener("click", selectMiracle);
-        button.addEventListener("touchstart", selectMiracle, { passive: false });
 
         return button;
     }
