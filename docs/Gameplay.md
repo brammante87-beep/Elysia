@@ -23,5 +23,8 @@ autonomous Houses cluster around it in three organic distance bands (140–220,
 220–320, and 320–420 pixels). A failed search is retried later without spending
 wood or reserving the builder.
 
-The planned Faith Era and Village features such as palisade, gate, well, toolbar
-replacement, and raiders are not available yet.
+The Faith Era, raiders, and combat remain planned. Alpha 1.5 now provides the
+Village palisade, gate, well, upgraded Houses, and Era-specific toolbar.
+
+## Villaggio fortificato
+Al raggiungimento di 32 abitanti, una palizzata circonda tutte le Case. Gli adulti attraversano il solo cancello; i bambini dipendenti restano al sicuro all'interno. Il Pozzo interno offre acqua illimitata, un'unità per azione completata, a non più di due utilizzatori contemporanei. La barra passa da Tree, Water, Animal, House e Fertility a Fertility, Flower, Light, Lightning e Blessing; gli ultimi quattro sono segnaposto sicuri in Alpha 1.5.

@@ -75,6 +75,13 @@ export class Input {
             return;
         }
 
+        const well = this.world.getVillageWell();
+        if (well !== null && Math.hypot(well.x - x, well.y - y) <= well.radius) {
+            this.clearPointerFeedback();
+            if (!this.world.commandHeroToCollectWater(well)) { this.showPointerFeedback(this.world.lastResourceCommandReason); }
+            return;
+        }
+
         const animal = this.world.getAnimalAtWorldPosition(x, y);
 
         if (animal !== null) {

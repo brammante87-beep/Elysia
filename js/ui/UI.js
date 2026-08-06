@@ -329,6 +329,12 @@ export class UI {
         this.updateMiracleButtons();
     }
 
+    rebuildMiracleToolbar() {
+        const existing = this.root.querySelector("#miracleToolbar");
+        if (existing !== null) { existing.remove(); }
+        this.showMiracleToolbar();
+    }
+
     showHouseHud() {
         if (this.houseHud !== null) {
             return;
@@ -546,6 +552,7 @@ export class UI {
             flower: "🌸",
             house: "🏠",
             fertility: "💞",
+            blessing: "✨",
             animal: "🐾"
         };
 
@@ -561,7 +568,8 @@ export class UI {
             flower: "Flower miracle",
             house: "House miracle",
             fertility: "Fertility miracle",
-            animal: "Animal miracle"
+            animal: "Animal miracle",
+            blessing: "Blessing miracle"
         };
 
         return labels[miracle];

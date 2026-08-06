@@ -23,6 +23,8 @@ export class Game {
         this.engine = new Engine(this);
         this.world.onAutosaveNeeded = () => this.safeAutosave();
         this.world.onEraChanged = (displayName) => {
+            this.miracleManager.refreshAvailableMiracles(this.world.getCurrentEra());
+            this.ui.rebuildMiracleToolbar();
             this.ui.updateVillageStatistics();
             this.ui.showEraFeedback(displayName);
         };
@@ -130,6 +132,7 @@ export class Game {
 
     showGameplayUi() {
         this.ui.clear();
+        this.miracleManager.refreshAvailableMiracles(this.world.getCurrentEra());
         this.ui.showMiracleToolbar();
         this.ui.showHouseHud();
         this.ui.showVillageStatistics();

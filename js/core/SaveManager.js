@@ -2,7 +2,7 @@ export class SaveManager {
     constructor(storage = window.localStorage) {
         this.storage = storage;
         this.storageKey = "elysia_save_v1";
-        this.version = "1.4";
+        this.version = "1.5";
     }
 
     save(gameState) {
@@ -28,7 +28,7 @@ export class SaveManager {
 
     isValidSave(payload) {
         return payload !== null &&
-            ["1.0", "1.2", this.version].includes(payload.version) &&
+            ["1.0", "1.2", "1.4", this.version].includes(payload.version) &&
             payload.gameState !== null &&
             typeof payload.gameState === "object" &&
             payload.gameState.world !== null &&

@@ -1,16 +1,20 @@
 export class MiracleManager {
     constructor() {
-        this.availableMiracles = [
-            "tree",
-            "water",
-            "light",
-            "lightning",
-            "flower",
-            "house",
-            "fertility",
-            "animal"
-        ];
+        this.availableMiracles = this.getMiraclesForEra("tribe");
         this.selectedMiracle = null;
+    }
+
+    getMiraclesForEra(worldEra) {
+        return worldEra === "village"
+            ? ["fertility", "flower", "light", "lightning", "blessing"]
+            : ["tree", "water", "animal", "house", "fertility"];
+    }
+
+    isMiracleAvailable(miracle, worldEra) { return this.getMiraclesForEra(worldEra).includes(miracle); }
+
+    refreshAvailableMiracles(worldEra) {
+        this.availableMiracles = this.getMiraclesForEra(worldEra);
+        if (!this.availableMiracles.includes(this.selectedMiracle)) { this.clearSelection(); }
     }
 
     select(miracle) {
@@ -30,6 +34,7 @@ export class MiracleManager {
     }
 
     cast(x, y, world) {
+        if (!this.isMiracleAvailable(this.selectedMiracle, world.getCurrentEra())) { this.clearSelection(); return false; }
         if (this.selectedMiracle === "tree") {
             return world.addTreeAt(x, y);
         }
@@ -50,6 +55,10 @@ export class MiracleManager {
             return this.castFertility(x, y, world);
         }
 
+        if (["flower", "light", "lightning", "blessing"].includes(this.selectedMiracle)) {
+            world.feedbackMessages.push({ text: "Questo miracolo non è ancora disponibile.", timer: 3 });
+            this.clearSelection();
+        }
         return false;
     }
 

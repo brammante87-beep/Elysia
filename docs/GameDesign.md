@@ -22,3 +22,6 @@ Rectangular settlement bounds are derived from all House collision areas for
 future Village systems.
 
 Palisade, gate, well, Faith, toolbar replacement, and raiders are not implemented.
+
+## Alpha 1.5: trasformazione in Villaggio
+A 32 abitanti viventi la trasformazione avviene una sola volta: il perimetro stabile dell'insediamento riceve una palizzata con un unico cancello aperto e un Pozzo permanente. Le Case esistenti diventano strutture migliorate e passano da 4 a 6 posti senza espellere occupanti legacy.
