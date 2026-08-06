@@ -58,6 +58,8 @@ export class World {
         this.phaseTimer = 0;
         this.nightlyConsumptionProcessed = false;
         this.lastResourceCommandReason = null;
+        this.autonomousResourceDebugEnabled = false;
+        this.lastAutonomousResourceDecision = null;
     }
 
     initialize(settings = {}) {
@@ -100,6 +102,8 @@ export class World {
         this.phaseTimer = 0;
         this.nightlyConsumptionProcessed = false;
         this.lastResourceCommandReason = null;
+        this.autonomousResourceDebugEnabled = false;
+        this.lastAutonomousResourceDecision = null;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -1122,6 +1126,13 @@ export class World {
 
     updateResourceWorker(worker, resource, collection, workState, completeMethod, clearMethod, delta = 0) {
         const resourceType = resource instanceof WaterSource || resource instanceof Well ? "water" : "meat";
+        const autonomousNpc = worker !== this.hero || worker.autonomousAction;
+        if (autonomousNpc && !this.canAutonomouslyGatherResource(worker, resourceType)) {
+            this[clearMethod](worker);
+            worker.actionTimer = 0;
+            worker.state = "idle";
+            return;
+        }
         if (this.shouldStopHouseholdGathering(worker, resourceType)) {
             this[clearMethod](worker);
             return;
@@ -1153,6 +1164,12 @@ export class World {
         worker.actionTimer += delta;
 
         if (worker.actionTimer >= 1 && collection.includes(resource)) {
+            if (autonomousNpc && !this.canAutonomouslyGatherResource(worker, resourceType)) {
+                this[clearMethod](worker);
+                worker.actionTimer = 0;
+                worker.state = "idle";
+                return;
+            }
             worker.actionTimer = 0;
             this[completeMethod](worker, resource);
         }
@@ -1317,40 +1334,83 @@ export class World {
     assignVillagersToResources() {
         if (!this.canNpcGatherResources()) { return false; }
         this.villagers.forEach((villager) => this.normalizeHouselessInvalidCarrying(villager));
-        const jobTypes = ["tree", "water", "animal"];
+        const villager = this.getAvailableVillager();
+        if (villager === null) { return false; }
 
-        for (let offset = 0; offset < jobTypes.length; offset += 1) {
-            const jobType = jobTypes[(this.nextResourceAssignmentIndex + offset) % jobTypes.length];
+        const candidatesBeforeFiltering = this.getAvailableAutonomousResourceTypes();
+        const allowedTypes = this.getAllowedAutonomousResourceTypes(villager);
+        const candidatesAfterFiltering = candidatesBeforeFiltering.filter((type) =>
+            allowedTypes.includes(type) &&
+            (villager.carrying.type === null || villager.carrying.type === type) &&
+            !this.shouldStopHouseholdGathering(villager, type));
+        const selectedType = this.getRotatingAutonomousResourceType(candidatesAfterFiltering);
+        const assigned = selectedType !== null && this.assignVillagerToResourceType(selectedType, villager);
 
-            if (this.assignVillagerToResourceType(jobType)) {
-                this.nextResourceAssignmentIndex = (this.nextResourceAssignmentIndex + offset + 1) % jobTypes.length;
-                return;
-            }
+        if (this.autonomousResourceDebugEnabled && this.lastAutonomousResourceDecision === null && this.isHouselessAdult(villager)) {
+            this.lastAutonomousResourceDecision = {
+                population: this.getPopulationCount(),
+                personName: villager.name,
+                personId: villager.id,
+                houseId: villager.house?.id ?? null,
+                isHouselessAdult: this.isHouselessAdult(villager),
+                carrying: { ...villager.carrying },
+                allowedTypes: [...allowedTypes],
+                candidatesBeforeFiltering: [...candidatesBeforeFiltering],
+                candidatesAfterFiltering: [...candidatesAfterFiltering],
+                selectedJob: selectedType,
+                assignedTarget: villager.targetTree?.id ?? villager.targetWaterSource?.id ?? villager.targetAnimal?.id ?? null
+            };
         }
+        return assigned;
     }
 
-    assignVillagerToResourceType(jobType) {
-        const villager = this.getAvailableVillager(jobType);
+    getAvailableAutonomousResourceTypes() {
+        const types = [];
+        if (this.trees.some((tree) => tree.assignedVillager === null && tree.assignedHero === null)) { types.push("wood"); }
+        if (this.getAvailableWaterResources().some((source) => source instanceof Well ? source.assignedWorkers.length < source.maximumUsers : source.assignedVillager === null && source.assignedHero === null)) { types.push("water"); }
+        if (this.animals.some((animal) => animal.assignedVillager === null && animal.assignedHero === null)) { types.push("meat"); }
+        return types;
+    }
 
-        if (villager === null) {
+    getRotatingAutonomousResourceType(types) {
+        const orderedTypes = ["wood", "water", "meat"];
+        for (let offset = 0; offset < orderedTypes.length; offset += 1) {
+            const index = (this.nextResourceAssignmentIndex + offset) % orderedTypes.length;
+            if (!types.includes(orderedTypes[index])) { continue; }
+            this.nextResourceAssignmentIndex = (index + 1) % orderedTypes.length;
+            return orderedTypes[index];
+        }
+        return null;
+    }
+
+    assignVillagerToResourceType(jobType, selectedVillager = null) {
+        const resourceType = jobType === "tree" ? "wood" : jobType === "animal" ? "meat" : jobType;
+        const assignmentType = resourceType === "wood" ? "tree" : resourceType === "meat" ? "animal" : resourceType;
+        const villager = selectedVillager ?? this.getAvailableVillager(jobType);
+
+        if (villager === null || !this.canAutonomouslyGatherResource(villager, resourceType)) {
             return false;
         }
 
-        if (jobType === "tree") {
+        if (assignmentType === "tree") {
             const tree = this.trees.find((candidate) => candidate.assignedVillager === null && candidate.assignedHero === null) || null;
             if (tree === null) { return false; }
             tree.assignedVillager = villager;
             villager.targetTree = tree;
         }
 
-        if (jobType === "water") {
+        if (assignmentType === "water") {
+            if (this.isHouselessAdult(villager)) { return false; }
             const source = this.getAvailableWaterResources().find((candidate) => candidate instanceof Well ? candidate.canAssign(villager) : candidate.assignedVillager === null && candidate.assignedHero === null) || null;
             if (source === null) { return false; }
-            if (source instanceof Well) { source.assign(villager); } else { source.assignedVillager = villager; }
+            if (source instanceof Well) {
+                if (!source.assign(villager)) { return false; }
+            } else { source.assignedVillager = villager; }
             villager.targetWaterSource = source;
         }
 
-        if (jobType === "animal") {
+        if (assignmentType === "animal") {
+            if (this.isHouselessAdult(villager)) { return false; }
             const animal = this.animals.find((candidate) => candidate.assignedVillager === null && candidate.assignedHero === null) || null;
             if (animal === null) { return false; }
             animal.assignedVillager = villager;
@@ -1376,11 +1436,11 @@ export class World {
                 !villager.reservedForFertility &&
                 villager.relationshipGoal === null &&
                 villager.isAdult &&
-                this.canAutonomouslyGatherResource(villager, resourceType) &&
-                !this.shouldStopHouseholdGathering(villager, resourceType) &&
+                (resourceType === null || this.canAutonomouslyGatherResource(villager, resourceType)) &&
+                (resourceType === null || !this.shouldStopHouseholdGathering(villager, resourceType)) &&
                 !(this.isHouselessAdult(villager) && villager.carrying.type === "wood" && villager.carrying.amount >= 3) &&
                 villager.carrying.amount < villager.carryingCapacity &&
-                (villager.carrying.type === null || villager.carrying.type === resourceType) &&
+                (resourceType === null || villager.carrying.type === null || villager.carrying.type === resourceType) &&
                 villager.state === "idle";
         }) || null;
     }
