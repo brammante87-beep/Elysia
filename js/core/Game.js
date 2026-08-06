@@ -22,6 +22,10 @@ export class Game {
         this.ui = new UI(this.uiRoot, this.miracleManager, this.world);
         this.engine = new Engine(this);
         this.world.onAutosaveNeeded = () => this.safeAutosave();
+        this.world.onEraChanged = (displayName) => {
+            this.ui.updateVillageStatistics();
+            this.ui.showEraFeedback(displayName);
+        };
         this.saveManager = new SaveManager();
         this.pendingNewGameSettings = null;
         this.tutorialManager = new TutorialManager(this.ui, () => this.beginPendingNewGame());
@@ -121,12 +125,14 @@ export class Game {
         this.updateAutosave(delta);
         this.ui.updateMiracleButtons();
         this.ui.updateHouseHud();
+        this.ui.updateVillageStatistics();
     }
 
     showGameplayUi() {
         this.ui.clear();
         this.ui.showMiracleToolbar();
         this.ui.showHouseHud();
+        this.ui.showVillageStatistics();
         this.ui.showSaveButton(() => this.manualSave());
     }
 
