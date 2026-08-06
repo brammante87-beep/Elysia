@@ -25,7 +25,13 @@ export class Flower extends Entity {
 
     render(context, sprite = null) {
         if (!this.alive) { return; }
-        if (sprite) {
+        const hasUsableSprite =
+            sprite &&
+            sprite.assetFallback !== true &&
+            Number(sprite.width) > 0 &&
+            Number(sprite.height) > 0;
+
+        if (hasUsableSprite) {
             context.drawImage(sprite, this.x - 12, this.y - 20, 24, 24);
         } else {
             this.renderFallback(context);
@@ -35,6 +41,7 @@ export class Flower extends Entity {
     }
 
     renderFallback(context) {
+        this.debug("Flower fallback rendered");
         const sway = Math.sin(this.sway * 2) * 1.5;
         context.strokeStyle = "#397447";
         context.lineWidth = 2;

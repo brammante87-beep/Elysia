@@ -7,6 +7,7 @@ import { Input } from "../js/input/Input.js";
 import { UI } from "../js/ui/UI.js";
 import { Renderer } from "../js/renderer/Renderer.js";
 import { Flower } from "../js/entities/Flower.js";
+import { AssetLoader } from "../js/assets/AssetLoader.js";
 
 class TestClassList {
     constructor(element) { this.element = element; }
@@ -143,17 +144,28 @@ class CommunityEraMiracleProgressionTest {
             assert.equal(this.miracles.selectedMiracle, "flower");
             this.clickCanvas(position.x, position.y);
             assert.equal(this.world.flowers.length, countBefore + 1);
-            assert.equal(this.world.flowers[0].x, position.x);
-            assert.equal(this.world.flowers[0].y, position.y);
+            const placedFlower = this.world.flowers.at(-1);
+            assert.ok(placedFlower instanceof Flower);
+            assert.equal(placedFlower.alive, true);
+            assert.equal(placedFlower.x, position.x);
+            assert.equal(placedFlower.y, position.y);
             assert.equal(this.world.feedbackMessages.at(-1).text, "Un fiore è sbocciato");
             assert.equal(this.world.lastFlowerPlacementReason, null);
             assert.equal(this.miracles.selectedMiracle, null);
 
             const context = new FlowerRenderContext();
-            const missingAssets = { getImage: () => null };
-            new Renderer(this.canvas, context, this.world, missingAssets).drawFlowers();
+            const assetManager = new AssetLoader();
+            const checkerboard = { assetFallback: true, width: 32, height: 32 };
+            assetManager.getImage = () => checkerboard;
+            assert.equal(assetManager.hasLoaded("flower"), false, "flower asset must be absent from the real asset registry");
+            new Renderer(this.canvas, context, this.world, assetManager).drawFlowers();
             assert.ok(context.arcCount >= 6, "Canvas fallback must draw visible petals and a center");
-            assert.equal(context.drawImageCount, 0, "missing sprite must not be drawn");
+            assert.equal(context.drawImageCount, 0, "checkerboard fallback must not be drawn");
+
+            const guardedContext = new FlowerRenderContext();
+            placedFlower.render(guardedContext, checkerboard);
+            assert.ok(guardedContext.arcCount >= 6, "Flower must reject an AssetManager checkerboard");
+            assert.equal(guardedContext.drawImageCount, 0);
 
             const saved = structuredClone(this.world.serialize());
             assert.deepEqual(saved.world.flowers.map(({ id, x, y }) => ({ id, x, y })), [{ id: this.world.flowers[0].id, x: position.x, y: position.y }]);
@@ -162,7 +174,7 @@ class CommunityEraMiracleProgressionTest {
             assert.equal(loaded.flowers.length, 1);
             assert.ok(loaded.flowers[0] instanceof Flower);
             const loadedContext = new FlowerRenderContext();
-            new Renderer(this.canvas, loadedContext, loaded, missingAssets).drawFlowers();
+            new Renderer(this.canvas, loadedContext, loaded, assetManager).drawFlowers();
             assert.ok(loadedContext.arcCount >= 6);
 
             const house = this.world.houses[0];
@@ -177,7 +189,7 @@ class CommunityEraMiracleProgressionTest {
             console.debug = originalDebug;
             delete globalThis.ELYSIA_DEBUG;
         }
-        ["Flower toolbar selected", "Flower world click received", "Flower coordinates converted", "Flower validation result", "Flower instance created", "Flower pushed to world.flowers", "Flower rendered", "Flower deselected"].forEach((message) => {
+        ["Flower toolbar selected", "Flower world click received", "Flower coordinates converted", "Flower validation result", "Flower instance exists", "Flower pushed to world.flowers", "Flower passed to Renderer", "Flower asset unavailable", "Flower procedural fallback selected", "Flower fallback rendered", "Flower rendered", "Flower deselected"].forEach((message) => {
             assert.ok(diagnostics.includes(message), `missing diagnostic: ${message}`);
         });
         assert.equal(this.hasUnavailableFeedback(), false);

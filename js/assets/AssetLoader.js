@@ -43,4 +43,9 @@ export class AssetLoader {
 
         return record.image;
     }
+
+    hasLoaded(name) {
+        const record = this.images.get(name);
+        return Boolean(record && record.loaded && !record.failed);
+    }
 }
