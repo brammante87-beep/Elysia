@@ -158,10 +158,24 @@ export class Renderer {
         this.context.arc(house.x + 4, house.y + 21, 1.5, 0, Math.PI * 2);
         this.context.fill();
 
+        this.drawHouseName(house);
+
         if (house.fertilityPhase === "private") {
             this.drawHouseFertilityFeedback(house);
         }
         if (house.depositFeedback !== null) { this.drawDepositFeedback(house); }
+    }
+
+    drawHouseName(house) {
+        this.context.font = "bold 13px sans-serif";
+        this.context.textAlign = "center";
+        this.context.textBaseline = "bottom";
+        this.context.lineWidth = 3;
+        this.context.strokeStyle = "rgba(0, 0, 0, 0.7)";
+        this.context.fillStyle = "#ffffff";
+        const name = this.world.getHouseName(house);
+        this.context.strokeText(name, house.x, house.y - 39);
+        this.context.fillText(name, house.x, house.y - 39);
     }
 
     drawHouseFertilityFeedback(house) {

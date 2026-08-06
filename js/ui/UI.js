@@ -11,6 +11,7 @@ export class UI {
         this.houseHudOccupants = null;
         this.heroCarrying = null;
         this.heroActivity = null;
+        this.heroResidence = null;
         this.villageStatistics = null;
         this.statisticsEra = null;
         this.statisticsPopulation = null;
@@ -35,6 +36,7 @@ export class UI {
         this.houseHudOccupants = null;
         this.heroCarrying = null;
         this.heroActivity = null;
+        this.heroResidence = null;
         this.villageStatistics = null;
         this.statisticsEra = null;
         this.statisticsPopulation = null;
@@ -351,6 +353,7 @@ export class UI {
         this.houseHud.appendChild(resources);
         this.heroCarrying = document.createElement("p");
         this.heroActivity = document.createElement("p");
+        this.heroResidence = document.createElement("p");
         this.houseNightCost = document.createElement("p");
         this.houseNightPhase = document.createElement("p");
         this.houseLastNight = document.createElement("p");
@@ -359,6 +362,7 @@ export class UI {
         this.houseHud.appendChild(this.houseLastNight);
         this.houseHud.appendChild(this.heroCarrying);
         this.houseHud.appendChild(this.heroActivity);
+        this.houseHud.appendChild(this.heroResidence);
         this.root.appendChild(this.houseHud);
         this.updateHouseHud();
     }
@@ -417,6 +421,7 @@ export class UI {
         this.heroCarrying.textContent = carrying.amount > 0 ? `Trasporta: ${carrying.amount} / ${hero.carryingCapacity} ${labels[carrying.type]}` : "Trasporta: nulla";
         const activities = { returningHome: "Torna a casa", depositingResources: "Deposita risorse", autonomousWandering: "Passeggia vicino casa" };
         this.heroActivity.textContent = `Attività: ${activities[hero.state] || "Disponibile"}`;
+        this.heroResidence.textContent = `Abitazione: ${hero.house === null ? "Nessuna casa" : this.world.getHouseName(hero.house)}`;
     }
 
     createMiracleButton(miracle) {
