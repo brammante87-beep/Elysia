@@ -26,3 +26,8 @@ Palisade, gate, well, Faith, toolbar replacement, and raiders are not implemente
 
 ## Alpha 1.5: trasformazione in Villaggio
 A 15 abitanti viventi la trasformazione avviene una sola volta: il perimetro stabile dell'insediamento riceve una palizzata con un unico cancello aperto e un Pozzo permanente. Le Case esistenti diventano strutture migliorate e passano da 4 a 6 posti senza espellere occupanti legacy. La popolazione può continuare a crescere fino al limite globale di 32.
+
+## Alpha 1.6: natura e frutteti
+Dopo la trasformazione in Villaggio, alberi e animali selvatici ricompaiono gradualmente fuori dalla palizzata. Il miracolo Fiore crea un piccolo fiore sul terreno libero: dopo l'osservazione autonoma di tre abitanti viventi differenti, anche bambini, esso si trasforma una sola volta in un Albero da Frutto. Luce e Benedizione restano miracoli segnaposto; Predoni e combattimento non fanno parte di questa versione.
+
+Gli Alberi da Frutto non producono legna. Partono con tre mele, ne rigenerano una ogni trenta secondi fino a sei e forniscono mele agli adulti residenti.

@@ -357,7 +357,8 @@ export class UI {
 
         this.houseHudWood = this.createHouseHudValue(resources, "🪵", "Legna");
         this.houseHudWater = this.createHouseHudValue(resources, "💧", "Acqua");
-        this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Cibo");
+        this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Carne");
+        this.houseHudApples = this.createHouseHudValue(resources, "🍎", "Mele");
         this.houseHudOccupants = this.createHouseHudValue(resources, "👥", "Occupanti");
         this.houseHudCapacity = this.createHouseHudValue(resources, "🏠", "Capienza");
 
@@ -417,6 +418,7 @@ export class UI {
         this.houseHudWood.textContent = String(totals.wood);
         this.houseHudWater.textContent = String(totals.water);
         this.houseHudMeat.textContent = String(totals.meat);
+        this.houseHudApples.textContent = String(totals.apples || 0);
         this.houseHudOccupants.textContent = String(totals.occupants);
     }
 
@@ -437,7 +439,7 @@ export class UI {
     updateHeroDetails() {
         const hero = this.world.hero;
         const carrying = hero.carrying;
-        const labels = { wood: "Legna", water: "Acqua", meat: "Carne" };
+        const labels = { wood: "Legna", water: "Acqua", meat: "Carne", apple: "Mele" };
         this.heroCarrying.textContent = carrying.amount > 0 ? `Trasporta: ${carrying.amount} / ${hero.carryingCapacity} ${labels[carrying.type]}` : "Trasporta: nulla";
         const activities = { returningHome: "Torna a casa", depositingResources: "Deposita risorse", autonomousWandering: "Passeggia vicino casa" };
         this.heroActivity.textContent = `Attività: ${activities[hero.state] || "Disponibile"}`;

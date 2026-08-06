@@ -74,6 +74,13 @@ export class Input {
             return;
         }
 
+        const fruitTree = this.world.getFruitTreeAtWorldPosition(x, y);
+        if (fruitTree !== null) {
+            this.clearPointerFeedback();
+            if (!this.world.commandHeroToHarvestFruitTree(fruitTree)) { this.showPointerFeedback(this.world.lastResourceCommandReason); }
+            return;
+        }
+
         const waterSource = this.world.getWaterSourceAtWorldPosition(x, y);
 
         if (waterSource !== null) {
