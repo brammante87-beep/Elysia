@@ -347,7 +347,7 @@ export class World {
             villager !== this.hero &&
             villager.alive &&
             villager.isAdult &&
-            this.getAvailableBuilderWood(villager) >= 3 &&
+            this.canBuilderAffordHouse(villager) &&
             villager.ownedHouse === null &&
             (villager.house === null || this.isAdultChildLivingWithParents(villager)) &&
             !this.hero.partners.includes(villager) &&
@@ -360,9 +360,40 @@ export class World {
             villager.targetAnimal === null;
     }
 
-    getAvailableBuilderWood(builder) {
-        // Transitional fallback remains only for unhoused autonomous builders.
-        return builder.house === null ? builder.wood : builder.house.storage.wood;
+    canBuilderAffordHouse(builder) {
+        return this.getBuilderHouseWoodSource(builder) !== null;
+    }
+
+    getBuilderHouseWoodSource(builder) {
+        if (this.isAdultChildLivingWithParents(builder) && builder.house.storage.wood >= 3) {
+            return "parentHouseStorage";
+        }
+
+        if (builder.house === null && builder.carrying.type === "wood" && builder.carrying.amount >= 3) {
+            return "carriedWood";
+        }
+
+        return null;
+    }
+
+    spendBuilderHouseWood(builder) {
+        if (builder.houseWoodSource !== this.getBuilderHouseWoodSource(builder)) {
+            return false;
+        }
+
+        if (builder.houseWoodSource === "parentHouseStorage") {
+            if (builder.houseWoodHouse !== builder.house) { return false; }
+            builder.houseWoodHouse.storage.wood -= 3;
+            return true;
+        }
+
+        if (builder.houseWoodSource === "carriedWood") {
+            builder.carrying.amount -= 3;
+            if (builder.carrying.amount === 0) { builder.carrying.type = null; }
+            return true;
+        }
+
+        return false;
     }
 
     reserveAutonomousHouseBuilder(builder) {
@@ -376,6 +407,8 @@ export class World {
 
         this.clearVillagerAllWork(builder);
         this.autonomousHouseBuilder = builder;
+        builder.houseWoodSource = this.getBuilderHouseWoodSource(builder);
+        builder.houseWoodHouse = builder.houseWoodSource === "parentHouseStorage" ? builder.house : null;
         builder.houseSite = site;
         builder.houseBuildTimer = 0;
         builder.destination = null;
@@ -408,7 +441,9 @@ export class World {
         return builder !== null &&
             builder.alive &&
             builder.isAdult &&
-            this.getAvailableBuilderWood(builder) >= 3 &&
+            builder.houseWoodSource !== null &&
+            builder.houseWoodSource === this.getBuilderHouseWoodSource(builder) &&
+            (builder.houseWoodSource !== "parentHouseStorage" || builder.houseWoodHouse === builder.house) &&
             builder.ownedHouse === null &&
             (builder.house === null || this.isAdultChildLivingWithParents(builder)) &&
             !this.hero.partners.includes(builder) &&
@@ -442,11 +477,14 @@ export class World {
         }
 
         const previousHouse = builder.house;
+        if (!this.spendBuilderHouseWood(builder)) {
+            this.cancelAutonomousHouseBuild(builder);
+            return;
+        }
         const house = new House(builder.houseSite.x, builder.houseSite.y, builder);
         this.configureHouseForCurrentEra(house);
         this.assignHouseId(house);
         this.houses.push(house);
-        if (previousHouse !== null) { previousHouse.storage.wood -= 3; } else { builder.wood -= 3; }
         if (previousHouse !== null) {
             previousHouse.occupants = previousHouse.occupants.filter((occupant) => occupant !== builder);
         }
@@ -463,6 +501,8 @@ export class World {
     }
 
     releaseAutonomousHouseBuilder(builder) {
+        builder.houseWoodSource = null;
+        builder.houseWoodHouse = null;
         builder.houseSite = null;
         builder.houseBuildTimer = 0;
         builder.destination = null;
@@ -2313,7 +2353,7 @@ export class World {
         this.eraTransitionSequence = Math.max(0, Number(worldData.eraTransitionSequence) || 0);
     }
 
-    createPersonFromData(d) { const isChild = d.type === "child" || d.ageStage === "child"; const person = d.type === "hero" ? new Hero(d.name, d.x, d.y, d) : isChild ? new Child({ name: d.name, x: d.x, y: d.y, gender: d.gender, spriteKey: d.spriteKey }) : new Villager(d); const growth = this.getMigratedChildGrowth(d, isChild); Object.assign(person, { id: d.id, x: d.x, y: d.y, destination: d.destination, state: d.state || "idle", wood: d.wood || 0, water: d.water || 0, meat: d.meat || 0, alive: d.alive !== false, isAdult: d.isAdult, age: d.age, ageStage: d.ageStage, ageTimer: growth.ageTimer, ageDuration: growth.ageDuration, orientation: d.orientation, relationshipStyle: d.relationshipStyle, spriteKey: d.spriteKey, reservedForFertility: false, reservedForPartnership: false, reservedForAutonomousPartnership: false, targetTree: null, targetWaterSource: null, targetAnimal: null, relationshipGoal: null, partnerTarget: null, socialTimer: 0, actionTimer: 0, arrivalMarkerTimer: d.arrivalMarkerTimer || 0, autonomyUnlocked: d.type === "hero" ? (d.autonomyUnlocked ?? false) : false, carrying: { type: d.carrying?.type || null, amount: Math.min(3, d.carrying?.amount || 0) }, carryingCapacity: 3, depositTimer: 0, autonomousAction: false }); return person; }
+    createPersonFromData(d) { const isChild = d.type === "child" || d.ageStage === "child"; const person = d.type === "hero" ? new Hero(d.name, d.x, d.y, d) : isChild ? new Child({ name: d.name, x: d.x, y: d.y, gender: d.gender, spriteKey: d.spriteKey }) : new Villager(d); const growth = this.getMigratedChildGrowth(d, isChild); Object.assign(person, { id: d.id, x: d.x, y: d.y, destination: d.destination, state: d.state || "idle", wood: d.wood || 0, water: d.water || 0, meat: d.meat || 0, alive: d.alive !== false, isAdult: d.isAdult, age: d.age, ageStage: d.ageStage, ageTimer: growth.ageTimer, ageDuration: growth.ageDuration, orientation: d.orientation, relationshipStyle: d.relationshipStyle, spriteKey: d.spriteKey, reservedForFertility: false, reservedForPartnership: false, reservedForAutonomousPartnership: false, targetTree: null, targetWaterSource: null, targetAnimal: null, relationshipGoal: null, partnerTarget: null, socialTimer: 0, actionTimer: 0, arrivalMarkerTimer: d.arrivalMarkerTimer || 0, autonomyUnlocked: d.type === "hero" ? (d.autonomyUnlocked ?? false) : false, carrying: { type: d.carrying?.type || null, amount: Math.max(0, d.carrying?.amount || 0) }, carryingCapacity: 3, depositTimer: 0, autonomousAction: false }); return person; }
     migrateHouseholdResources(worldData) {
         if ((worldData.schemaVersion || 1) >= 2) {
             if (this.hero.children.length >= 1) { this.hero.autonomyUnlocked = true; }
