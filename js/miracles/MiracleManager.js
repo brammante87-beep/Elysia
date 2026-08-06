@@ -7,7 +7,7 @@ export class MiracleManager {
     getMiraclesForEra(worldEra) {
         return worldEra === "community"
             ? ["fertility", "flower", "light", "lightning", "blessing"]
-            : ["tree", "water", "animal", "house", "fertility", "flower", "lightning"];
+            : ["tree", "water", "animal", "house", "fertility", "mushroom", "flower", "lightning"];
     }
 
     isMiracleAvailable(miracle, worldEra) { return this.getMiraclesForEra(worldEra).includes(miracle); }
@@ -27,6 +27,7 @@ export class MiracleManager {
     cast(x, y, world) {
         if (!this.isMiracleAvailable(this.selectedMiracle, world.getCurrentEra())) { this.clearSelection(); return false; }
         if (this.selectedMiracle === "flower") { return this.castFlower(x, y, world); }
+        if (this.selectedMiracle === "mushroom") { return this.castMushroom(x, y, world); }
         if (this.selectedMiracle === "tree") { return world.addTreeAt(x, y); }
         if (this.selectedMiracle === "water") { return world.addWaterSourceAt(x, y); }
         if (this.selectedMiracle === "animal") { return world.addAnimalAt(x, y); }
@@ -46,6 +47,12 @@ export class MiracleManager {
             this.clearSelection();
             this.debug("Flower deselected", result);
         }
+        return result.success;
+    }
+
+    castMushroom(x, y, world) {
+        const result = world.placeMushroomAt(x, y);
+        if (result.success) { this.clearSelection(); }
         return result.success;
     }
 

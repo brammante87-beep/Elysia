@@ -19,6 +19,7 @@ export class Renderer {
         this.drawHouses();
         this.drawTrees();
         this.drawFlowers();
+        this.drawMushrooms();
         this.drawFruitTrees();
         this.drawWaterSources();
         this.drawAnimals();
@@ -291,6 +292,8 @@ export class Renderer {
             flower.render(this.context, sprite);
         });
     }
+
+    drawMushrooms() { (this.world.getMushrooms?.() || []).forEach((mushroom) => mushroom.render(this.context)); }
 
     debugFlower(message, details) {
         if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); }
