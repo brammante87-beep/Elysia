@@ -584,7 +584,8 @@ export class UI {
             house: "🏠",
             fertility: "💞",
             blessing: "✨",
-            animal: "🐾"
+            animal: "🐾",
+            mushroom: "🍄"
         };
 
         return icons[miracle];
@@ -600,7 +601,8 @@ export class UI {
             house: "House miracle",
             fertility: "Fertility miracle",
             animal: "Animal miracle",
-            blessing: "Blessing miracle"
+            blessing: "Blessing miracle",
+            mushroom: "Crea fungo"
         };
 
         return labels[miracle];
