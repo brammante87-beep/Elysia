@@ -40,5 +40,6 @@ export class Villager extends Entity {
         this.carrying = { type: null, amount: 0 };
         this.carryingCapacity = 3;
         this.depositTimer = 0;
+        this.lightningWarnings = Math.max(0, settings.lightningWarnings || 0);
     }
 }
