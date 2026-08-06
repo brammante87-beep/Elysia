@@ -78,7 +78,7 @@ class VillageUnlockPopulationTest {
     }
 
     verifyVillageFeatures(world) {
-        assert.equal(world.worldEra, "village");
+        assert.equal(world.worldEra, "community");
         assert.equal(world.villageTransformationCompleted, true);
         assert.equal(world.eraTransitionSequence, 1);
         assert.notEqual(world.villageBounds, null);

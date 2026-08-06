@@ -5,7 +5,7 @@ export class MiracleManager {
     }
 
     getMiraclesForEra(worldEra) {
-        return worldEra === "village"
+        return worldEra === "community"
             ? ["fertility", "flower", "light", "lightning", "blessing"]
             : ["tree", "water", "animal", "house", "fertility"];
     }
