@@ -27,6 +27,11 @@ export class Hero extends Entity {
         this.isAdult = true;
         this.alive = true;
         this.reservedForFertility = false;
+        this.autonomyUnlocked = false;
+        this.carrying = { type: null, amount: 0 };
+        this.carryingCapacity = 3;
+        this.depositTimer = 0;
+        this.autonomousAction = false;
     }
 
     getSpriteKey() {

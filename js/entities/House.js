@@ -12,5 +12,7 @@ export class House extends Entity {
         this.fertilityCooldown = 0;
         this.participants = [];
         this.pendingChild = null;
+        this.storage = { wood: 0, water: 0, meat: 0 };
+        this.depositFeedback = null;
     }
 }

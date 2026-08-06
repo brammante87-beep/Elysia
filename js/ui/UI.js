@@ -9,6 +9,8 @@ export class UI {
         this.houseHudWater = null;
         this.houseHudMeat = null;
         this.houseHudOccupants = null;
+        this.heroCarrying = null;
+        this.heroActivity = null;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -26,6 +28,8 @@ export class UI {
         this.houseHudWater = null;
         this.houseHudMeat = null;
         this.houseHudOccupants = null;
+        this.heroCarrying = null;
+        this.heroActivity = null;
     }
 
     showMainMenu(options) {
@@ -292,6 +296,10 @@ export class UI {
         this.houseHudOccupants = this.createHouseHudValue(resources, "👥", "Occupanti");
 
         this.houseHud.appendChild(resources);
+        this.heroCarrying = document.createElement("p");
+        this.heroActivity = document.createElement("p");
+        this.houseHud.appendChild(this.heroCarrying);
+        this.houseHud.appendChild(this.heroActivity);
         this.root.appendChild(this.houseHud);
         this.updateHouseHud();
     }
@@ -319,12 +327,14 @@ export class UI {
             this.houseHudTitle.textContent = "Nessuna casa";
             this.houseHud.hidden = false;
             this.setHouseHudTotals({ wood: 0, water: 0, meat: 0, occupants: 0 });
+            this.updateHeroDetails();
             return;
         }
 
         this.houseHudTitle.textContent = "Casa del Prescelto";
         this.houseHud.hidden = false;
         this.setHouseHudTotals(this.world.getHouseResourceTotals(house));
+        this.updateHeroDetails();
     }
 
     setHouseHudTotals(totals) {
@@ -332,6 +342,15 @@ export class UI {
         this.houseHudWater.textContent = String(totals.water);
         this.houseHudMeat.textContent = String(totals.meat);
         this.houseHudOccupants.textContent = String(totals.occupants);
+    }
+
+    updateHeroDetails() {
+        const hero = this.world.hero;
+        const carrying = hero.carrying;
+        const labels = { wood: "Legna", water: "Acqua", meat: "Carne" };
+        this.heroCarrying.textContent = carrying.amount > 0 ? `Trasporta: ${carrying.amount} / ${hero.carryingCapacity} ${labels[carrying.type]}` : "Trasporta: nulla";
+        const activities = { returningHome: "Torna a casa", depositingResources: "Deposita risorse", autonomousWandering: "Passeggia vicino casa" };
+        this.heroActivity.textContent = `Attività: ${activities[hero.state] || "Disponibile"}`;
     }
 
     createMiracleButton(miracle) {
