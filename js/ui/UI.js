@@ -478,6 +478,10 @@ export class UI {
                 this.miracleManager.select(miracle);
             }
 
+            if (miracle === "flower" && this.miracleManager.selectedMiracle === "flower" && globalThis.ELYSIA_DEBUG === true) {
+                console.debug("Flower toolbar selected");
+            }
+
             this.updateMiracleButtons();
             if (globalThis.ELYSIA_DEBUG === true) {
                 console.debug("[Elysia/UI] toolbar button clicked", {

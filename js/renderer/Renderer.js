@@ -275,12 +275,9 @@ export class Renderer {
     }
 
     drawFlowers() {
-        const sway = Math.sin(Date.now() / 500) * 1.5;
         this.world.getFlowers().forEach((flower) => {
-            this.context.strokeStyle = "#397447"; this.context.lineWidth = 2; this.context.beginPath(); this.context.moveTo(flower.x, flower.y + 7); this.context.lineTo(flower.x + sway, flower.y - 3); this.context.stroke();
-            this.context.fillStyle = ["#f472b6", "#fde047", "#a78bfa"][flower.spriteVariant];
-            for (let petal = 0; petal < 5; petal += 1) { const angle = petal * Math.PI * 0.4; this.context.beginPath(); this.context.arc(flower.x + sway + Math.cos(angle) * 4, flower.y - 5 + Math.sin(angle) * 4, 3, 0, Math.PI * 2); this.context.fill(); }
-            if (flower.activeObserver) { this.context.strokeStyle = "rgba(255,255,255,.8)"; this.context.beginPath(); this.context.arc(flower.x, flower.y - 5, 12, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, flower.observationProgress / 2)); this.context.stroke(); }
+            const sprite = this.assetLoader === null ? null : this.assetLoader.getImage("flower");
+            flower.render(this.context, sprite);
         });
     }
 
