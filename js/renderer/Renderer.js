@@ -4,8 +4,7 @@ export class Renderer {
         this.context = context;
         this.world = world;
         this.assetLoader = assetLoader;
-        this.context.imageSmoothingEnabled = true;
-        this.context.imageSmoothingQuality = "high";
+        this.context.imageSmoothingEnabled = false;
     }
 
     render() {
@@ -297,7 +296,7 @@ export class Renderer {
             return null;
         }
 
-        return this.assetLoader.getImage(spriteName);
+        return this.getLoadedSprite(spriteName);
     }
 
     drawGeometricTree(tree) {
@@ -361,6 +360,11 @@ export class Renderer {
 
     getSprite(spriteName) {
         if (this.assetLoader === null) { return null; }
+        return this.getLoadedSprite(spriteName);
+    }
+
+    getLoadedSprite(spriteName) {
+        if (!this.assetLoader.hasLoaded(spriteName)) { return null; }
         return this.assetLoader.getImage(spriteName);
     }
 
@@ -483,7 +487,7 @@ export class Renderer {
             return null;
         }
 
-        return this.assetLoader.getImage(hero.getSpriteKey());
+        return this.getLoadedSprite(hero.getSpriteKey());
     }
 
     drawVillager(villager) {
@@ -507,7 +511,7 @@ export class Renderer {
             return null;
         }
 
-        return this.assetLoader.getImage(villager.spriteKey);
+        return this.getLoadedSprite(villager.spriteKey);
     }
 
     drawGeometricEntity(entity) {

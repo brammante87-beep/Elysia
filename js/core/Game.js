@@ -4,7 +4,8 @@ import { Renderer } from "../renderer/Renderer.js";
 import { Input } from "../input/Input.js";
 import { UI } from "../ui/UI.js";
 import { MiracleManager } from "../miracles/MiracleManager.js";
-import { AssetLoader } from "../assets/AssetLoader.js";
+import { AssetManager } from "../assets/AssetManager.js";
+import { AssetCatalog } from "../assets/AssetCatalog.js";
 import { SaveManager } from "./SaveManager.js";
 import { TutorialManager } from "../tutorial/TutorialManager.js";
 
@@ -14,7 +15,7 @@ export class Game {
         this.context = this.canvas.getContext("2d");
         this.uiRoot = document.getElementById(uiId);
 
-        this.assetLoader = new AssetLoader();
+        this.assetLoader = new AssetManager();
         this.world = new World();
         this.renderer = new Renderer(this.canvas, this.context, this.world, this.assetLoader);
         this.miracleManager = new MiracleManager();
@@ -40,26 +41,8 @@ export class Game {
     }
 
     preloadAssets() {
-        this.assetLoader.preloadImages([
-            { name: "tree", source: "assets/sprites/trees/tree_01.svg" },
-            { name: "treeHit", source: "assets/sprites/trees/tree_01_hit.svg" },
-            { name: "waterSource", source: "assets/sprites/water/water_source_01.svg" },
-            { name: "waterSourceUse", source: "assets/sprites/water/water_source_01_use.svg" },
-            { name: "deer", source: "assets/sprites/animals/deer_01.svg" },
-            { name: "deerHit", source: "assets/sprites/animals/deer_01_hit.svg" },
-            { name: "chosenMale", source: "assets/sprites/villagers/chosen_male.svg" },
-            { name: "chosenFemale", source: "assets/sprites/villagers/chosen_female.svg" },
-            { name: "chosenNonbinary", source: "assets/sprites/villagers/chosen_nonbinary.svg" },
-            { name: "villager_male_01", source: "assets/sprites/villagers/villager_male_01.svg" },
-            { name: "villager_male_02", source: "assets/sprites/villagers/villager_male_02.svg" },
-            { name: "villager_female_01", source: "assets/sprites/villagers/villager_female_01.svg" },
-            { name: "villager_female_02", source: "assets/sprites/villagers/villager_female_02.svg" },
-            { name: "villager_nonbinary_01", source: "assets/sprites/villagers/villager_nonbinary_01.svg" },
-            { name: "villager_nonbinary_02", source: "assets/sprites/villagers/villager_nonbinary_02.svg" },
-            { name: "child_male_01", source: "assets/sprites/children/child_male_01.svg" },
-            { name: "child_female_01", source: "assets/sprites/children/child_female_01.svg" },
-            { name: "child_nonbinary_01", source: "assets/sprites/children/child_nonbinary_01.svg" }
-        ]);
+        AssetCatalog.getLegacyAliases().forEach((key, alias) => this.assetLoader.registerAlias(alias, key));
+        this.assetLoader.preloadImages(AssetCatalog.getEntries());
     }
 
     start() {
