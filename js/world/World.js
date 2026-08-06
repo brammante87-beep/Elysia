@@ -10,6 +10,9 @@ import { Well } from "../entities/Well.js";
 import { VillageBoundary } from "./VillageBoundary.js";
 
 export class World {
+    static VILLAGE_UNLOCK_POPULATION = 15;
+    static MAX_POPULATION = 32;
+
     constructor() {
         this.tileSize = 64;
         this.terrain = new Terrain(16, 10, this.tileSize);
@@ -587,7 +590,7 @@ export class World {
             !this.villagers.includes(owner) || !this.villagers.includes(arrival) || owner.partners.length > 0 || arrival.partners.length > 0 ||
             !this.hasPartnerCapacity(owner) || !this.hasPartnerCapacity(arrival) || !this.isTheoreticallyCompatiblePair(owner, arrival) ||
             owner.ownedHouse === null || owner.ownedHouse.owner !== owner || owner.house !== owner.ownedHouse ||
-            !this.canAddHouseOccupant(owner.ownedHouse) || this.getPopulationCount() > 32;
+            !this.canAddHouseOccupant(owner.ownedHouse) || this.getPopulationCount() > World.MAX_POPULATION;
     }
 
     clearIntendedPartnership(arrival) { arrival.intendedPartnerId = null; arrival.intendedPartner = null; }
@@ -2016,7 +2019,7 @@ export class World {
         return { tribe: "L'Alba della Vita", village: "La Comunità", faith: "La Fede" }[era] || "L'Alba della Vita";
     }
 
-    canAdvanceToVillage() { return this.worldEra === "tribe" && this.getPopulationCount() >= 32; }
+    canAdvanceToVillage() { return this.worldEra === "tribe" && this.getPopulationCount() >= World.VILLAGE_UNLOCK_POPULATION; }
 
     checkEraProgression() { if (this.canAdvanceToVillage()) { this.enterVillageEra(); } }
 
@@ -2126,7 +2129,7 @@ export class World {
     getFertilityIneligibilityReason(house) {
         if (!this.houses.includes(house)) { return "La casa non esiste più"; }
         if (this.dayPhase === "night") { return "La fertilità non può essere invocata durante la notte"; }
-        if (this.getPopulationCount() >= 32) { return "La popolazione ha raggiunto il limite"; }
+        if (this.getPopulationCount() >= World.MAX_POPULATION) { return "La popolazione ha raggiunto il limite"; }
         if (!this.canAddHouseOccupant(house)) { return "La casa non può accogliere altri abitanti"; }
         if (house.fertilityInProgress) { return "La casa è già occupata"; }
         if (house.fertilityCooldown > 0) { return "La casa ha bisogno di tempo"; }
@@ -2230,7 +2233,7 @@ export class World {
     }
 
     completeFertilityEvent(house) {
-        if (this.getPopulationCount() >= 32) { this.cancelFertilityEvent(house); this.feedbackMessages.push({ text: "La popolazione ha raggiunto il limite", timer: 3 }); return false; }
+        if (this.getPopulationCount() >= World.MAX_POPULATION) { this.cancelFertilityEvent(house); this.feedbackMessages.push({ text: "La popolazione ha raggiunto il limite", timer: 3 }); return false; }
         if (!this.canAddHouseOccupant(house)) { this.cancelFertilityEvent(house); this.feedbackMessages.push({ text: "La casa non può accogliere altri abitanti", timer: 3 }); return false; }
         const child = this.createChildForHouse(house);
         this.assignEntityId(child);
@@ -2531,7 +2534,7 @@ export class World {
     }
 
     updateAdultArrivals(delta) {
-        if (this.arrivalsUsed >= this.maxArrivals || this.getPopulationCount() >= 32 || this.arrivalInProgress) { return; }
+        if (this.arrivalsUsed >= this.maxArrivals || this.getPopulationCount() >= World.MAX_POPULATION || this.arrivalInProgress) { return; }
         this.arrivalCooldown = Math.max(0, this.arrivalCooldown - delta);
         this.nextArrivalCheckTimer = Math.max(0, this.nextArrivalCheckTimer - delta);
         if (this.arrivalCooldown > 0 || this.nextArrivalCheckTimer > 0) { return; }
@@ -2540,7 +2543,7 @@ export class World {
     }
 
     tryCreateAdultArrival() {
-        if (this.arrivalsUsed >= this.maxArrivals || this.getPopulationCount() >= 32 || this.arrivalInProgress) { return false; }
+        if (this.arrivalsUsed >= this.maxArrivals || this.getPopulationCount() >= World.MAX_POPULATION || this.arrivalInProgress) { return false; }
         const target = this.selectArrivalTarget(); const spawn = this.findArrivalSpawnPosition();
         if (target === null || spawn === null) { return false; }
         const identity = this.generateCompatibleArrivalIdentity(target);
@@ -2638,10 +2641,10 @@ export class World {
         const hasEraData = typeof worldData.worldEra === "string";
         if (!hasEraData) {
             const population = this.getPopulationCount();
-            this.worldEra = population >= 32 ? "village" : "tribe";
-            this.villageUnlocked = population >= 32;
-            this.villageUnlockedAtPopulation = population >= 32 ? population : null;
-            this.eraTransitionSequence = population >= 32 ? 1 : 0;
+            this.worldEra = population >= World.VILLAGE_UNLOCK_POPULATION ? "village" : "tribe";
+            this.villageUnlocked = population >= World.VILLAGE_UNLOCK_POPULATION;
+            this.villageUnlockedAtPopulation = population >= World.VILLAGE_UNLOCK_POPULATION ? population : null;
+            this.eraTransitionSequence = population >= World.VILLAGE_UNLOCK_POPULATION ? 1 : 0;
             return;
         }
         this.worldEra = ["tribe", "village", "faith"].includes(worldData.worldEra) ? worldData.worldEra : "tribe";

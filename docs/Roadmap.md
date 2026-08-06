@@ -27,7 +27,8 @@
 ## Alpha 1.3 — Era System and Compact Settlement
 
 - Add the three planned Era identities: Tribe, Village, and Faith.
-- Advance permanently from Tribe to Village at 32 living inhabitants.
+- Advance permanently from Tribe to Village at 15 living inhabitants while
+  retaining the global population maximum of 32.
 - Cluster autonomous Houses around the Prescelto's House.
 - Expose calculated settlement bounds for later Village features.
 - Preserve and migrate Era state through save/load.
@@ -38,4 +39,4 @@
   future work; Alpha 1.3 does not claim or create these systems.
 
 ## Alpha 1.5 - Village Transformation
-Completata la trasformazione una tantum a 32 abitanti: palizzata e cancello, Pozzo illimitato, Case migliorate con capacità 6, sicurezza dei bambini e barra Miracoli specifica dell'Era. Flower, Light, Lightning e Blessing restano intenzionalmente non funzionali; Faith e i sistemi di conflitto sono rinviati.
+Completata la trasformazione una tantum a 15 abitanti: palizzata e cancello, Pozzo illimitato, Case migliorate con capacità 6, sicurezza dei bambini e barra Miracoli specifica dell'Era. La crescita prosegue fino al limite globale di 32. Flower, Light, Lightning e Blessing restano intenzionalmente non funzionali; Faith e i sistemi di conflitto sono rinviati.
