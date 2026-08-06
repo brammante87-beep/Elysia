@@ -317,7 +317,7 @@ export class World {
     isHouselessAdult(person) { return person !== null && person.alive && person.isAdult && !this.isValidResidence(person); }
     getAllowedAutonomousResourceTypes(person) {
         if (person === null || !person.alive || !person.isAdult) { return []; }
-        return this.isHouselessAdult(person) ? ["wood"] : this.worldEra === "village" ? ["wood", "water", "meat", "apple"] : ["wood", "water", "meat"];
+        return this.isHouselessAdult(person) ? ["wood"] : this.worldEra === "community" ? ["wood", "water", "meat", "apple"] : ["wood", "water", "meat"];
     }
     canAutonomouslyGatherResource(person, resourceType) {
         return this.getAllowedAutonomousResourceTypes(person).includes(resourceType);
@@ -2106,7 +2106,7 @@ export class World {
     getCurrentEra() { return this.worldEra; }
 
     getEraDisplayName(era = this.worldEra) {
-        return { tribe: "L'Alba della Vita", village: "La Comunità", faith: "La Fede" }[era] || "L'Alba della Vita";
+        return { tribe: "L'Alba della Vita", community: "La Comunità", faith: "La Fede" }[era] || "L'Alba della Vita";
     }
 
     canAdvanceToVillage() { return this.worldEra === "tribe" && this.getPopulationCount() >= World.VILLAGE_UNLOCK_POPULATION; }
@@ -2115,7 +2115,7 @@ export class World {
 
     enterVillageEra() {
         if (!this.canAdvanceToVillage()) { return false; }
-        this.worldEra = "village";
+        this.worldEra = "community";
         this.villageUnlocked = true;
         this.villageUnlockedAtPopulation = this.getPopulationCount();
         this.eraTransitionSequence += 1;
@@ -2127,7 +2127,7 @@ export class World {
     }
 
     performVillageTransformation(silent = false) {
-        if (this.villageTransformationCompleted || this.worldEra !== "village" || this.houses.length === 0) { return false; }
+        if (this.villageTransformationCompleted || this.worldEra !== "community" || this.houses.length === 0) { return false; }
         this.villageBounds = this.getSettlementBounds(105);
         this.villageGate = { side: "bottom", x: this.villageBounds.centerX, y: this.villageBounds.maxY, width: 58, open: true };
         this.villageBoundary = new VillageBoundary(this.villageBounds, this.villageGate);
@@ -2213,7 +2213,7 @@ export class World {
     getRandomAnimalRespawnDelay() { return 60 + Math.random() * 30; }
 
     updateNaturalResourceRegeneration(delta) {
-        if (this.worldEra !== "village" || !this.villageTransformationCompleted) { return; }
+        if (this.worldEra !== "community" || !this.villageTransformationCompleted) { return; }
         if (this.trees.length < 2) {
             this.treeRespawnTimer -= delta;
             if (this.treeRespawnTimer <= 0) { const position = this.findNaturalResourceSpawnPosition("tree"); if (position) { this.addTreeAt(position.x, position.y); } this.treeRespawnTimer = this.getRandomTreeRespawnDelay(); }
@@ -2292,7 +2292,7 @@ export class World {
     getHouseCapacity(house) { return house?.capacity || (this.villageTransformationCompleted ? House.VILLAGE_CAPACITY : House.TRIBE_CAPACITY); }
     canAddHouseOccupant(house) { return this.getLivingHouseResidents(house).length < this.getHouseCapacity(house); }
 
-    hasReachedVillageEra() { return this.villageUnlocked || this.worldEra === "village" || this.worldEra === "faith"; }
+    hasReachedVillageEra() { return this.villageUnlocked || this.worldEra === "community" || this.worldEra === "faith"; }
 
     getSettlementBounds(margin = 80) {
         if (this.houses.length === 0) { return null; }
@@ -2879,7 +2879,7 @@ export class World {
             this.normalizeDependentChildrenInsideVillage();
             return;
         }
-        if (this.worldEra === "village") { this.performVillageTransformation(true); }
+        if (this.worldEra === "community") { this.performVillageTransformation(true); }
         if (this.worldEra === "tribe") { this.houses.forEach((house) => { house.capacity = House.TRIBE_CAPACITY; house.upgraded = false; }); }
     }
 
@@ -2899,17 +2899,20 @@ export class World {
         }
     }
 
+    normalizeEra(era) { return era === "village" ? "community" : era; }
+
     loadEraProgression(worldData) {
         const hasEraData = typeof worldData.worldEra === "string";
         if (!hasEraData) {
             const population = this.getPopulationCount();
-            this.worldEra = population >= World.VILLAGE_UNLOCK_POPULATION ? "village" : "tribe";
+            this.worldEra = population >= World.VILLAGE_UNLOCK_POPULATION ? "community" : "tribe";
             this.villageUnlocked = population >= World.VILLAGE_UNLOCK_POPULATION;
             this.villageUnlockedAtPopulation = population >= World.VILLAGE_UNLOCK_POPULATION ? population : null;
             this.eraTransitionSequence = population >= World.VILLAGE_UNLOCK_POPULATION ? 1 : 0;
             return;
         }
-        this.worldEra = ["tribe", "village", "faith"].includes(worldData.worldEra) ? worldData.worldEra : "tribe";
+        const savedEra = this.normalizeEra(worldData.worldEra);
+        this.worldEra = ["tribe", "community", "faith"].includes(savedEra) ? savedEra : "tribe";
         this.villageUnlocked = worldData.villageUnlocked === true || this.worldEra !== "tribe";
         this.villageUnlockedAtPopulation = worldData.villageUnlockedAtPopulation ?? (this.villageUnlocked ? this.getPopulationCount() : null);
         this.eraTransitionSequence = Math.max(0, Number(worldData.eraTransitionSequence) || 0);

@@ -21,9 +21,9 @@ class TestCanvas extends EventTarget {
 function createVillage() {
     const world = new World();
     world.initialize({ name: "Blu" });
-    world.worldEra = "village";
+    world.worldEra = "community";
     const miracles = new MiracleManager();
-    miracles.refreshAvailableMiracles("village");
+    miracles.refreshAvailableMiracles("community");
     return { world, miracles };
 }
 
@@ -131,9 +131,9 @@ test("Flowers and Lightning warnings retain save compatibility", () => {
     assert.equal(loaded.villagers[0].lightningWarnings, 2);
 });
 
-test("Village toolbar miracle keys exactly match MiracleManager keys", () => {
+test("Community toolbar miracle keys exactly match MiracleManager keys", () => {
     const miracles = new MiracleManager();
-    miracles.refreshAvailableMiracles("village");
+    miracles.refreshAvailableMiracles("community");
     assert.deepEqual(miracles.availableMiracles, ["fertility", "flower", "light", "lightning", "blessing"]);
 });
 
