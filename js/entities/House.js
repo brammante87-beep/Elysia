@@ -2,12 +2,16 @@ import { Entity } from "./Entity.js";
 
 export class House extends Entity {
     static RESOURCE_COLLECTION_TARGETS = { wood: 30, water: 30, meat: 30 };
+    static TRIBE_CAPACITY = 4;
+    static VILLAGE_CAPACITY = 6;
 
     constructor(x, y, owner, resourceCollectionTargets = House.RESOURCE_COLLECTION_TARGETS) {
         super("House", x, y, "#d9b88f");
         this.owner = owner;
         this.occupants = [owner];
         this.radius = 30;
+        this.capacity = House.TRIBE_CAPACITY;
+        this.upgraded = false;
         this.fertilityInProgress = false;
         this.fertilityPhase = null;
         this.fertilityTimer = 0;

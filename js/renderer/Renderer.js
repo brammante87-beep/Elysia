@@ -11,12 +11,14 @@ export class Renderer {
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawVillageWell();
         this.drawHouses();
         this.drawTrees();
         this.drawWaterSources();
         this.drawAnimals();
         this.drawDestinationMarker();
         this.drawEntities();
+        this.drawVillageBoundary();
         this.drawEntityNames();
         this.drawEntityFeedback();
         this.drawDayNightOverlay();
@@ -129,19 +131,26 @@ export class Renderer {
     drawHouse(house) {
         this.context.fillStyle = "rgba(0, 0, 0, 0.22)";
         this.context.beginPath();
-        this.context.ellipse(house.x, house.y + 21, 31, 10, 0, 0, Math.PI * 2);
+        this.context.ellipse(house.x, house.y + 21, house.upgraded ? 37 : 31, 10, 0, 0, Math.PI * 2);
         this.context.fill();
 
-        this.context.fillStyle = "#7b3f24";
+        this.context.fillStyle = house.upgraded ? "#63341f" : "#7b3f24";
         this.context.beginPath();
-        this.context.moveTo(house.x - 35, house.y - 4);
-        this.context.lineTo(house.x, house.y - 35);
-        this.context.lineTo(house.x + 35, house.y - 4);
+        const roofWidth = house.upgraded ? 41 : 35;
+        const roofTop = house.upgraded ? 40 : 35;
+        this.context.moveTo(house.x - roofWidth, house.y - 4);
+        this.context.lineTo(house.x, house.y - roofTop);
+        this.context.lineTo(house.x + roofWidth, house.y - 4);
         this.context.closePath();
         this.context.fill();
 
         this.context.fillStyle = "#e4bd86";
         this.context.fillRect(house.x - 25, house.y - 4, 50, 34);
+        if (house.upgraded) {
+            this.context.strokeStyle = "#75502f"; this.context.lineWidth = 4;
+            this.context.strokeRect(house.x - 27, house.y - 5, 54, 36);
+            this.context.fillStyle = "#8b6a46"; this.context.fillRect(house.x - 31, house.y + 29, 62, 5);
+        }
 
         this.context.fillStyle = this.world.dayPhase === "night" ? "#ffd978" : "#8ed1df";
         this.context.fillRect(house.x - 19, house.y + 5, 10, 9);
@@ -164,6 +173,28 @@ export class Renderer {
             this.drawHouseFertilityFeedback(house);
         }
         if (house.depositFeedback !== null) { this.drawDepositFeedback(house); }
+    }
+
+    drawVillageWell() {
+        const well = this.world.getVillageWell();
+        if (well === null) { return; }
+        const context = this.context;
+        context.fillStyle = "rgba(0,0,0,0.2)"; context.beginPath(); context.ellipse(well.x, well.y + 14, 29, 10, 0, 0, Math.PI * 2); context.fill();
+        context.fillStyle = "#8b7763"; context.beginPath(); context.arc(well.x, well.y, well.radius, 0, Math.PI * 2); context.fill();
+        context.strokeStyle = "#554538"; context.lineWidth = 5; context.stroke();
+        context.fillStyle = "#3b91b5"; context.beginPath(); context.arc(well.x, well.y, well.radius - 7, 0, Math.PI * 2); context.fill();
+        context.strokeStyle = "#69472d"; context.lineWidth = 5; context.beginPath(); context.moveTo(well.x - 19, well.y); context.lineTo(well.x - 19, well.y - 34); context.lineTo(well.x + 19, well.y - 34); context.lineTo(well.x + 19, well.y); context.stroke();
+    }
+
+    drawVillageBoundary() {
+        const boundary = this.world.getVillageBoundary();
+        if (boundary === null) { return; }
+        const b = boundary.bounds; const g = boundary.gate; const context = this.context;
+        context.save(); context.strokeStyle = "rgba(0,0,0,0.2)"; context.lineWidth = 11; context.strokeRect(b.minX + 2, b.minY + 3, b.width, b.height);
+        context.strokeStyle = "#6f4828"; context.lineWidth = 7; context.setLineDash([8, 4]);
+        context.beginPath(); context.moveTo(b.minX, b.minY); context.lineTo(b.maxX, b.minY); context.moveTo(b.minX, b.minY); context.lineTo(b.minX, b.maxY); context.moveTo(b.maxX, b.minY); context.lineTo(b.maxX, b.maxY);
+        context.moveTo(b.minX, b.maxY); context.lineTo(g.x - g.width / 2, b.maxY); context.moveTo(g.x + g.width / 2, b.maxY); context.lineTo(b.maxX, b.maxY); context.stroke(); context.setLineDash([]);
+        context.fillStyle = "#8b5a31"; context.fillRect(g.x - g.width / 2, g.y - 5, 7, 13); context.fillRect(g.x + g.width / 2 - 7, g.y - 5, 7, 13); context.restore();
     }
 
     drawHouseName(house) {

@@ -36,3 +36,6 @@
 
 - Palisade, gate, well, Faith mechanics, toolbar replacement, and raiders remain
   future work; Alpha 1.3 does not claim or create these systems.
+
+## Alpha 1.5 - Village Transformation
+Completata la trasformazione una tantum a 32 abitanti: palizzata e cancello, Pozzo illimitato, Case migliorate con capacità 6, sicurezza dei bambini e barra Miracoli specifica dell'Era. Flower, Light, Lightning e Blessing restano intenzionalmente non funzionali; Faith e i sistemi di conflitto sono rinviati.
