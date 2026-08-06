@@ -14,6 +14,8 @@ export class UI {
         this.villageStatistics = null;
         this.statisticsEra = null;
         this.statisticsPopulation = null;
+        this.statisticsDay = null;
+        this.statisticsPhase = null;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -36,6 +38,8 @@ export class UI {
         this.villageStatistics = null;
         this.statisticsEra = null;
         this.statisticsPopulation = null;
+        this.statisticsDay = null;
+        this.statisticsPhase = null;
     }
 
     showMainMenu(options) {
@@ -289,7 +293,15 @@ export class UI {
         population.appendChild(document.createTextNode("Abitanti: "));
         this.statisticsPopulation = document.createElement("span");
         population.appendChild(this.statisticsPopulation);
-        this.villageStatistics.append(title, era, population);
+        const day = document.createElement("p");
+        day.appendChild(document.createTextNode("Giorno: "));
+        this.statisticsDay = document.createElement("span");
+        day.appendChild(this.statisticsDay);
+        const phase = document.createElement("p");
+        phase.appendChild(document.createTextNode("Fase: "));
+        this.statisticsPhase = document.createElement("span");
+        phase.appendChild(this.statisticsPhase);
+        this.villageStatistics.append(title, era, population, day, phase);
         this.root.appendChild(this.villageStatistics);
         this.updateVillageStatistics();
     }
@@ -298,6 +310,8 @@ export class UI {
         if (this.villageStatistics === null || this.world === null) { return; }
         this.statisticsEra.textContent = this.world.getEraDisplayName();
         this.statisticsPopulation.textContent = String(this.world.getPopulationCount());
+        this.statisticsDay.textContent = String(this.world.dayNumber);
+        this.statisticsPhase.textContent = this.world.getDayPhaseLabel();
     }
 
     showMiracleToolbar() {
@@ -331,12 +345,18 @@ export class UI {
 
         this.houseHudWood = this.createHouseHudValue(resources, "🪵", "Legna");
         this.houseHudWater = this.createHouseHudValue(resources, "💧", "Acqua");
-        this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Carne");
+        this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Cibo");
         this.houseHudOccupants = this.createHouseHudValue(resources, "👥", "Occupanti");
 
         this.houseHud.appendChild(resources);
         this.heroCarrying = document.createElement("p");
         this.heroActivity = document.createElement("p");
+        this.houseNightCost = document.createElement("p");
+        this.houseNightPhase = document.createElement("p");
+        this.houseLastNight = document.createElement("p");
+        this.houseHud.appendChild(this.houseNightCost);
+        this.houseHud.appendChild(this.houseNightPhase);
+        this.houseHud.appendChild(this.houseLastNight);
         this.houseHud.appendChild(this.heroCarrying);
         this.houseHud.appendChild(this.heroActivity);
         this.root.appendChild(this.houseHud);
@@ -365,14 +385,13 @@ export class UI {
         if (house === null) {
             this.houseHudTitle.textContent = "Nessuna casa";
             this.houseHud.hidden = false;
-            this.setHouseHudTotals({ wood: 0, water: 0, meat: 0, occupants: 0 });
+            this.applyHouseHudSummary(this.world.getHouseHudSummary(null));
             this.updateHeroDetails();
             return;
         }
 
-        this.houseHudTitle.textContent = "Casa del Prescelto";
         this.houseHud.hidden = false;
-        this.setHouseHudTotals(this.world.getHouseResourceTotals(house));
+        this.applyHouseHudSummary(this.world.getHouseHudSummary(house));
         this.updateHeroDetails();
     }
 
@@ -381,6 +400,14 @@ export class UI {
         this.houseHudWater.textContent = String(totals.water);
         this.houseHudMeat.textContent = String(totals.meat);
         this.houseHudOccupants.textContent = String(totals.occupants);
+    }
+
+    applyHouseHudSummary(summary) {
+        this.houseHudTitle.textContent = summary.title;
+        this.setHouseHudTotals(summary.totals);
+        this.houseNightCost.textContent = `Prossima notte: legna -${summary.cost.wood}, acqua -${summary.cost.water}, cibo -${summary.cost.food}`;
+        this.houseNightPhase.textContent = summary.phaseText;
+        this.houseLastNight.textContent = summary.lastNightText;
     }
 
     updateHeroDetails() {

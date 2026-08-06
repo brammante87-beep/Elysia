@@ -14,5 +14,18 @@ export class House extends Entity {
         this.pendingChild = null;
         this.storage = { wood: 0, water: 0, meat: 0 };
         this.depositFeedback = null;
+        this.lastNightResult = null;
+    }
+
+    getFoodAmount() {
+        // Food is intentionally abstracted here so future food sources can be
+        // added without changing the nightly household system.
+        return Math.max(0, this.storage.meat || 0);
+    }
+
+    consumeFood(amount) {
+        const consumed = Math.min(this.getFoodAmount(), Math.max(0, amount));
+        this.storage.meat = this.getFoodAmount() - consumed;
+        return consumed;
     }
 }
