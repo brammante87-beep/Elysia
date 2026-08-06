@@ -11,6 +11,9 @@ export class UI {
         this.houseHudOccupants = null;
         this.heroCarrying = null;
         this.heroActivity = null;
+        this.villageStatistics = null;
+        this.statisticsEra = null;
+        this.statisticsPopulation = null;
 
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape") {
@@ -30,6 +33,9 @@ export class UI {
         this.houseHudOccupants = null;
         this.heroCarrying = null;
         this.heroActivity = null;
+        this.villageStatistics = null;
+        this.statisticsEra = null;
+        this.statisticsPopulation = null;
     }
 
     showMainMenu(options) {
@@ -259,6 +265,39 @@ export class UI {
         message.textContent = text;
         this.root.appendChild(message);
         window.setTimeout(() => { message.remove(); }, 2500);
+    }
+
+    showEraFeedback(displayName) {
+        const message = document.createElement("div");
+        message.className = "eraFeedbackMessage";
+        message.textContent = `Una nuova Era è iniziata: ${displayName}`;
+        this.root.appendChild(message);
+        window.setTimeout(() => { message.remove(); }, 4000);
+    }
+
+    showVillageStatistics() {
+        if (this.villageStatistics !== null) { return; }
+        this.villageStatistics = document.createElement("section");
+        this.villageStatistics.id = "villageStatistics";
+        const title = document.createElement("h2");
+        title.textContent = "Statistiche del villaggio";
+        const era = document.createElement("p");
+        era.appendChild(document.createTextNode("Era: "));
+        this.statisticsEra = document.createElement("span");
+        era.appendChild(this.statisticsEra);
+        const population = document.createElement("p");
+        population.appendChild(document.createTextNode("Abitanti: "));
+        this.statisticsPopulation = document.createElement("span");
+        population.appendChild(this.statisticsPopulation);
+        this.villageStatistics.append(title, era, population);
+        this.root.appendChild(this.villageStatistics);
+        this.updateVillageStatistics();
+    }
+
+    updateVillageStatistics() {
+        if (this.villageStatistics === null || this.world === null) { return; }
+        this.statisticsEra.textContent = this.world.getEraDisplayName();
+        this.statisticsPopulation.textContent = String(this.world.getPopulationCount());
     }
 
     showMiracleToolbar() {

@@ -2,14 +2,23 @@
 
 Elysia is planned as a god-game village simulation. The player will eventually influence a small world through miracles and observe villagers responding to the environment.
 
-## Alpha 0.1 Goal
+## Era progression
 
-The first foundation proves only the rendering and simulation base:
+Progression uses stable internal Era keys. The three planned Eras are `tribe`
+(**L'Alba della Vita**), `village` (**La Comunità**) and `faith` (**La Fede**).
+The current Alpha 1.3 milestone implements only the permanent Tribe-to-Village
+transition, triggered when the living population reaches 32.
 
-- a full-window canvas;
-- generated terrain with sea, beach, and grass;
-- one Hero;
-- two Villagers;
-- all three characters visible immediately when the game starts.
+Entering the Village Era currently records the milestone, gives temporary
+feedback, and saves the game. It deliberately does not transform buildings or
+unlock new miracles.
 
-Menus, miracles, AI, resources, houses, families, camera, zoom, and animations are intentionally outside Alpha 0.1.
+## Settlement shape
+
+The Prescelto's House is the permanent center of the settlement. Autonomous
+Houses are placed organically in concentric bands no farther than 420 world
+pixels from it, with safe spacing from Houses, resources, and inhabitants.
+Rectangular settlement bounds are derived from all House collision areas for
+future Village systems.
+
+Palisade, gate, well, Faith, toolbar replacement, and raiders are not implemented.

@@ -243,6 +243,41 @@
     pointer-events: none;
 }
 
+.eraFeedbackMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    max-width: calc(100% - 32px);
+    padding: 16px 22px;
+    border-radius: 12px;
+    background: rgba(16, 24, 32, 0.92);
+    color: #fff4c7;
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 700;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+#villageStatistics {
+    position: absolute;
+    top: max(54px, calc(env(safe-area-inset-top) + 54px));
+    left: 12px;
+    min-width: 190px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(16, 24, 32, 0.82);
+    color: #fff;
+    pointer-events: none;
+}
+
+#villageStatistics h2,
+#villageStatistics p { margin: 0; }
+
+#villageStatistics h2 { margin-bottom: 5px; font-size: 14px; }
+#villageStatistics p { font-size: 13px; }
+
 .menuPanel .primaryButton + .primaryButton {
     margin-top: 12px;
 }

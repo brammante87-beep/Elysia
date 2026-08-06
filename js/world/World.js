@@ -36,6 +36,11 @@ export class World {
         this.feedbackMessages = [];
         this.eventLog = [];
         this.onAutosaveNeeded = null;
+        this.onEraChanged = null;
+        this.worldEra = "tribe";
+        this.villageUnlocked = false;
+        this.villageUnlockedAtPopulation = null;
+        this.eraTransitionSequence = 0;
     }
 
     initialize(settings = {}) {
@@ -61,6 +66,10 @@ export class World {
         this.arrivalInProgress = false;
         this.feedbackMessages = [];
         this.eventLog = [];
+        this.worldEra = "tribe";
+        this.villageUnlocked = false;
+        this.villageUnlockedAtPopulation = null;
+        this.eraTransitionSequence = 0;
         this.villagers = [
             new Villager({
                 name: "Mira",
@@ -91,6 +100,7 @@ export class World {
     }
 
     update(delta) {
+        this.checkEraProgression();
         this.unlockHeroAutonomyIfEligible();
         this.updateHero(delta);
         this.updateFertilityEvents(delta);
@@ -183,7 +193,7 @@ export class World {
     }
 
     reserveAutonomousHouseBuilder(builder) {
-        const site = this.findAutonomousHouseSite(builder);
+        const site = this.findCompactHouseSite(builder);
 
         if (site === null) {
             builder.state = "idle";
@@ -231,7 +241,7 @@ export class World {
             !this.hero.partners.includes(builder) &&
             builder.houseSite !== null &&
             this.houses.length < this.getMaximumHouseCountForPopulation(this.getPopulationCount()) &&
-            this.canPlaceAutonomousHouseAt(builder.houseSite.x, builder.houseSite.y, builder);
+            this.isValidCompactHouseSite(builder.houseSite.x, builder.houseSite.y, builder);
     }
 
     moveBuilderToHouseSite(builder, delta) {
@@ -522,16 +532,39 @@ export class World {
             this.areCharactersMutuallyCompatible(owner, candidate);
     }
 
-    findAutonomousHouseSite(builder) {
-        for (let attempt = 0; attempt < 50; attempt += 1) {
-            const site = this.getRandomGrassHouseSite();
+    findAutonomousHouseSite(builder) { return this.findCompactHouseSite(builder); }
 
-            if (this.canPlaceAutonomousHouseAt(site.x, site.y, builder)) {
-                return site;
-            }
+    findCompactHouseSite(builder) {
+        if (this.getSettlementCenterHouse() === null) { return null; }
+        return this.searchCompactHouseSiteInBand(builder, 140, 220, 30) ||
+            this.searchCompactHouseSiteInBand(builder, 220, 320, 30) ||
+            this.searchCompactHouseSiteInBand(builder, 320, 420, 40);
+    }
+
+    getSettlementCenterHouse() {
+        return this.hero === null ? null : this.hero.ownedHouse;
+    }
+
+    searchCompactHouseSiteInBand(builder, minDistance, maxDistance, attempts) {
+        const center = this.getSettlementCenterHouse();
+        if (center === null) { return null; }
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = minDistance + Math.random() * (maxDistance - minDistance);
+            const site = { x: center.x + Math.cos(angle) * distance, y: center.y + Math.sin(angle) * distance };
+            if (this.isValidCompactHouseSite(site.x, site.y, builder)) { return site; }
         }
-
         return null;
+    }
+
+    isValidCompactHouseSite(x, y, builder) {
+        const distance = this.getDistanceFromSettlementCenter(x, y);
+        return distance !== null && distance <= 420 && this.canPlaceAutonomousHouseAt(x, y, builder);
+    }
+
+    getDistanceFromSettlementCenter(x, y) {
+        const center = this.getSettlementCenterHouse();
+        return center === null ? null : Math.hypot(center.x - x, center.y - y);
     }
 
     getRandomGrassHouseSite() {
@@ -545,7 +578,8 @@ export class World {
     canPlaceAutonomousHouseAt(x, y, builder) {
         const house = new House(x, y, builder);
 
-        return this.contains(x, y) &&
+        return x - house.radius >= 0 && y - house.radius >= 0 &&
+            x + house.radius <= this.getWidth() && y + house.radius <= this.getHeight() &&
             this.terrain.isGrassAtWorldPosition(x, y) &&
             this.houses.every((existingHouse) => Math.hypot(existingHouse.x - x, existingHouse.y - y) >= 120) &&
             !this.overlapsAnyTree(house) &&
@@ -1446,7 +1480,46 @@ export class World {
     }
 
     getPopulationCount() {
-        return (this.hero === null ? 0 : 1) + this.villagers.length;
+        return (this.hero !== null && this.hero.alive ? 1 : 0) + this.villagers.filter((villager) => villager.alive).length;
+    }
+
+    getCurrentEra() { return this.worldEra; }
+
+    getEraDisplayName(era = this.worldEra) {
+        return { tribe: "L'Alba della Vita", village: "La Comunità", faith: "La Fede" }[era] || "L'Alba della Vita";
+    }
+
+    canAdvanceToVillage() { return this.worldEra === "tribe" && this.getPopulationCount() >= 32; }
+
+    checkEraProgression() { if (this.canAdvanceToVillage()) { this.enterVillageEra(); } }
+
+    enterVillageEra() {
+        if (!this.canAdvanceToVillage()) { return false; }
+        this.worldEra = "village";
+        this.villageUnlocked = true;
+        this.villageUnlockedAtPopulation = this.getPopulationCount();
+        this.eraTransitionSequence += 1;
+        this.eventLog.push("La tribù è diventata un villaggio.");
+        if (this.onEraChanged !== null) { this.onEraChanged(this.getEraDisplayName()); }
+        this.requestAutosave();
+        return true;
+    }
+
+    hasReachedVillageEra() { return this.villageUnlocked || this.worldEra === "village" || this.worldEra === "faith"; }
+
+    getSettlementBounds(margin = 80) {
+        if (this.houses.length === 0) { return null; }
+        const safeMargin = Math.max(0, Number(margin) || 0);
+        const minX = Math.max(0, Math.min(...this.houses.map((house) => house.x - house.radius)) - safeMargin);
+        const minY = Math.max(0, Math.min(...this.houses.map((house) => house.y - house.radius)) - safeMargin);
+        const maxX = Math.min(this.getWidth(), Math.max(...this.houses.map((house) => house.x + house.radius)) + safeMargin);
+        const maxY = Math.min(this.getHeight(), Math.max(...this.houses.map((house) => house.y + house.radius)) + safeMargin);
+        return { minX, minY, maxX, maxY, centerX: (minX + maxX) / 2, centerY: (minY + maxY) / 2, width: maxX - minX, height: maxY - minY, margin: safeMargin };
+    }
+
+    isInsideSettlementBounds(x, y, margin = 0) {
+        const bounds = this.getSettlementBounds(margin);
+        return bounds !== null && x >= bounds.minX && x <= bounds.maxX && y >= bounds.minY && y <= bounds.maxY;
     }
 
     commandFertilityAt(x, y) {
@@ -1823,11 +1896,27 @@ export class World {
     canSpawnArrivalAt(probe, x, y) { return this.contains(x, y) && this.terrain.isGrassAtWorldPosition(x, y) && !this.overlapsAnyHouse(probe) && !this.overlapsAnyTree(probe) && !this.overlapsAnyWaterSource(probe) && !this.overlapsAnyAnimal(probe) && !this.overlapsEntity(probe, this.hero) && !this.villagers.some((v) => this.overlapsEntity(probe, v)); }
     getArrivalDestination(spawn) { const center = { x: this.getWidth() / 2, y: this.tileSize * 7 }; const dx = center.x - spawn.x; const dy = center.y - spawn.y; const distance = Math.max(1, Math.hypot(dx, dy)); return { x: spawn.x + (dx / distance) * 96, y: spawn.y + (dy / distance) * 96 }; }
 
-    serialize() { return { world: { schemaVersion: 2, eventLog: this.eventLog, terrain: { columns: this.terrain.columns, rows: this.terrain.rows, tileSize: this.tileSize, tiles: this.terrain.tiles }, heroDestination: this.heroDestination, nextResourceAssignmentIndex: this.nextResourceAssignmentIndex, nextAutonomousBuilderIndex: this.nextAutonomousBuilderIndex, nextAutonomousPartnerIndex: this.nextAutonomousPartnerIndex, nextEntityId: this.nextEntityId, nextHouseId: this.nextHouseId, nextResourceId: this.nextResourceId, arrivalsUsed: this.arrivalsUsed, maxArrivals: this.maxArrivals, arrivalCooldown: this.arrivalCooldown, nextArrivalCheckTimer: this.nextArrivalCheckTimer, feedbackMessages: this.feedbackMessages, hero: this.serializePerson(this.hero, "hero"), villagers: this.villagers.map((v) => this.serializePerson(v, v.ageStage === "child" ? "child" : "villager")), houses: this.houses.map((h) => this.serializeHouse(h)), trees: this.trees.map((t) => this.serializeResource(t, "tree")), waterSources: this.waterSources.map((w) => this.serializeResource(w, "water")), animals: this.animals.map((a) => this.serializeResource(a, "animal")) } }; }
+    serialize() { return { world: { schemaVersion: 3, eventLog: this.eventLog, worldEra: this.worldEra, villageUnlocked: this.villageUnlocked, villageUnlockedAtPopulation: this.villageUnlockedAtPopulation, eraTransitionSequence: this.eraTransitionSequence, terrain: { columns: this.terrain.columns, rows: this.terrain.rows, tileSize: this.tileSize, tiles: this.terrain.tiles }, heroDestination: this.heroDestination, nextResourceAssignmentIndex: this.nextResourceAssignmentIndex, nextAutonomousBuilderIndex: this.nextAutonomousBuilderIndex, nextAutonomousPartnerIndex: this.nextAutonomousPartnerIndex, nextEntityId: this.nextEntityId, nextHouseId: this.nextHouseId, nextResourceId: this.nextResourceId, arrivalsUsed: this.arrivalsUsed, maxArrivals: this.maxArrivals, arrivalCooldown: this.arrivalCooldown, nextArrivalCheckTimer: this.nextArrivalCheckTimer, feedbackMessages: this.feedbackMessages, hero: this.serializePerson(this.hero, "hero"), villagers: this.villagers.map((v) => this.serializePerson(v, v.ageStage === "child" ? "child" : "villager")), houses: this.houses.map((h) => this.serializeHouse(h)), trees: this.trees.map((t) => this.serializeResource(t, "tree")), waterSources: this.waterSources.map((w) => this.serializeResource(w, "water")), animals: this.animals.map((a) => this.serializeResource(a, "animal")) } }; }
     serializePerson(p, type) { return { id: p.id, type, name: p.name, x: p.x, y: p.y, destination: p.destination, state: p.state === "insideHouse" ? p.state : "idle", gender: p.gender, orientation: p.orientation, relationshipStyle: p.relationshipStyle, age: p.age, ageStage: p.ageStage || "adult", ageTimer: p.ageTimer || 0, ageDuration: p.ageDuration || Child.GROWTH_DURATION_SECONDS, spriteKey: p.spriteKey || (p.getSpriteKey ? p.getSpriteKey() : null), wood: p.wood || 0, water: p.water || 0, meat: p.meat || 0, alive: p.alive, isAdult: p.isAdult, partnerIds: p.partners.map((x) => x.id).filter(Boolean), parentIds: p.parents.map((x) => x.id).filter(Boolean), childIds: p.children.map((x) => x.id).filter(Boolean), houseId: p.house ? p.house.id : null, ownedHouseId: p.ownedHouse ? p.ownedHouse.id : null, reservedForFertility: false, reservedForPartnership: false, arrivalMarkerTimer: p.arrivalMarkerTimer || 0, autonomyUnlocked: p === this.hero && p.autonomyUnlocked === true, carrying: { type: p.carrying.type, amount: p.carrying.amount } }; }
     serializeHouse(h) { return { id: h.id, x: h.x, y: h.y, ownerId: h.owner ? h.owner.id : null, occupantIds: h.occupants.map((o) => o.id).filter(Boolean), fertilityInProgress: false, fertilityPhase: null, fertilityTimer: 0, fertilityCooldown: h.fertilityCooldown, storage: { ...h.storage }, participantIds: [] }; }
     serializeResource(r, type) { return { id: r.id, type, name: r.name, x: r.x, y: r.y, woodRemaining: r.woodRemaining, waterRemaining: r.waterRemaining, meatRemaining: r.meatRemaining, cutFeedbackTimer: r.cutFeedbackTimer || 0, useFeedbackTimer: r.useFeedbackTimer || 0, hitFeedbackTimer: r.hitFeedbackTimer || 0 }; }
-    loadFromData(data) { if (!data || !data.world || !data.world.hero) { return false; } const w = data.world; this.tileSize = w.terrain.tileSize; this.terrain = new Terrain(w.terrain.columns, w.terrain.rows, w.terrain.tileSize); this.terrain.tiles = w.terrain.tiles; this.hero = this.createPersonFromData(w.hero); this.villagers = w.villagers.map((v) => this.createPersonFromData(v)); this.houses = w.houses.map((h) => { const house = new House(h.x, h.y, null); house.id = h.id; house.occupants = []; house.fertilityCooldown = h.fertilityCooldown || 0; house.storage = { wood: h.storage?.wood || 0, water: h.storage?.water || 0, meat: h.storage?.meat || 0 }; return house; }); this.trees = w.trees.map((t) => { const tree = new Tree(t.x, t.y); tree.id = t.id; tree.woodRemaining = t.woodRemaining; tree.cutFeedbackTimer = t.cutFeedbackTimer || 0; return tree; }); this.waterSources = w.waterSources.map((r) => { const source = new WaterSource(r.x, r.y); source.id = r.id; source.waterRemaining = r.waterRemaining; source.useFeedbackTimer = r.useFeedbackTimer || 0; return source; }); this.animals = w.animals.map((r) => { const animal = new Animal(r.name, r.x, r.y); animal.id = r.id; animal.meatRemaining = r.meatRemaining; animal.hitFeedbackTimer = r.hitFeedbackTimer || 0; return animal; }); this.rebuildReferences(w); this.migrateHouseholdResources(w); this.heroDestination = w.heroDestination; this.nextResourceAssignmentIndex = w.nextResourceAssignmentIndex || 0; this.nextAutonomousBuilderIndex = w.nextAutonomousBuilderIndex || 0; this.nextAutonomousPartnerIndex = w.nextAutonomousPartnerIndex || 0; this.nextEntityId = w.nextEntityId || 1; this.nextHouseId = w.nextHouseId || 1; this.nextResourceId = w.nextResourceId || 1; this.arrivalsUsed = w.arrivalsUsed || 0; this.maxArrivals = w.maxArrivals || 3; this.arrivalCooldown = w.arrivalCooldown ?? 300; this.nextArrivalCheckTimer = w.nextArrivalCheckTimer ?? 30; this.arrivalInProgress = false; this.autonomousHouseBuilder = null; this.feedbackMessages = w.feedbackMessages || []; this.eventLog = w.eventLog || []; return true; }
+    loadFromData(data) { if (!data || !data.world || !data.world.hero) { return false; } const w = data.world; this.tileSize = w.terrain.tileSize; this.terrain = new Terrain(w.terrain.columns, w.terrain.rows, w.terrain.tileSize); this.terrain.tiles = w.terrain.tiles; this.hero = this.createPersonFromData(w.hero); this.villagers = w.villagers.map((v) => this.createPersonFromData(v)); this.houses = w.houses.map((h) => { const house = new House(h.x, h.y, null); house.id = h.id; house.occupants = []; house.fertilityCooldown = h.fertilityCooldown || 0; house.storage = { wood: h.storage?.wood || 0, water: h.storage?.water || 0, meat: h.storage?.meat || 0 }; return house; }); this.trees = w.trees.map((t) => { const tree = new Tree(t.x, t.y); tree.id = t.id; tree.woodRemaining = t.woodRemaining; tree.cutFeedbackTimer = t.cutFeedbackTimer || 0; return tree; }); this.waterSources = w.waterSources.map((r) => { const source = new WaterSource(r.x, r.y); source.id = r.id; source.waterRemaining = r.waterRemaining; source.useFeedbackTimer = r.useFeedbackTimer || 0; return source; }); this.animals = w.animals.map((r) => { const animal = new Animal(r.name, r.x, r.y); animal.id = r.id; animal.meatRemaining = r.meatRemaining; animal.hitFeedbackTimer = r.hitFeedbackTimer || 0; return animal; }); this.rebuildReferences(w); this.migrateHouseholdResources(w); this.heroDestination = w.heroDestination; this.nextResourceAssignmentIndex = w.nextResourceAssignmentIndex || 0; this.nextAutonomousBuilderIndex = w.nextAutonomousBuilderIndex || 0; this.nextAutonomousPartnerIndex = w.nextAutonomousPartnerIndex || 0; this.nextEntityId = w.nextEntityId || 1; this.nextHouseId = w.nextHouseId || 1; this.nextResourceId = w.nextResourceId || 1; this.arrivalsUsed = w.arrivalsUsed || 0; this.maxArrivals = w.maxArrivals || 3; this.arrivalCooldown = w.arrivalCooldown ?? 300; this.nextArrivalCheckTimer = w.nextArrivalCheckTimer ?? 30; this.arrivalInProgress = false; this.autonomousHouseBuilder = null; this.feedbackMessages = w.feedbackMessages || []; this.eventLog = w.eventLog || []; this.loadEraProgression(w); return true; }
+    loadEraProgression(worldData) {
+        const hasEraData = typeof worldData.worldEra === "string";
+        if (!hasEraData) {
+            const population = this.getPopulationCount();
+            this.worldEra = population >= 32 ? "village" : "tribe";
+            this.villageUnlocked = population >= 32;
+            this.villageUnlockedAtPopulation = population >= 32 ? population : null;
+            this.eraTransitionSequence = population >= 32 ? 1 : 0;
+            return;
+        }
+        this.worldEra = ["tribe", "village", "faith"].includes(worldData.worldEra) ? worldData.worldEra : "tribe";
+        this.villageUnlocked = worldData.villageUnlocked === true || this.worldEra !== "tribe";
+        this.villageUnlockedAtPopulation = worldData.villageUnlockedAtPopulation ?? (this.villageUnlocked ? this.getPopulationCount() : null);
+        this.eraTransitionSequence = Math.max(0, Number(worldData.eraTransitionSequence) || 0);
+    }
+
     createPersonFromData(d) { const isChild = d.type === "child" || d.ageStage === "child"; const person = d.type === "hero" ? new Hero(d.name, d.x, d.y, d) : isChild ? new Child({ name: d.name, x: d.x, y: d.y, gender: d.gender, spriteKey: d.spriteKey }) : new Villager(d); const growth = this.getMigratedChildGrowth(d, isChild); Object.assign(person, { id: d.id, x: d.x, y: d.y, destination: d.destination, state: d.state || "idle", wood: d.wood || 0, water: d.water || 0, meat: d.meat || 0, alive: d.alive !== false, isAdult: d.isAdult, age: d.age, ageStage: d.ageStage, ageTimer: growth.ageTimer, ageDuration: growth.ageDuration, orientation: d.orientation, relationshipStyle: d.relationshipStyle, spriteKey: d.spriteKey, reservedForFertility: false, reservedForPartnership: false, reservedForAutonomousPartnership: false, targetTree: null, targetWaterSource: null, targetAnimal: null, relationshipGoal: null, partnerTarget: null, socialTimer: 0, actionTimer: 0, arrivalMarkerTimer: d.arrivalMarkerTimer || 0, autonomyUnlocked: d.type === "hero" ? (d.autonomyUnlocked ?? false) : false, carrying: { type: d.carrying?.type || null, amount: Math.min(3, d.carrying?.amount || 0) }, carryingCapacity: 3, depositTimer: 0, autonomousAction: false }); return person; }
     migrateHouseholdResources(worldData) {
         if ((worldData.schemaVersion || 1) >= 2) {

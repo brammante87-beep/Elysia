@@ -23,3 +23,16 @@
 ## Later
 
 - Families, housing, relationships, long-term simulation, camera controls, mobile polish, audio, and save data.
+
+## Alpha 1.3 — Era System and Compact Settlement
+
+- Add the three planned Era identities: Tribe, Village, and Faith.
+- Advance permanently from Tribe to Village at 32 living inhabitants.
+- Cluster autonomous Houses around the Prescelto's House.
+- Expose calculated settlement bounds for later Village features.
+- Preserve and migrate Era state through save/load.
+
+## Alpha 1.4 and later
+
+- Palisade, gate, well, Faith mechanics, toolbar replacement, and raiders remain
+  future work; Alpha 1.3 does not claim or create these systems.
