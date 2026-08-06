@@ -133,7 +133,10 @@ export class Game {
     showGameplayUi() {
         this.ui.clear();
         this.miracleManager.refreshAvailableMiracles(this.world.getCurrentEra());
+        console.log("CURRENT ERA", this.world.getCurrentEra());
+        console.log("AVAILABLE", this.miracleManager.availableMiracles);
         this.ui.showMiracleToolbar();
+        console.log("TOOLBAR", [...document.querySelectorAll(".miracleButton")].map(b => b.dataset.miracle));
         this.ui.showHouseHud();
         this.ui.showVillageStatistics();
         this.ui.showSaveButton(() => this.manualSave());
