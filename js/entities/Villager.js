@@ -20,6 +20,8 @@ export class Villager extends Entity {
         this.reservedForFertility = false;
         this.relationshipGoal = null;
         this.partnerTarget = null;
+        this.intendedPartnerId = settings.intendedPartnerId || null;
+        this.intendedPartner = null;
         this.socialTimer = 0;
         this.partnerFeedbackTimer = 0;
         this.destination = null;

@@ -56,9 +56,13 @@ class PostHousePartnershipProgressionTest {
                 arrival = currentArrival;
                 assert(world.areCharactersMutuallyCompatible(owner, arrival));
                 assert.equal(arrival.state, "arriving");
+                assert.equal(arrival.intendedPartnerId, owner.id);
+                assert.equal(arrival.intendedPartner, owner);
                 storageBeforePartnership = { ...owner.ownedHouse.storage };
                 world = this.reload(world); owner = this.findPerson(world, ownerName);
                 arrival = this.findPerson(world, currentArrival.name);
+                assert.equal(arrival.intendedPartnerId, owner.id);
+                assert.equal(arrival.intendedPartner, owner);
                 savedAfterArrival = true;
             }
             if (!partnershipVerified && arrival !== null && owner.partners.includes(arrival)) {
