@@ -35,6 +35,7 @@ export class World {
         this.nextArrivalCheckTimer = 30;
         this.arrivalCheckInterval = 30;
         this.arrivalInProgress = false;
+        this.transientStateRecoveryTimer = 0;
         this.feedbackMessages = [];
         this.eventLog = [];
         this.onAutosaveNeeded = null;
@@ -81,6 +82,7 @@ export class World {
         this.arrivalCooldown = 300;
         this.nextArrivalCheckTimer = 30;
         this.arrivalInProgress = false;
+        this.transientStateRecoveryTimer = 0;
         this.feedbackMessages = [];
         this.eventLog = [];
         this.worldEra = "tribe";
@@ -128,6 +130,7 @@ export class World {
     }
 
     update(delta) {
+        this.updateTransientStateRecovery(delta);
         this.updateDayNightCycle(delta);
         if (this.dayPhase !== "day") {
             this.updateFertilityEvents(delta);
@@ -344,21 +347,19 @@ export class World {
     }
 
     canVillagerBuildAutonomousHouse(villager) {
-        return this.villagers.includes(villager) &&
-            villager !== this.hero &&
-            villager.alive &&
-            villager.isAdult &&
-            this.canBuilderAffordHouse(villager) &&
-            villager.ownedHouse === null &&
-            (villager.house === null || this.isAdultChildLivingWithParents(villager)) &&
-            !this.hero.partners.includes(villager) &&
-            !villager.reservedForFertility &&
-            !villager.reservedForPartnership &&
-            villager.state !== "insideHouse" &&
-            !this.isVillagerBuildingHouse(villager) &&
-            villager.targetTree === null &&
-            villager.targetWaterSource === null &&
-            villager.targetAnimal === null;
+        return this.getAutonomousHouseBuildingIneligibilityReason(villager) === null;
+    }
+
+    getAutonomousHouseBuildingIneligibilityReason(villager) {
+        if (!this.villagers.includes(villager) || villager === this.hero || !villager.alive || !villager.isAdult) { return "not a living adult villager"; }
+        if (villager.ownedHouse !== null) { return "already owns a House"; }
+        if (villager.house !== null && !this.isAdultChildLivingWithParents(villager)) { return "already belongs to a non-parental household"; }
+        if (this.hero.partners.includes(villager)) { return "belongs to the chosen one's household"; }
+        if (villager.reservedForFertility) { return "active Fertility participant"; }
+        if (villager.reservedForPartnership) { return "active partnership participant"; }
+        if (this.isVillagerBuildingHouse(villager)) { return "already building a House"; }
+        if (!this.canBuilderAffordHouse(villager)) { return "needs three wood in parental storage or carried wood while houseless"; }
+        return null;
     }
 
     canBuilderAffordHouse(builder) {
@@ -552,24 +553,21 @@ export class World {
     }
 
     canVillagerStartAutonomousPartnerSearch(villager) {
-        return this.villagers.includes(villager) &&
-            villager !== this.hero &&
-            villager.alive &&
-            villager.isAdult &&
-            villager.ownedHouse !== null &&
-            villager.ownedHouse.owner === villager &&
-            villager.house === villager.ownedHouse &&
-            this.hasAutonomousPartnerCapacity(villager) &&
-            this.hasPartnershipResources(villager) &&
-            !villager.reservedForFertility &&
-            !villager.reservedForPartnership &&
-            !villager.reservedForAutonomousPartnership &&
-            villager.relationshipGoal !== "FindPartner" &&
-            villager.state !== "insideHouse" &&
-            !this.isVillagerBuildingHouse(villager) &&
-            villager.targetTree === null &&
-            villager.targetWaterSource === null &&
-            villager.targetAnimal === null;
+        return this.getAutonomousPartnershipIneligibilityReason(villager) === null;
+    }
+
+    getAutonomousPartnershipIneligibilityReason(villager) {
+        if (!this.villagers.includes(villager) || villager === this.hero || !villager.alive || !villager.isAdult) { return "not a living adult villager"; }
+        if (villager.ownedHouse === null || villager.ownedHouse.owner !== villager || villager.house !== villager.ownedHouse) { return "not a resident House owner"; }
+        if (!this.hasAutonomousPartnerCapacity(villager)) { return "relationship capacity is full"; }
+        if (!this.canAddHouseOccupant(villager.ownedHouse)) { return "House has no partner capacity"; }
+        if (!this.hasPartnershipResources(villager)) { return "House needs three wood, water, and meat"; }
+        if (villager.reservedForFertility) { return "active Fertility participant"; }
+        if (villager.reservedForPartnership || villager.reservedForAutonomousPartnership || villager.relationshipGoal === "FindPartner") { return "partnership already reserved"; }
+        if (villager.state === "insideHouse") { return "inside House for night or Fertility"; }
+        if (this.isVillagerBuildingHouse(villager)) { return "structurally busy building a House"; }
+        if (!this.getActionablePartnerCandidates(villager).some((candidate) => this.isEligibleAutonomousPartner(villager, candidate))) { return "no actionable compatible unrelated candidate"; }
+        return null;
     }
 
     hasAutonomousPartnerCapacity(villager) {
@@ -586,7 +584,7 @@ export class World {
     }
 
     startAutonomousPartnerSearch(owner) {
-        const candidates = this.villagers.filter((candidate) => this.isEligibleAutonomousPartner(owner, candidate));
+        const candidates = this.getActionablePartnerCandidates(owner).filter((candidate) => this.isEligibleAutonomousPartner(owner, candidate));
 
         if (candidates.length === 0) {
             return false;
@@ -677,6 +675,10 @@ export class World {
         owner.house.storage.meat -= 3;
         owner.partners.push(candidate);
         candidate.partners.push(owner);
+        const previousHouse = candidate.house;
+        if (previousHouse !== null && previousHouse !== owner.ownedHouse) {
+            previousHouse.occupants = previousHouse.occupants.filter((occupant) => occupant !== candidate);
+        }
         candidate.house = owner.ownedHouse;
 
         if (!owner.ownedHouse.occupants.includes(candidate)) {
@@ -714,11 +716,10 @@ export class World {
         }
 
         return candidate.ownedHouse === null &&
-            candidate.house === null &&
+            (candidate.house === null || this.isAdultChildLivingWithParents(candidate)) &&
             !candidate.reservedForFertility &&
             !candidate.reservedForPartnership &&
             !candidate.reservedForAutonomousPartnership &&
-            candidate.state !== "insideHouse" &&
             !this.isVillagerBuildingHouse(candidate) &&
             candidate.partners.length === 0 &&
             !owner.partners.includes(candidate) &&
@@ -733,7 +734,7 @@ export class World {
         }
 
         return candidate.ownedHouse === null &&
-            candidate.house === null &&
+            (candidate.house === null || this.isAdultChildLivingWithParents(candidate)) &&
             !candidate.reservedForFertility &&
             candidate.reservedForPartnership &&
             candidate.reservedForAutonomousPartnership &&
@@ -754,7 +755,21 @@ export class World {
         if (this.getSettlementCenterHouse() === null) { return null; }
         return this.searchCompactHouseSiteInBand(builder, 140, 220, 30) ||
             this.searchCompactHouseSiteInBand(builder, 220, 320, 30) ||
-            this.searchCompactHouseSiteInBand(builder, 320, 420, 40);
+            this.searchCompactHouseSiteInBand(builder, 320, 420, 40) ||
+            this.searchDeterministicCompactHouseSite(builder);
+    }
+
+    searchDeterministicCompactHouseSite(builder) {
+        const center = this.getSettlementCenterHouse();
+        if (center === null) { return null; }
+        for (let distance = 140; distance <= 420; distance += 20) {
+            for (let degrees = 0; degrees < 360; degrees += 10) {
+                const angle = degrees * Math.PI / 180;
+                const site = { x: center.x + Math.cos(angle) * distance, y: center.y + Math.sin(angle) * distance };
+                if (this.isValidCompactHouseSite(site.x, site.y, builder)) { return site; }
+            }
+        }
+        return null;
     }
 
     getSettlementCenterHouse() {
@@ -1948,15 +1963,18 @@ export class World {
         if (!this.canAddHouseOccupant(house)) { return "La casa non può accogliere altri abitanti"; }
         if (house.fertilityInProgress) { return "La casa è già occupata"; }
         if (house.fertilityCooldown > 0) { return "La casa ha bisogno di tempo"; }
-        const dependentChildren = house.occupants.filter((occupant) => !occupant.isAdult);
-        if (dependentChildren.length >= 2) { return "La casa ospita già due figli"; }
-        const adults = house.occupants.filter((occupant) => occupant.isAdult);
-        if (adults.length < 2) { return "Servono due adulti nella casa"; }
-        if (adults.some((adult) => !adult.alive || adult.house !== house || this.isStructurallyBusyForFertility(adult))) { return "Gli adulti non sono disponibili"; }
-        if (this.dayPhase === "nightApproaching" && adults.some((adult) => !house.occupants.includes(adult))) { return "Gli adulti non sono disponibili"; }
-        if (!this.areEstablishedHouseholdPartners(adults)) { return "Servono partner stabiliti"; }
-        if (this.hasCloseRelatives(adults)) { return "Parenti stretti non ammessi"; }
+        const participants = this.getEligibleFertilityParticipants(house);
+        if (participants.length < 2) { return "Servono partner adulti validi nella casa"; }
         return null;
+    }
+
+    getEligibleFertilityParticipants(house) {
+        const adults = this.getLivingHouseResidents(house).filter((adult) => adult.isAdult && !this.isStructurallyBusyForFertility(adult));
+        for (const first of adults) {
+            const second = adults.find((adult) => adult !== first && first.partners.includes(adult) && adult.partners.includes(first) && !this.isCloseRelative(first, adult));
+            if (second !== undefined) { return [first, second]; }
+        }
+        return [];
     }
 
     isStructurallyBusyForFertility(person) {
@@ -1972,7 +1990,7 @@ export class World {
     }
 
     startFertilityEvent(house) {
-        house.participants = house.occupants.filter((occupant) => occupant.isAdult);
+        house.participants = this.getEligibleFertilityParticipants(house);
         house.fertilityInProgress = true;
         house.fertilityPhase = "walking";
         house.fertilityTimer = 0;
@@ -2292,6 +2310,47 @@ export class World {
 
     updateFeedbackMessages(delta) { this.feedbackMessages.forEach((m) => { m.timer = Math.max(0, m.timer - delta); }); this.feedbackMessages = this.feedbackMessages.filter((m) => m.timer > 0); this.villagers.forEach((v) => { v.arrivalMarkerTimer = Math.max(0, (v.arrivalMarkerTimer || 0) - delta); }); }
 
+    updateTransientStateRecovery(delta) {
+        this.transientStateRecoveryTimer -= delta;
+        if (this.transientStateRecoveryTimer > 0) { return; }
+        this.transientStateRecoveryTimer = 10;
+        this.reconcileHouseOccupants();
+        this.getLivingInhabitants().forEach((person) => this.recoverPersonTransientState(person));
+        if (this.arrivalInProgress && !this.villagers.some((person) => person.alive && person.state === "arriving")) { this.arrivalInProgress = false; }
+    }
+
+    reconcileHouseOccupants() {
+        this.houses.forEach((house) => {
+            house.occupants = [...new Set(house.occupants)].filter((person) => person && person.alive && person.house === house);
+        });
+        this.getLivingInhabitants().forEach((person) => {
+            if (person.ownedHouse !== null && person.ownedHouse.owner === person && person.house !== person.ownedHouse) { person.house = person.ownedHouse; }
+            if (person.house !== null && this.houses.includes(person.house) && !person.house.occupants.includes(person)) { person.house.occupants.push(person); }
+            this.houses.forEach((house) => {
+                if (house !== person.house) { house.occupants = house.occupants.filter((occupant) => occupant !== person); }
+            });
+        });
+    }
+
+    recoverPersonTransientState(person) {
+        const activeOwner = this.villagers.find((owner) => owner.relationshipGoal === "FindPartner" && owner.partnerTarget === person);
+        const ownsActiveSearch = person.relationshipGoal === "FindPartner" && person.partnerTarget !== null && person.partnerTarget.alive;
+        if ((person.reservedForPartnership || person.reservedForAutonomousPartnership) && !ownsActiveSearch && activeOwner === undefined) {
+            person.reservedForPartnership = false; person.reservedForAutonomousPartnership = false;
+        }
+        if (person.relationshipGoal === "FindPartner" && (!person.partnerTarget || !person.partnerTarget.alive)) {
+            this.cancelAutonomousPartnerSearch(person, person.partnerTarget);
+        }
+        const activeFertility = this.houses.some((house) => house.fertilityInProgress && house.participants.includes(person));
+        if (person.reservedForFertility && !activeFertility) { person.reservedForFertility = false; }
+        if (this.isVillagerBuildingHouse(person) && person !== this.autonomousHouseBuilder) {
+            person.houseSite = null; person.houseBuildTimer = 0; person.state = "idle"; person.destination = null;
+        }
+        if (person.state === "insideHouse" && this.dayPhase === "day" && !activeFertility) {
+            person.state = "idle"; person.destination = null;
+        }
+    }
+
     updateAdultArrivals(delta) {
         if (this.arrivalsUsed >= this.maxArrivals || this.getPopulationCount() >= 32 || this.arrivalInProgress) { return; }
         this.arrivalCooldown = Math.max(0, this.arrivalCooldown - delta);
@@ -2314,12 +2373,38 @@ export class World {
     }
 
     selectArrivalTarget() {
-        const candidates = this.getArrivalAvailableAdults().filter((adult) => adult.partners.length === 0 && this.countCompatibleUnrelatedCandidates(adult) === 0);
+        const candidates = this.getLivingInhabitants().filter((adult) => this.getArrivalTargetIneligibilityReason(adult) === null);
         return candidates.length === 0 ? null : candidates[Math.floor(Math.random() * candidates.length)];
     }
     getArrivalAvailableAdults() { return this.getEntities().filter((adult) => adult !== null && adult.alive && adult.isAdult && this.hasPartnerCapacity(adult) && !adult.reservedForFertility && !adult.reservedForPartnership && !adult.reservedForAutonomousPartnership && adult.relationshipGoal === null && adult.partnerTarget === null && !this.isVillagerBuildingHouse(adult)); }
     hasPartnerCapacity(adult) { return adult.partners.length === 0 || (adult.relationshipStyle === "poliamoroso" && adult.partners.length < 2); }
-    countCompatibleUnrelatedCandidates(adult) { return this.getArrivalAvailableAdults().filter((candidate) => candidate !== adult && !this.isCloseRelative(adult, candidate) && this.areCharactersMutuallyCompatible(adult, candidate)).length; }
+    isTheoreticallyCompatiblePair(first, second) { return first !== second && first !== null && second !== null && first.alive && second.alive && first.isAdult && second.isAdult && !this.isCloseRelative(first, second) && this.areCharactersMutuallyCompatible(first, second); }
+    isActionablePartnerPair(first, second) {
+        if (!this.isTheoreticallyCompatiblePair(first, second) || !this.hasPartnerCapacity(first) || !this.hasPartnerCapacity(second)) { return false; }
+        if (first.partners.length > 0 || second.partners.length > 0) { return false; }
+        return this.isActionablePartnerDirection(first, second) || this.isActionablePartnerDirection(second, first);
+    }
+    isActionablePartnerDirection(owner, candidate) {
+        return owner !== this.hero && owner.ownedHouse !== null && owner.ownedHouse.owner === owner && owner.house === owner.ownedHouse &&
+            this.canAddHouseOccupant(owner.ownedHouse) && this.hasPartnershipResources(owner) &&
+            candidate !== this.hero && candidate.ownedHouse === null && (candidate.house === null || this.isAdultChildLivingWithParents(candidate)) &&
+            !owner.reservedForFertility && !candidate.reservedForFertility && !this.isVillagerBuildingHouse(owner) && !this.isVillagerBuildingHouse(candidate) &&
+            this.hasNoInvalidPartnershipReservation(owner) && this.hasNoInvalidPartnershipReservation(candidate);
+    }
+    hasNoInvalidPartnershipReservation(person) {
+        if (!person.reservedForPartnership && !person.reservedForAutonomousPartnership) { return true; }
+        if (person.relationshipGoal === "FindPartner" && person.partnerTarget !== null && person.partnerTarget.alive) { return true; }
+        return this.villagers.some((owner) => owner.alive && owner.relationshipGoal === "FindPartner" && owner.partnerTarget === person);
+    }
+    getActionablePartnerCandidates(adult) { return this.getLivingInhabitants().filter((candidate) => candidate !== adult && this.isActionablePartnerPair(adult, candidate)); }
+    countCompatibleUnrelatedCandidates(adult) { return this.getLivingInhabitants().filter((candidate) => this.isTheoreticallyCompatiblePair(adult, candidate)).length; }
+    getArrivalTargetIneligibilityReason(adult) {
+        if (adult === null || !adult.alive) { return "not a living inhabitant"; }
+        if (!adult.isAdult) { return "not an adult"; }
+        if (adult.partners.length > 0 || !this.hasPartnerCapacity(adult)) { return "already partnered"; }
+        if (this.getActionablePartnerCandidates(adult).length > 0) { return "an actionable compatible partnership exists"; }
+        return null;
+    }
     generateCompatibleArrivalIdentity(target) { for (let attempt = 0; attempt < 50; attempt += 1) { const gender = this.getRandomChildGender(); const identity = { name: this.getRandomArrivalName(), age: 18 + Math.floor(Math.random() * 23), gender, orientation: this.getRandomAdultOrientation(), relationshipStyle: Math.random() < 0.65 ? "monogamo" : "poliamoroso", spriteKey: this.getAdultVillagerSpriteKey(gender) }; const candidate = new Villager(identity); if (this.areCharactersMutuallyCompatible(target, candidate)) { return identity; } } return null; }
     getRandomArrivalName() { const names = ["Alba", "Brin", "Cora", "Dario", "Enea", "Fio", "Gio", "Iris", "Luce", "Milo", "Noa", "Onda", "Pia", "Rami", "Vera"]; let name = names[Math.floor(Math.random() * names.length)]; let suffix = 2; const used = new Set(this.getEntities().filter(Boolean).map((e) => e.name)); while (used.has(name)) { name = `${name} ${suffix}`; suffix += 1; } return name; }
     findArrivalSpawnPosition() { for (let attempt = 0; attempt < 80; attempt += 1) { const margin = 28; const side = Math.floor(Math.random() * 4); const x = side === 0 ? margin : side === 1 ? this.getWidth() - margin : margin + Math.random() * (this.getWidth() - margin * 2); const y = side === 2 ? this.tileSize * 5 + margin : side === 3 ? this.getHeight() - margin : this.tileSize * 5 + margin + Math.random() * (this.getHeight() - this.tileSize * 5 - margin * 2); const probe = new Villager({ x, y }); if (this.canSpawnArrivalAt(probe, x, y)) { return { x, y }; } } return null; }
