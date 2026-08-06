@@ -9,6 +9,8 @@ export class UI {
         this.houseHudWater = null;
         this.houseHudMeat = null;
         this.houseHudOccupants = null;
+        this.houseHudCapacity = null;
+        this.houseOccupantList = null;
         this.heroCarrying = null;
         this.heroActivity = null;
         this.heroResidence = null;
@@ -34,6 +36,8 @@ export class UI {
         this.houseHudWater = null;
         this.houseHudMeat = null;
         this.houseHudOccupants = null;
+        this.houseHudCapacity = null;
+        this.houseOccupantList = null;
         this.heroCarrying = null;
         this.heroActivity = null;
         this.heroResidence = null;
@@ -355,6 +359,7 @@ export class UI {
         this.houseHudWater = this.createHouseHudValue(resources, "💧", "Acqua");
         this.houseHudMeat = this.createHouseHudValue(resources, "🍖", "Cibo");
         this.houseHudOccupants = this.createHouseHudValue(resources, "👥", "Occupanti");
+        this.houseHudCapacity = this.createHouseHudValue(resources, "🏠", "Capienza");
 
         this.houseHud.appendChild(resources);
         this.heroCarrying = document.createElement("p");
@@ -363,9 +368,12 @@ export class UI {
         this.houseNightCost = document.createElement("p");
         this.houseNightPhase = document.createElement("p");
         this.houseLastNight = document.createElement("p");
+        this.houseOccupantList = document.createElement("div");
+        this.houseOccupantList.className = "houseOccupantList";
         this.houseHud.appendChild(this.houseNightCost);
         this.houseHud.appendChild(this.houseNightPhase);
         this.houseHud.appendChild(this.houseLastNight);
+        this.houseHud.appendChild(this.houseOccupantList);
         this.houseHud.appendChild(this.heroCarrying);
         this.houseHud.appendChild(this.heroActivity);
         this.houseHud.appendChild(this.heroResidence);
@@ -390,7 +398,7 @@ export class UI {
             return;
         }
 
-        const house = this.world === null ? null : this.world.getChosenHouse();
+        const house = this.world === null ? null : this.world.getSelectedHouse();
 
         if (house === null) {
             this.houseHudTitle.textContent = "Nessuna casa";
@@ -415,6 +423,12 @@ export class UI {
     applyHouseHudSummary(summary) {
         this.houseHudTitle.textContent = summary.title;
         this.setHouseHudTotals(summary.totals);
+        this.houseHudCapacity.textContent = String(summary.capacity);
+        this.houseOccupantList.replaceChildren(...summary.occupants.map((occupant) => {
+            const line = document.createElement("span");
+            line.textContent = occupant;
+            return line;
+        }));
         this.houseNightCost.textContent = `Prossima notte: legna -${summary.cost.wood}, acqua -${summary.cost.water}, cibo -${summary.cost.food}`;
         this.houseNightPhase.textContent = summary.phaseText;
         this.houseLastNight.textContent = summary.lastNightText;

@@ -129,6 +129,7 @@ export class Renderer {
     }
 
     drawHouse(house) {
+        if (this.world.getSelectedHouse() === house) { this.drawHouseSelection(house); }
         this.context.fillStyle = "rgba(0, 0, 0, 0.22)";
         this.context.beginPath();
         this.context.ellipse(house.x, house.y + 21, house.upgraded ? 37 : 31, 10, 0, 0, Math.PI * 2);
@@ -173,6 +174,14 @@ export class Renderer {
             this.drawHouseFertilityFeedback(house);
         }
         if (house.depositFeedback !== null) { this.drawDepositFeedback(house); }
+    }
+
+    drawHouseSelection(house) {
+        this.context.strokeStyle = "rgba(250, 204, 21, 0.95)";
+        this.context.lineWidth = 4;
+        this.context.beginPath();
+        this.context.ellipse(house.x, house.y + 2, house.upgraded ? 48 : 42, 45, 0, 0, Math.PI * 2);
+        this.context.stroke();
     }
 
     drawVillageWell() {

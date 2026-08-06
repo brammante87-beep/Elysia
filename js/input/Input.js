@@ -59,6 +59,13 @@ export class Input {
             return;
         }
 
+        const house = this.world.getHouseAtWorldPosition(x, y);
+        if (house !== null) {
+            this.clearPointerFeedback();
+            this.world.selectHouse(house);
+            return;
+        }
+
         const tree = this.world.getTreeAtWorldPosition(x, y);
 
         if (tree !== null) {
