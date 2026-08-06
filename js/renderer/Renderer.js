@@ -278,9 +278,22 @@ export class Renderer {
 
     drawFlowers() {
         this.world.getFlowers().forEach((flower) => {
-            const sprite = this.assetLoader === null ? null : this.assetLoader.getImage("flower");
+            this.debugFlower("Flower passed to Renderer", { id: flower.id });
+            const sprite =
+                this.assetLoader !== null &&
+                this.assetLoader.hasLoaded("flower")
+                    ? this.assetLoader.getImage("flower")
+                    : null;
+            if (sprite === null) {
+                this.debugFlower("Flower asset unavailable", { id: flower.id });
+                this.debugFlower("Flower procedural fallback selected", { id: flower.id });
+            }
             flower.render(this.context, sprite);
         });
+    }
+
+    debugFlower(message, details) {
+        if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); }
     }
 
     drawFruitTrees() {

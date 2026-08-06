@@ -2555,7 +2555,7 @@ export class World {
         }
         const flower = new Flower(x, y);
         this.assignResourceId(flower);
-        this.debugFlower("Flower instance created", { id: flower.id, x, y });
+        this.debugFlower("Flower instance exists", { id: flower.id, x, y });
         this.flowers.push(flower);
         this.debugFlower("Flower pushed to world.flowers", { length: this.flowers.length });
         this.feedbackMessages.push({ text: "Un fiore è sbocciato", timer: 3 });
