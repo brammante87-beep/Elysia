@@ -55,7 +55,13 @@ export class MiracleManager {
             return this.castFertility(x, y, world);
         }
 
-        if (["flower", "light", "lightning", "blessing"].includes(this.selectedMiracle)) {
+        if (this.selectedMiracle === "lightning") {
+            const result = world.castLightningAt(x, y);
+            if (result) { this.clearSelection(); }
+            return result;
+        }
+
+        if (["flower", "light", "blessing"].includes(this.selectedMiracle)) {
             world.feedbackMessages.push({ text: "Questo miracolo non è ancora disponibile.", timer: 3 });
             this.clearSelection();
         }

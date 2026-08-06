@@ -22,6 +22,7 @@ export class House extends Entity {
         this.resourceCollectionTargets = { ...House.RESOURCE_COLLECTION_TARGETS, ...resourceCollectionTargets };
         this.depositFeedback = null;
         this.lastNightResult = null;
+        this.visualVariant = Math.floor(Math.random() * 4);
     }
 
     getFoodAmount() {

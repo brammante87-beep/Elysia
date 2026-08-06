@@ -11,6 +11,8 @@ export class Renderer {
     render() {
         this.clear();
         this.drawTerrain();
+        this.drawDirtPaths();
+        this.drawVillageCenter();
         this.drawVillageWell();
         this.drawHouses();
         this.drawTrees();
@@ -23,6 +25,7 @@ export class Renderer {
         this.drawEntityFeedback();
         this.drawDayNightOverlay();
         this.drawWorldFeedbackMessages();
+        this.drawLightningEffects();
     }
 
     drawDayNightOverlay() {
@@ -59,9 +62,18 @@ export class Renderer {
         const seed = column * 17 + row * 31;
 
         if (tileType === "grass") {
-            this.context.fillStyle = seed % 2 === 0 ? "rgba(35, 105, 55, 0.10)" : "rgba(220, 238, 151, 0.10)";
-            this.context.fillRect(x + 8 + seed % 19, y + 10 + seed % 23, 2, 4);
-            this.context.fillRect(x + 31 + seed % 13, y + 33 + seed % 17, 2, 2);
+            this.context.fillStyle = seed % 2 === 0 ? "rgba(35, 92, 45, 0.13)" : "rgba(220, 238, 151, 0.11)";
+            this.context.fillRect(x + 4 + seed % 27, y + 7 + seed % 23, 18, 12);
+            const detailX = x + 12 + seed % 37; const detailY = y + 15 + seed % 31;
+            if (seed % 5 === 0) {
+                this.context.strokeStyle = "#397a43"; this.context.lineWidth = 1;
+                this.context.beginPath(); this.context.moveTo(detailX, detailY + 5); this.context.lineTo(detailX - 2, detailY); this.context.moveTo(detailX, detailY + 5); this.context.lineTo(detailX + 3, detailY - 2); this.context.stroke();
+            } else if (seed % 5 === 1) {
+                this.context.fillStyle = ["#fff9df", "#f4cf4e", "#dc5a4c"][seed % 3];
+                this.context.fillRect(detailX - 2, detailY, 2, 2); this.context.fillRect(detailX + 1, detailY, 2, 2); this.context.fillRect(detailX, detailY - 2, 2, 2);
+            } else if (seed % 5 === 2) {
+                this.context.fillStyle = "#788276"; this.context.fillRect(detailX, detailY, 4, 3);
+            }
             return;
         }
 
@@ -98,7 +110,7 @@ export class Renderer {
     }
 
     drawEntities() {
-        this.world.getEntities().forEach((entity) => {
+        this.world.getEntities().filter((entity) => entity.alive).forEach((entity) => {
             if (entity.selected) {
                 this.drawSelectionRing(entity);
             }
@@ -108,13 +120,13 @@ export class Renderer {
     }
 
     drawEntityNames() {
-        this.world.getEntities().forEach((entity) => {
+        this.world.getEntities().filter((entity) => entity.alive).forEach((entity) => {
             if (entity.state !== "insideHouse") { this.drawEntityName(entity); }
         });
     }
 
     drawEntityFeedback() {
-        this.world.getEntities().forEach((entity) => {
+        this.world.getEntities().filter((entity) => entity.alive).forEach((entity) => {
             if (entity.state === "insideHouse") { return; }
             if (entity.state === "cuttingTree" || entity.state === "huntingAnimal") { this.drawCuttingFeedback(entity); }
             if (entity.state === "collectingWater") { this.drawWaterFeedback(entity); }
@@ -135,7 +147,9 @@ export class Renderer {
         this.context.ellipse(house.x, house.y + 21, house.upgraded ? 37 : 31, 10, 0, 0, Math.PI * 2);
         this.context.fill();
 
-        this.context.fillStyle = house.upgraded ? "#63341f" : "#7b3f24";
+        const variant = house.visualVariant || 0;
+        const roofColors = house.upgraded ? ["#63341f", "#70402a", "#573b2c", "#82462c"] : ["#7b3f24", "#854a2c", "#68402c", "#905033"];
+        this.context.fillStyle = roofColors[variant % roofColors.length];
         this.context.beginPath();
         const roofWidth = house.upgraded ? 41 : 35;
         const roofTop = house.upgraded ? 40 : 35;
@@ -153,7 +167,8 @@ export class Renderer {
             this.context.fillStyle = "#8b6a46"; this.context.fillRect(house.x - 31, house.y + 29, 62, 5);
         }
 
-        this.context.fillStyle = this.world.dayPhase === "night" ? "#ffd978" : "#8ed1df";
+        if (variant !== 2) { this.context.fillStyle = "#725039"; this.context.fillRect(house.x + (variant % 2 ? -23 : 16), house.y - 27, 7, 20); }
+        this.context.fillStyle = this.world.dayPhase === "night" ? "#ffd978" : ["#8ed1df", "#a8c879", "#c49c78", "#9ab8cc"][variant % 4];
         this.context.fillRect(house.x - 19, house.y + 5, 10, 9);
         this.context.fillRect(house.x + 9, house.y + 5, 10, 9);
         this.context.strokeStyle = "rgba(75, 42, 24, 0.65)";
@@ -161,11 +176,12 @@ export class Renderer {
         this.context.strokeRect(house.x - 19, house.y + 5, 10, 9);
         this.context.strokeRect(house.x + 9, house.y + 5, 10, 9);
 
-        this.context.fillStyle = "#4b2a18";
-        this.context.fillRect(house.x - 7, house.y + 10, 14, 20);
+        this.context.fillStyle = ["#4b2a18", "#5b3820", "#3e3028", "#69391f"][variant % 4];
+        const doorOffset = variant % 2 === 0 ? 0 : 4;
+        this.context.fillRect(house.x - 7 + doorOffset, house.y + 10, 14, 20);
         this.context.fillStyle = "#d7a849";
         this.context.beginPath();
-        this.context.arc(house.x + 4, house.y + 21, 1.5, 0, Math.PI * 2);
+        this.context.arc(house.x + 4 + doorOffset, house.y + 21, 1.5, 0, Math.PI * 2);
         this.context.fill();
 
         this.drawHouseName(house);
@@ -207,15 +223,14 @@ export class Renderer {
     }
 
     drawHouseName(house) {
-        this.context.font = "bold 13px sans-serif";
-        this.context.textAlign = "center";
-        this.context.textBaseline = "bottom";
-        this.context.lineWidth = 3;
-        this.context.strokeStyle = "rgba(0, 0, 0, 0.7)";
-        this.context.fillStyle = "#ffffff";
-        const name = this.world.getHouseName(house);
-        this.context.strokeText(name, house.x, house.y - 39);
-        this.context.fillText(name, house.x, house.y - 39);
+        const name = this.world.getHousePlateName(house);
+        this.context.font = "bold 11px serif";
+        const width = Math.max(48, this.context.measureText(name).width + 14);
+        const y = house.y - 55;
+        this.context.fillStyle = "#4b2e19"; this.context.fillRect(house.x - width / 2, y, width, 18);
+        this.context.strokeStyle = "#c18a4b"; this.context.lineWidth = 2; this.context.strokeRect(house.x - width / 2, y, width, 18);
+        this.context.fillStyle = "#fff0c2"; this.context.textAlign = "center"; this.context.textBaseline = "middle";
+        this.context.fillText(name, house.x, y + 9);
     }
 
     drawHouseFertilityFeedback(house) {
@@ -245,6 +260,7 @@ export class Renderer {
     }
 
     drawTree(tree) {
+        this.drawSoftShadow(tree.x, tree.y + 15, 23, 8);
         const spriteName = tree.cutFeedbackTimer > 0 ? "treeHit" : "tree";
         const sprite = this.getTreeSprite(spriteName);
 
@@ -306,6 +322,7 @@ export class Renderer {
         this.world.getAnimals().forEach((animal) => {
             const sprite = this.getSprite(animal.hitFeedbackTimer > 0 ? "deerHit" : "deer");
             if (sprite === null) { this.drawGeometricAnimal(animal); return; }
+            this.drawSoftShadow(animal.x, animal.y + 15, 20, 7);
             this.context.drawImage(sprite, animal.x - 30, animal.y - 43, 60, 60);
         });
     }
@@ -365,6 +382,7 @@ export class Renderer {
             this.drawPartnerTargetHighlight(entity);
         }
 
+        this.drawSoftShadow(entity.x, entity.y + 14, entity.ageStage === "child" ? 9 : 12, 5);
         if (entity === this.world.hero) {
             this.drawHero(entity);
         } else {
@@ -563,4 +581,45 @@ export class Renderer {
         this.context.lineTo(entity.x + 22, entity.y - 24);
         this.context.stroke();
     }
+
+    drawSoftShadow(x, y, radiusX, radiusY) {
+        this.context.fillStyle = "rgba(25, 35, 25, 0.2)";
+        this.context.beginPath(); this.context.ellipse(x, y, radiusX, radiusY, 0, 0, Math.PI * 2); this.context.fill();
+    }
+
+    drawDirtPaths() {
+        if (!this.world.villageTransformationCompleted || !this.world.villageBounds) { return; }
+        const center = { x: this.world.villageBounds.centerX, y: this.world.villageBounds.centerY };
+        this.context.save(); this.context.strokeStyle = "rgba(157, 116, 68, 0.72)"; this.context.lineWidth = 12; this.context.lineCap = "round"; this.context.lineJoin = "round";
+        this.world.getHouses().forEach((house) => {
+            const entrance = { x: house.x, y: house.y + 34 };
+            const bendY = entrance.y + (center.y - entrance.y) * 0.55;
+            this.context.beginPath(); this.context.moveTo(entrance.x, entrance.y); this.context.lineTo(entrance.x, bendY); this.context.lineTo(center.x, bendY); this.context.lineTo(center.x, center.y); this.context.stroke();
+        });
+        this.context.restore();
+    }
+
+    drawVillageCenter() {
+        if (!this.world.villageTransformationCompleted || !this.world.villageBounds) { return; }
+        const x = this.world.villageBounds.centerX + 46; const y = this.world.villageBounds.centerY + 12;
+        this.drawSoftShadow(x, y + 9, 18, 7);
+        this.context.fillStyle = "#6f6254";
+        for (let index = 0; index < 8; index += 1) { const a = index * Math.PI / 4; this.context.fillRect(x + Math.cos(a) * 12 - 3, y + Math.sin(a) * 7 - 2, 6, 4); }
+        this.context.strokeStyle = "#6b3c22"; this.context.lineWidth = 5; this.context.beginPath(); this.context.moveTo(x - 10, y + 5); this.context.lineTo(x + 10, y - 4); this.context.moveTo(x - 10, y - 4); this.context.lineTo(x + 10, y + 5); this.context.stroke();
+        this.context.fillStyle = "#f59e0b"; this.context.beginPath(); this.context.moveTo(x, y + 2); this.context.quadraticCurveTo(x - 9, y - 9, x, y - 20); this.context.quadraticCurveTo(x + 10, y - 8, x, y + 2); this.context.fill();
+        this.context.strokeStyle = "#765035"; this.context.lineWidth = 7; this.context.beginPath(); this.context.moveTo(x - 34, y + 22); this.context.lineTo(x - 13, y + 18); this.context.moveTo(x + 17, y + 21); this.context.lineTo(x + 38, y + 24); this.context.stroke();
+        this.context.fillStyle = "#3f7e43"; [[-42,-15],[40,-17],[-37,11]].forEach(([dx,dy]) => { this.context.beginPath(); this.context.arc(x+dx,y+dy,8,0,Math.PI*2); this.context.fill(); });
+    }
+
+    drawLightningEffects() {
+        this.world.lightningEffects.forEach((effect) => {
+            const progress = effect.timer / effect.duration;
+            this.context.fillStyle = `rgba(255,255,235,${Math.max(0, progress - 0.7) * 0.16})`; this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.strokeStyle = `rgba(245,250,255,${progress})`; this.context.lineWidth = 4; this.context.beginPath();
+            this.context.moveTo(effect.x - 18, 0); this.context.lineTo(effect.x + 6, effect.y * 0.38); this.context.lineTo(effect.x - 8, effect.y * 0.7); this.context.lineTo(effect.x, effect.y); this.context.stroke();
+            this.context.fillStyle = `rgba(255,220,90,${progress})`;
+            for (let i = 0; i < 6; i += 1) { const a = i * Math.PI / 3; this.context.fillRect(effect.x + Math.cos(a) * (18-progress*8)-2, effect.y + Math.sin(a) * (12-progress*5)-2, 4, 4); }
+        });
+    }
+
 }
