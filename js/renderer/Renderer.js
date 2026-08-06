@@ -1,3 +1,5 @@
+import { AdultCharacterGeometry } from "./AdultCharacterGeometry.js";
+
 export class Renderer {
     constructor(canvas, context, world, assetLoader = null) {
         this.canvas = canvas;
@@ -492,7 +494,8 @@ export class Renderer {
             if (villager.ageStage === "child") {
                 this.context.drawImage(sprite, villager.x - 26, villager.y - 35, 52, 52);
             } else {
-                this.context.drawImage(sprite, villager.x - 32, villager.y - 45, 64, 64);
+                const bounds = AdultCharacterGeometry.getAdultCharacterBounds(villager);
+                this.context.drawImage(sprite, bounds.left, bounds.top, AdultCharacterGeometry.SPRITE_WIDTH, AdultCharacterGeometry.SPRITE_HEIGHT);
             }
         }
 
@@ -630,12 +633,8 @@ export class Renderer {
 
     drawLightningEffects() {
         this.world.lightningEffects.forEach((effect) => {
-            const progress = effect.timer / effect.duration;
-            this.context.fillStyle = `rgba(255,255,235,${Math.max(0, progress - 0.7) * 0.16})`; this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            this.context.strokeStyle = `rgba(245,250,255,${progress})`; this.context.lineWidth = 4; this.context.beginPath();
-            this.context.moveTo(effect.x - 18, 0); this.context.lineTo(effect.x + 6, effect.y * 0.38); this.context.lineTo(effect.x - 8, effect.y * 0.7); this.context.lineTo(effect.x, effect.y); this.context.stroke();
-            this.context.fillStyle = `rgba(255,220,90,${progress})`;
-            for (let i = 0; i < 6; i += 1) { const a = i * Math.PI / 3; this.context.fillRect(effect.x + Math.cos(a) * (18-progress*8)-2, effect.y + Math.sin(a) * (12-progress*5)-2, 4, 4); }
+            const sprite = this.assetLoader === null ? null : this.assetLoader.getImage("lightning");
+            effect.render(this.context, this.canvas, sprite);
         });
     }
 

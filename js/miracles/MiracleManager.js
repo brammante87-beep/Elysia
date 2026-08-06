@@ -30,11 +30,7 @@ export class MiracleManager {
         if (this.selectedMiracle === "animal") { return world.addAnimalAt(x, y); }
         if (this.selectedMiracle === "house") { return this.castHouse(x, y, world); }
         if (this.selectedMiracle === "fertility") { return this.castFertility(x, y, world); }
-        if (this.selectedMiracle === "lightning") {
-            const result = world.castLightningAt(x, y);
-            if (result) { this.clearSelection(); }
-            return result;
-        }
+        if (this.selectedMiracle === "lightning") { return this.castLightning(x, y, world); }
         if (["light", "blessing"].includes(this.selectedMiracle)) {
             world.feedbackMessages.push({ text: "Questo miracolo non è ancora disponibile.", timer: 3 });
             this.clearSelection();
@@ -47,6 +43,17 @@ export class MiracleManager {
         if (result.success) {
             this.clearSelection();
             this.debug("Flower deselected", result);
+        }
+        return result.success;
+    }
+
+    castLightning(x, y, world) {
+        const result = world.strikeWithLightningAt(x, y);
+        if (result.success) {
+            this.clearSelection();
+            this.debug("Lightning deselected");
+        } else {
+            this.debug("Lightning remains selected");
         }
         return result.success;
     }

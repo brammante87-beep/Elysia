@@ -46,6 +46,11 @@ export class Input {
 
     handleWorldClick(x, y) {
         this.debug("handleWorldClick entered", { x, y, worldEra: this.world.getCurrentEra() });
+        if (this.miracleManager.selectedMiracle === "lightning") {
+            this.debugLightning("Lightning world click received", { x, y });
+            this.handleSelectedMiracleClick(x, y);
+            return;
+        }
         if (this.miracleManager.selectedMiracle === "flower") {
             this.debugFlower("Flower world click received", { x, y });
             this.handleSelectedMiracleClick(x, y);
@@ -152,6 +157,8 @@ export class Input {
             this.showPointerFeedback(this.world.lastFertilityIneligibilityReason);
         } else if (selectedMiracle === "flower") {
             this.showPointerFeedback("Qui il fiore non può crescere");
+        } else if (selectedMiracle === "lightning") {
+            this.showPointerFeedback("Nessun abitante da colpire");
         }
 
         return false;
@@ -175,6 +182,7 @@ export class Input {
             y: (event.clientY - rectangle.top) * scaleY
         };
         if (this.miracleManager.selectedMiracle === "flower") { this.debugFlower("Flower coordinates converted", position); }
+        if (this.miracleManager.selectedMiracle === "lightning") { this.debugLightning("Lightning coordinates converted", position); }
         this.debug("canvas pointer converted", {
             pointer: { x: event.clientX, y: event.clientY },
             world: position
@@ -187,6 +195,10 @@ export class Input {
     }
 
     debugFlower(message, details) {
+        if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); }
+    }
+
+    debugLightning(message, details) {
         if (globalThis.ELYSIA_DEBUG === true) { console.debug(message, details); }
     }
 }

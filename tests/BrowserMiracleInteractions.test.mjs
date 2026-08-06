@@ -170,15 +170,15 @@ test("toolbar binds exact dataset keys through one activation listener", async (
     assert.doesNotMatch(source, /button\.addEventListener\("touchstart", selectMiracle/);
 });
 
-test("ground Lightning is visual-only and the Hero remains immune", () => {
+test("ground and Hero clicks do not cast Lightning and keep it selected", () => {
     const { world, miracles } = createVillage();
     const input = new Input(new TestCanvas(), world, miracles);
     miracles.select("lightning");
     input.handleWorldClick(20, 20);
-    assert.equal(world.lightningEffects.length, 1);
-    assert.equal(miracles.selectedMiracle, null);
-    miracles.select("lightning");
+    assert.equal(world.lightningEffects.length, 0);
+    assert.equal(miracles.selectedMiracle, "lightning");
     input.handleWorldClick(world.hero.x, world.hero.y);
     assert.equal(world.hero.alive, true);
-    assert.equal(world.feedbackMessages.at(-1).text, "Il Prescelto è immune al fulmine");
+    assert.equal(world.feedbackMessages.at(-1).text, "Nessun abitante da colpire");
+    assert.equal(miracles.selectedMiracle, "lightning");
 });
