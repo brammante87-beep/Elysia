@@ -50,12 +50,7 @@ export class Input {
         }
 
         if (this.miracleManager.hasSelectedMiracle()) {
-            this.clearPointerFeedback();
-            const selectedMiracle = this.miracleManager.selectedMiracle;
-            const castSucceeded = this.miracleManager.cast(x, y, this.world);
-            if (!castSucceeded && selectedMiracle === "fertility" && this.world.lastFertilityIneligibilityReason !== null) {
-                this.showPointerFeedback(this.world.lastFertilityIneligibilityReason);
-            }
+            this.handleSelectedMiracleClick(x, y);
             return;
         }
 
@@ -122,6 +117,24 @@ export class Input {
 
         this.clearPointerFeedback();
         this.world.setHeroDestination(x, y);
+    }
+
+    handleSelectedMiracleClick(x, y) {
+        this.clearPointerFeedback();
+        const selectedMiracle = this.miracleManager.selectedMiracle;
+        const castSucceeded = this.miracleManager.cast(x, y, this.world);
+
+        if (castSucceeded) {
+            return true;
+        }
+
+        if (selectedMiracle === "fertility" && this.world.lastFertilityIneligibilityReason !== null) {
+            this.showPointerFeedback(this.world.lastFertilityIneligibilityReason);
+        } else if (selectedMiracle === "flower") {
+            this.showPointerFeedback("Qui il fiore non può crescere");
+        }
+
+        return false;
     }
 
     showPointerFeedback(message) {

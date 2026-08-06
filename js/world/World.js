@@ -2159,11 +2159,13 @@ export class World {
     castLightningAt(x, y) {
         const villager = this.getVillagerAtWorldPosition(x, y);
         const raider = this.getRaiderAtWorldPosition(x, y);
-        const target = villager || raider || { x, y };
+        const hero = this.hero && this.hero.alive && Math.hypot(this.hero.x - x, this.hero.y - y) <= this.hero.radius ? this.hero : null;
+        const target = villager || raider || hero || { x, y };
         this.lightningEffects.push({ x: target.x, y: target.y, timer: 0.55, duration: 0.55 });
         if (raider) { this.killRaider(raider); return true; }
         if (villager) { return this.warnVillagerWithLightning(villager); }
-        return this.isWalkableAtWorldPosition(x, y);
+        this.feedbackMessages.push({ text: hero ? "Il Prescelto è immune al fulmine" : "Il fulmine colpisce il suolo", timer: 3 });
+        return true;
     }
 
     warnVillagerWithLightning(villager) {
@@ -2533,7 +2535,7 @@ export class World {
     addFlowerAt(x, y) {
         const flower = new Flower(x, y);
         if (!this.canPlaceResourceAt(flower, x, y) || this.overlapsAnyFruitTree(flower) || this.overlapsAnyFlower(flower) || this.overlapsVillageWallOrGate(flower)) {
-            this.feedbackMessages.push({ text: "Il fiore non può sbocciare qui", timer: 3 }); return false;
+            this.feedbackMessages.push({ text: "Qui il fiore non può crescere", timer: 3 }); return false;
         }
         this.assignResourceId(flower); this.flowers.push(flower);
         this.feedbackMessages.push({ text: "Un fiore è sbocciato", timer: 3 }); return true;
