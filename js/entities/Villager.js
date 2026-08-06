@@ -44,4 +44,21 @@ export class Villager extends Entity {
         this.depositTimer = 0;
         this.lightningWarnings = Math.max(0, settings.lightningWarnings || 0);
     }
+
+    receiveLightningStrike(world) {
+        if (!this.alive || !this.isAdult || !world.villagers.includes(this)) { return false; }
+        const fertilityHouse = world.houses.find((house) => house.participants.includes(this));
+        if (fertilityHouse) { world.cancelFertilityEvent(fertilityHouse); }
+        if (this === world.autonomousHouseBuilder) { world.cancelAutonomousHouseBuild(this); }
+        if (this.relationshipGoal === "FindPartner") { world.cancelAutonomousPartnerSearch(this, this.partnerTarget); }
+        if (world.hero.partnerTarget === this) { world.clearHeroPartnerProposal(); }
+        world.clearVillagerAllWork(this);
+        this.destination = null;
+        this.state = "idle";
+        this.idleTimer = world.getRandomVillagerIdleTime();
+        this.lightningWarnings += 1;
+        if (this.lightningWarnings >= 3) { world.killVillager(this); }
+        world.requestAutosave();
+        return true;
+    }
 }

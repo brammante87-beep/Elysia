@@ -22,7 +22,8 @@ test("lightning preserves cargo, increments warnings, and third strike kills", (
     const miracles = new MiracleManager(); miracles.refreshAvailableMiracles("community"); miracles.select("lightning");
     assert.equal(miracles.cast(villager.x, villager.y, world), true);
     assert.equal(villager.lightningWarnings, 1); assert.deepEqual(villager.carrying, { type: "wood", amount: 3 }); assert.equal(villager.state, "idle");
-    world.warnVillagerWithLightning(villager); world.warnVillagerWithLightning(villager);
+    miracles.select("lightning"); miracles.cast(villager.x, villager.y, world);
+    miracles.select("lightning"); miracles.cast(villager.x, villager.y, world);
     assert.equal(villager.alive, false); assert.equal(world.getLivingInhabitants().includes(villager), false);
 });
 
@@ -31,10 +32,14 @@ test("warning counters and house variants survive save/load with old-save defaul
     const house = new House(420, 400, world.hero); world.assignHouseId(house); world.houses.push(house); world.hero.house = house; house.visualVariant = 3;
     const saved = world.serialize(); const loaded = new World(); assert.equal(loaded.loadFromData(saved), true);
     assert.equal(loaded.villagers[0].lightningWarnings, 2); assert.equal(loaded.houses[0].visualVariant, 3);
+    loaded.worldEra = "community"; const miracles = new MiracleManager(); miracles.refreshAvailableMiracles("community"); miracles.select("lightning");
+    assert.equal(miracles.cast(loaded.villagers[0].x, loaded.villagers[0].y, loaded), true); assert.equal(loaded.villagers[0].alive, false);
+    assert.equal(loaded.lightningEffects.length, 1); assert.equal(loaded.loadFromData(saved), true); assert.equal(loaded.lightningEffects.length, 0);
     delete saved.world.villagers[0].lightningWarnings; const migrated = new World(); migrated.loadFromData(saved); assert.equal(migrated.villagers[0].lightningWarnings, 0);
 });
 
-test("lightning immediately removes future raider targets", () => {
+test("lightning ignores raiders and remains selected without an adult Villager", () => {
     const world = new World(); world.initialize(); world.worldEra = "community"; const raider = { x: 200, y: 200, radius: 14, alive: true }; world.raiders.push(raider);
-    assert.equal(world.castLightningAt(200, 200), true); assert.equal(raider.alive, false); assert.equal(world.raiders.length, 0);
+    const miracles = new MiracleManager(); miracles.refreshAvailableMiracles("community"); miracles.select("lightning");
+    assert.equal(miracles.cast(200, 200, world), false); assert.equal(raider.alive, true); assert.equal(world.raiders.length, 1); assert.equal(miracles.selectedMiracle, "lightning");
 });
