@@ -13,6 +13,7 @@ export class Hero extends Entity {
         this.targetAnimal = null;
         this.targetFruitTree = null;
         this.targetFlower = null;
+        this.targetMushroom = null;
         this.state = "idle";
         this.actionTimer = 0;
         this.wood = 0;

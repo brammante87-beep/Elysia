@@ -46,6 +46,7 @@ export class Input {
 
     handleWorldClick(x, y) {
         this.debug("handleWorldClick entered", { x, y, worldEra: this.world.getCurrentEra() });
+        if (this.miracleManager.selectedMiracle === "mushroom") { this.handleSelectedMiracleClick(x, y); return; }
         if (this.miracleManager.selectedMiracle === "lightning") {
             this.debugLightning("Lightning world click received", { x, y });
             this.handleSelectedMiracleClick(x, y);
@@ -64,6 +65,9 @@ export class Input {
             this.handleSelectedMiracleClick(x, y);
             return;
         }
+
+        const mushroom = this.world.getMushroomAtWorldPosition(x, y);
+        if (mushroom !== null) { this.clearPointerFeedback(); this.world.commandHeroToCollectMushroom(mushroom); return; }
 
         const house = this.world.getHouseAtWorldPosition(x, y);
         if (house !== null) {
@@ -157,6 +161,8 @@ export class Input {
             this.showPointerFeedback(this.world.lastFertilityIneligibilityReason);
         } else if (selectedMiracle === "flower") {
             this.showPointerFeedback("Qui il fiore non può crescere");
+        } else if (selectedMiracle === "mushroom") {
+            this.showPointerFeedback("Qui il fungo non può crescere");
         } else if (selectedMiracle === "lightning") {
             this.showPointerFeedback("Nessun abitante da colpire");
         }
