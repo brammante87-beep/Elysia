@@ -19,7 +19,14 @@ export class Renderer {
         this.drawEntities();
         this.drawEntityNames();
         this.drawEntityFeedback();
+        this.drawDayNightOverlay();
         this.drawWorldFeedbackMessages();
+    }
+
+    drawDayNightOverlay() {
+        if (this.world.dayPhase === "day") { return; }
+        this.context.fillStyle = this.world.dayPhase === "night" ? "rgba(16, 31, 74, 0.42)" : "rgba(99, 55, 48, 0.18)";
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     clear() {
@@ -136,7 +143,7 @@ export class Renderer {
         this.context.fillStyle = "#e4bd86";
         this.context.fillRect(house.x - 25, house.y - 4, 50, 34);
 
-        this.context.fillStyle = "#8ed1df";
+        this.context.fillStyle = this.world.dayPhase === "night" ? "#ffd978" : "#8ed1df";
         this.context.fillRect(house.x - 19, house.y + 5, 10, 9);
         this.context.fillRect(house.x + 9, house.y + 5, 10, 9);
         this.context.strokeStyle = "rgba(75, 42, 24, 0.65)";
