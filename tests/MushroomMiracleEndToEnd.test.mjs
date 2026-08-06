@@ -45,7 +45,7 @@ test("Mushroom follows toolbar, canvas, collection, rendering and persistence pa
     try {
         const world = new World(); world.initialize({ name: "Test Hero" });
         const miracles = new MiracleManager();
-        assert.ok(miracles.availableMiracles.includes("mushroom"));
+        assert.deepEqual(miracles.availableMiracles, ["tree", "water", "animal", "house", "fertility", "mushroom"]);
         const root = { querySelectorAll: () => [], querySelector: () => null };
         const ui = new UI(root, miracles, world);
         const button = ui.createMiracleButton("mushroom");
@@ -81,4 +81,19 @@ test("index boots the real Game module and Mushroom uses only the toolbar click 
     assert.match(index, /import \{ Game \} from "\.\/js\/core\/Game\.js"/);
     assert.match(ui, /button\.dataset\.miracle = miracle/); assert.match(ui, /button\.addEventListener\("click", selectMiracle\)/);
     assert.doesNotMatch(ui, /button\.addEventListener\("(?:pointer|touch)/);
+});
+
+test("the initial real toolbar builds Mushroom as a visible sixth button", () => {
+    const previousWindow = globalThis.window; const previousDocument = globalThis.document;
+    globalThis.window = { addEventListener() {} }; globalThis.document = { createElement: () => new TestButton() };
+    try {
+        const miracles = new MiracleManager();
+        const toolbar = new TestButton();
+        const root = { appendChild: (child) => { toolbar.children = child.children; }, querySelectorAll: () => [], querySelector: () => null };
+        const ui = new UI(root, miracles); ui.showMiracleToolbar();
+        assert.equal(toolbar.children.length, 6);
+        assert.equal(toolbar.children.at(-1).dataset.miracle, "mushroom");
+        assert.equal(toolbar.children.at(-1).textContent, "🍄");
+        assert.equal(toolbar.children.at(-1).title, "Crea fungo");
+    } finally { globalThis.window = previousWindow; globalThis.document = previousDocument; }
 });

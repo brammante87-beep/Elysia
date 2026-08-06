@@ -7,7 +7,7 @@ export class MiracleManager {
     getMiraclesForEra(worldEra) {
         return worldEra === "community"
             ? ["fertility", "flower", "light", "lightning", "blessing"]
-            : ["tree", "water", "animal", "house", "fertility", "mushroom", "flower", "lightning"];
+            : ["tree", "water", "animal", "house", "fertility", "mushroom"];
     }
 
     isMiracleAvailable(miracle, worldEra) { return this.getMiraclesForEra(worldEra).includes(miracle); }
