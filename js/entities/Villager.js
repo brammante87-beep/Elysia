@@ -31,6 +31,8 @@ export class Villager extends Entity {
         this.targetTree = null;
         this.targetWaterSource = null;
         this.targetAnimal = null;
+        this.targetFruitTree = null;
+        this.targetFlower = null;
         this.wood = 0;
         this.water = 0;
         this.meat = 0;

@@ -16,6 +16,8 @@ export class Renderer {
         this.drawVillageWell();
         this.drawHouses();
         this.drawTrees();
+        this.drawFlowers();
+        this.drawFruitTrees();
         this.drawWaterSources();
         this.drawAnimals();
         this.drawDestinationMarker();
@@ -270,6 +272,24 @@ export class Renderer {
         }
 
         this.context.drawImage(sprite, tree.x - 32, tree.y - 46, 64, 64);
+    }
+
+    drawFlowers() {
+        const sway = Math.sin(Date.now() / 500) * 1.5;
+        this.world.getFlowers().forEach((flower) => {
+            this.context.strokeStyle = "#397447"; this.context.lineWidth = 2; this.context.beginPath(); this.context.moveTo(flower.x, flower.y + 7); this.context.lineTo(flower.x + sway, flower.y - 3); this.context.stroke();
+            this.context.fillStyle = ["#f472b6", "#fde047", "#a78bfa"][flower.spriteVariant];
+            for (let petal = 0; petal < 5; petal += 1) { const angle = petal * Math.PI * 0.4; this.context.beginPath(); this.context.arc(flower.x + sway + Math.cos(angle) * 4, flower.y - 5 + Math.sin(angle) * 4, 3, 0, Math.PI * 2); this.context.fill(); }
+            if (flower.activeObserver) { this.context.strokeStyle = "rgba(255,255,255,.8)"; this.context.beginPath(); this.context.arc(flower.x, flower.y - 5, 12, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, flower.observationProgress / 2)); this.context.stroke(); }
+        });
+    }
+
+    drawFruitTrees() {
+        this.world.getFruitTrees().forEach((tree) => {
+            this.drawSoftShadow(tree.x, tree.y + 16, 25, 8); this.context.fillStyle = "#75451f"; this.context.fillRect(tree.x - 5, tree.y - 5, 10, 28);
+            this.context.fillStyle = tree.harvestFeedbackTimer > 0 ? "#75c96b" : "#3f7d3b"; this.context.beginPath(); this.context.arc(tree.x, tree.y - 15, tree.radius, 0, Math.PI * 2); this.context.fill();
+            for (let apple = 0; apple < tree.apples; apple += 1) { const angle = apple * 2.4; this.context.fillStyle = "#d83a31"; this.context.beginPath(); this.context.arc(tree.x + Math.cos(angle) * (8 + apple % 2 * 6), tree.y - 15 + Math.sin(angle) * 13, 3.5, 0, Math.PI * 2); this.context.fill(); }
+        });
     }
 
     getTreeSprite(spriteName) {

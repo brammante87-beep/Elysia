@@ -26,3 +26,6 @@ data-only preparation and do not represent a palisade or movement restriction.
 
 ## Sistemi del Villaggio (Alpha 1.5)
 `World` possiede lo stato stabile della trasformazione, il `VillageBoundary`, il cancello, il `Well` e la migrazione dei salvataggi. `VillageBoundary` incapsula perimetro, collisione e waypoint del cancello; `Well` incapsula il limite di due utilizzatori senza riserva esauribile. `House` espone capacità e stato di miglioramento. `Renderer` si limita al disegno, mentre `MiracleManager` fornisce elenchi specifici per Era e `UI` ricostruisce la toolbar senza creare un nuovo loop.
+
+## Entità naturali Alpha 1.6
+`Flower` e `FruitTree` sono entità distinte, ciascuna definita nella propria classe. `World` conserva la responsabilità per piazzamento, osservazione, rigenerazione naturale, lavori sulle risorse, consumo alimentare e persistenza; `Renderer` ne cura soltanto il disegno, `Input` inoltra i comandi e `MiracleManager` crea il Fiore tramite l'API del mondo.

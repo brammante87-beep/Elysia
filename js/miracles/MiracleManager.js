@@ -61,7 +61,13 @@ export class MiracleManager {
             return result;
         }
 
-        if (["flower", "light", "blessing"].includes(this.selectedMiracle)) {
+        if (this.selectedMiracle === "flower") {
+            const result = world.addFlowerAt(x, y);
+            if (result) { this.clearSelection(); }
+            return result;
+        }
+
+        if (["light", "blessing"].includes(this.selectedMiracle)) {
             world.feedbackMessages.push({ text: "Questo miracolo non è ancora disponibile.", timer: 3 });
             this.clearSelection();
         }

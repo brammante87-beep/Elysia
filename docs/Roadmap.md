@@ -40,3 +40,10 @@
 
 ## Alpha 1.5 - Village Transformation
 Completata la trasformazione una tantum a 15 abitanti: palizzata e cancello, Pozzo illimitato, Case migliorate con capacità 6, sicurezza dei bambini e barra Miracoli specifica dell'Era. La crescita prosegue fino al limite globale di 32. Flower, Light, Lightning e Blessing restano intenzionalmente non funzionali; Faith e i sistemi di conflitto sono rinviati.
+
+## Alpha 1.6 — completata
+- Rigenerazione graduale di Alberi (obiettivo 2) e Animali (obiettivo 3) all'esterno del Villaggio trasformato.
+- Miracolo Fiore, osservazione da tre abitanti unici e trasformazione in Albero da Frutto.
+- Raccolta, deposito e ricrescita delle Mele; consumo notturno misto Carne/Mele.
+
+Luce, Benedizione, Fede, Predoni e combattimento rimangono pianificati per versioni future.
