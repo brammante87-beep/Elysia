@@ -574,10 +574,10 @@ export class World {
     }
 
     canVillagerStartAutonomousPartnerSearch(villager) {
-        return this.getAutonomousPartnershipIneligibilityReason(villager) === null;
+        return this.getAutonomousPartnerSearchIneligibilityReason(villager) === null;
     }
 
-    getAutonomousPartnershipIneligibilityReason(villager) {
+    getAutonomousPartnerSearchIneligibilityReason(villager) {
         if (!this.villagers.includes(villager) || villager === this.hero || !villager.alive || !villager.isAdult) { return "not a living adult villager"; }
         if (villager.ownedHouse === null || villager.ownedHouse.owner !== villager || villager.house !== villager.ownedHouse) { return "not a resident House owner"; }
         if (!this.hasAutonomousPartnerCapacity(villager)) { return "relationship capacity is full"; }
@@ -589,6 +589,10 @@ export class World {
         if (this.isVillagerBuildingHouse(villager)) { return "structurally busy building a House"; }
         if (!this.getActionablePartnerCandidates(villager).some((candidate) => this.isEligibleAutonomousPartner(villager, candidate))) { return "no actionable compatible unrelated candidate"; }
         return null;
+    }
+
+    getAutonomousPartnershipIneligibilityReason(villager) {
+        return this.getAutonomousPartnerSearchIneligibilityReason(villager);
     }
 
     hasAutonomousPartnerCapacity(villager) {
@@ -1037,7 +1041,8 @@ export class World {
             return;
         }
 
-        villager.state = "walking";
+        const isCompletingArrival = villager.state === "arriving";
+        if (!isCompletingArrival) { villager.state = "walking"; }
         const finalDestination = villager.destination;
         const movementTarget = this.getGateAwareTarget(villager, finalDestination);
         const distanceX = movementTarget.x - villager.x;
@@ -1051,6 +1056,7 @@ export class World {
             if (movementTarget === finalDestination) { villager.destination = null; }
             villager.idleTimer = this.getRandomVillagerIdleTime();
             villager.state = "idle";
+            if (isCompletingArrival) { this.arrivalInProgress = false; }
             return;
         }
 
@@ -2460,10 +2466,10 @@ export class World {
     }
 
     selectArrivalTarget() {
-        const candidates = this.getLivingInhabitants().filter((adult) => this.getArrivalTargetIneligibilityReason(adult) === null);
+        const candidates = this.getArrivalAvailableAdults();
         return candidates.length === 0 ? null : candidates[Math.floor(Math.random() * candidates.length)];
     }
-    getArrivalAvailableAdults() { return this.getEntities().filter((adult) => adult !== null && adult.alive && adult.isAdult && this.hasPartnerCapacity(adult) && !adult.reservedForFertility && !adult.reservedForPartnership && !adult.reservedForAutonomousPartnership && adult.relationshipGoal === null && adult.partnerTarget === null && !this.isVillagerBuildingHouse(adult)); }
+    getArrivalAvailableAdults() { return this.getLivingInhabitants().filter((adult) => this.getArrivalTargetIneligibilityReason(adult) === null); }
     hasPartnerCapacity(adult) { return adult.partners.length === 0 || (adult.relationshipStyle === "poliamoroso" && adult.partners.length < 2); }
     isTheoreticallyCompatiblePair(first, second) { return first !== second && first !== null && second !== null && first.alive && second.alive && first.isAdult && second.isAdult && !this.isCloseRelative(first, second) && this.areCharactersMutuallyCompatible(first, second); }
     isActionablePartnerPair(first, second) {
@@ -2489,6 +2495,8 @@ export class World {
         if (adult === null || !adult.alive) { return "not a living inhabitant"; }
         if (!adult.isAdult) { return "not an adult"; }
         if (adult.partners.length > 0 || !this.hasPartnerCapacity(adult)) { return "already partnered"; }
+        if (adult.reservedForFertility) { return "active Fertility participant"; }
+        if (adult.reservedForPartnership || adult.reservedForAutonomousPartnership) { return "active partnership interaction"; }
         if (this.getActionablePartnerCandidates(adult).length > 0) { return "an actionable compatible partnership exists"; }
         return null;
     }
