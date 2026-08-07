@@ -16,6 +16,7 @@ export class PowerManager {
   }
   livingCharacterAt(position) { return this.world.characters.find(character => character.alive && Math.hypot(character.position.x-position.x, character.position.y-position.y) <= character.interactionRadius) ?? null; }
   affectCharacter(id, position, choice) {
+    if (id === 'lightning') { const enemy=this.world.invasions?.lightningAt(position); if (enemy) return enemy; }
     const character = this.livingCharacterAt(position);
     if (!character) { this.world.addEffect(position, 'invalid'); return false; }
     if (id === 'changeSex' && !choice) return { requiresChoice: true, character };

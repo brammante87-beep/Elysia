@@ -37,6 +37,7 @@ export class Character {
     this.canFoundSettlement = data.canFoundSettlement ?? this.isExalted;
     this.isArmed = data.isArmed ?? false;
     this.hasShield = data.hasShield ?? false;
+    this.health = data.health ?? 100;
     this.behaviourMemory = new BehaviourMemory(data.behaviourPreferences ?? (this.lifeStage === 'child' ? { theft: 0 } : null));
     this.behaviourPreferences = this.behaviourMemory.preferences;
     if (data.sexCharacteristics) this.sexCharacteristics = data.sexCharacteristics;

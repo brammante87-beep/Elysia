@@ -1,0 +1,6 @@
+export class ProjectileSystem {
+  constructor(world, data={}) { this.world=world; this.nextId=data.nextId ?? 1; this.projectiles=(data.projectiles ?? []).map(item=>({...item,position:{...item.position},velocity:{...item.velocity}})); }
+  create(type, source, target, damage, speed) { const dx=target.position.x-source.position.x,dy=target.position.y-source.position.y,d=Math.hypot(dx,dy)||1; const projectile={id:`projectile-${this.nextId++}`,type,sourceId:source.id,targetId:target.id,position:{...source.position},velocity:{x:dx/d*speed,y:dy/d*speed},speed,damage,alive:true,expired:false,age:0};this.projectiles.push(projectile);return projectile; }
+  update(dt) { for(const p of this.projectiles.filter(item=>item.alive)){ const target=this.world.findCombatant(p.targetId); if(!target?.alive){p.alive=false;p.expired=true;continue;} p.age+=dt;p.position.x+=p.velocity.x*dt;p.position.y+=p.velocity.y*dt; if(Math.hypot(p.position.x-target.position.x,p.position.y-target.position.y)<=Math.max(.35,p.speed*dt)){this.world.combat.applyDamage(target,p.damage,p.type);p.alive=false;p.expired=true;} if(p.age>5){p.alive=false;p.expired=true;} } this.projectiles=this.projectiles.filter(p=>p.alive||p.age<.25); }
+  toJSON() { return { nextId:this.nextId,projectiles:this.projectiles.filter(p=>p.alive).map(p=>({...p,position:{...p.position},velocity:{...p.velocity}})) }; }
+}

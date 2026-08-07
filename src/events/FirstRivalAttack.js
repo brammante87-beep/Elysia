@@ -18,6 +18,7 @@ export class FirstRivalAttack {
     this.targetSettlementId = data.targetSettlementId ?? null;
     this.casualties = data.casualties ?? 0;
     this.rescueEmitted = data.rescueEmitted ?? false;
+    this.rivalWorldId = data.rivalWorldId ?? 'rivalWorld1';
     this.meteor = new RivalMeteorAttack(world);
     if (this.targetSettlementId) this.meteor.arm(this.targetSettlementId);
   }
@@ -74,5 +75,5 @@ export class FirstRivalAttack {
 
   dialogueBeat() { return FirstRivalAttack.Dialogue[Math.min(2, Math.floor(this.elapsed / 2))]; }
   aftermathMessage() { return this.casualties ? `Elysia ha conosciuto il suo primo attacco. ${this.casualties} vite sono state spezzate.` : 'Elysia ha conosciuto il suo primo attacco. Il tuo potere li ha protetti tutti.'; }
-  toJSON() { return { phase:this.phase, elapsed:this.elapsed, firstRivalAttackStarted:this.firstRivalAttackStarted, firstRivalAttackCompleted:this.firstRivalAttackCompleted, targetSettlementId:this.targetSettlementId, casualties:this.casualties, rescueEmitted:this.rescueEmitted }; }
+  toJSON() { return { phase:this.phase, elapsed:this.elapsed, firstRivalAttackStarted:this.firstRivalAttackStarted, firstRivalAttackCompleted:this.firstRivalAttackCompleted, targetSettlementId:this.targetSettlementId, casualties:this.casualties, rescueEmitted:this.rescueEmitted, rivalWorldId:this.rivalWorldId }; }
 }
