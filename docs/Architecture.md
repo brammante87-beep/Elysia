@@ -112,3 +112,9 @@ Homes keep household-local storage. When two single homeowners pair, the lexicog
 
 ## Power targeting
 `PowerManager` centralizes three target categories: **placement** (Plant, Water, Flower, Food), **Character** (Lightning, Blessing, Change Sex, Give Weapons, Shield), and **rally/world position** (Ray of Light). `Miracles` creates/casts miracles, while `World` owns validation and semantic results. Miracle input is consumed before inspection. Persistent entities and character statuses serialize semantically; transient effects and rally paths do not.
+
+
+## Behaviour and theft boundary
+`BehaviourMemory` owns the character's normalized, serializable preference for the only implemented learned behaviour, theft. `DivineTeachingSystem` is the contextual boundary used by miracles; Lightning and Blessing do not contain behaviour-weight rules. `TheftSystem`, owned by each `CharacterAI`, controls eligibility, need/target selection, reservation, navigated approach, one-unit withdrawal, return, deposit, cooldown, and deterministic cancellation. `World` remains the gameplay owner and `Renderer` only draws the semantic indicator. This boundary can accept later observable behaviours without introducing a universal alignment score, but Alpha 0.0.10 deliberately implements no unused behaviours.
+
+Saves persist behaviour preferences and theft cooldown. They never serialize path nodes. An in-progress saved theft restores its removed carried unit to the victim and resumes ordinary AI, preventing duplication or phantom inventory. Ray of Light, night, Lightning cancellation, and death use the same cleanup path.

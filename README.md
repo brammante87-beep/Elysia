@@ -1,6 +1,6 @@
 # Elysia
 
-**Alpha 0.0.7 — Day, Night & First Generation**
+**Alpha 0.0.10 — Emergent Behaviour, Theft & Divine Teaching**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
 milestone gives Human and Beast households a five-minute simulation-time day/night cycle,
@@ -55,3 +55,9 @@ A stable food-provision slot now manifests as a Cow for Humans and a finite natu
 
 ## Alpha 0.0.9 — Complete Divine Power Set
 All ten fixed toolbar powers are functional in Human and Beast worlds. Placement miracles create Plants, Water, gameplay Flowers and world-specific food; character miracles apply Lightning, Blessing, Change Sex, Weapons and Shield; Ray of Light issues a temporary navigated rally. Flowers mature into renewable Apple Trees after one simulation cycle.
+
+
+## Alpha 0.0.10 — Emergent Behaviour, Theft & Divine Teaching
+Adult Human and Beast inhabitants whose household is short of Wood, Water, or Food can now occasionally choose `STEAL_RESOURCE` instead of honest gathering. They navigate to another occupied household, take exactly one unit, carry it home, and deposit it. A restrained painted cross above the inhabitant and an Italian intention line make the act observable. Children, dead inhabitants, meal participants, sleepers, nighttime inhabitants, and characters obeying Ray of Light cannot begin theft.
+
+Every adult has a persistent, low initial theft preference. Lightning during theft lowers that behaviour-specific preference and cancels the act; Blessing during theft raises it while retaining the normal Blessing/Exalted progression. Outside theft neither power changes the preference. This is contextual divine teaching, not a universal good/evil, karma, sin, or virtue score: the player is not enforcing a predefined morality. Inhabitants learn what the Omnipotent approves or disapproves through divine intervention. Plant World remains unchanged.

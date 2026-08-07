@@ -24,3 +24,9 @@ The Chosen One then chooses an available resource with the lowest stored quantit
 The ten powers are **Plant, Water, Flower, Food Manifestation, Lightning, Blessing, Ray of Light, Change Sex, Give Weapons, and Shield**. Flower matures after one complete Elysia cycle; Apple Trees provide renewable food with a cooldown. Three direct Lightning strikes kill a character, while the fifth Blessing grants Exalted status and future settlement-founding eligibility. Shield does not block divine Lightning.
 
 Ray of Light temporarily rallies every living inhabitant by navigation to spaced walkable positions. Rally paths are deliberately not saved; Continue safely restores ordinary AI.
+
+
+## Alpha 0.0.10 theft and divine teaching
+During daytime autonomous decision intervals, a needy adult may choose theft according to a persistent, usually low preference. The inhabitant approaches another occupied Home, House, Castle, Den, or Great Den with the needed resource, removes exactly one unit, carries it visibly under a cross-shaped misconduct indicator, and deposits it at their own home. Humans hesitate with a restrained sneaking posture; Beasts retain species movement. Inspection reports “Sta rubando cibo/acqua/legna.” A cooldown prevents immediate repetition. Night, meals, intimacy, death, childhood, sleep, and Ray of Light take priority.
+
+Lightning applied during the observable sequence decreases the preference and immediately cancels theft. If a unit was already removed, cancellation restores it to the victim deterministically. Blessing increases the preference without stopping theft and still increments Blessing count, so an Exalted thief is valid. The same powers outside theft do not teach about theft. The player is not enforcing a predefined morality; inhabitants learn what the Omnipotent approves or disapproves through divine intervention.
