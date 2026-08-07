@@ -4,6 +4,7 @@ import { WorldSelectionScreen } from './WorldSelectionScreen.js';
 import { WorldRevealScreen } from './WorldRevealScreen.js';
 import { CharacterCreationScreen } from './CharacterCreationScreen.js';
 import { DivineToolbar } from './DivineToolbar.js';
+import { GameOverScreen } from './GameOverScreen.js';
 
 export class UI {
   constructor(root) {
@@ -14,6 +15,7 @@ export class UI {
     this.worldRevealScreen = new WorldRevealScreen(root.ownerDocument ?? globalThis.document);
     this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document);
     this.divineToolbar = new DivineToolbar(root.ownerDocument ?? globalThis.document);
+    this.gameOverScreen = new GameOverScreen(root.ownerDocument ?? globalThis.document);
   }
 
   createCanvas() {
@@ -42,6 +44,7 @@ export class UI {
   showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
   showPlaying(worldType, miracles, onSelect) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect); }
+  showGameOver(handlers) { this.clearScreens(); this.divineToolbar.remove(); this.gameOverScreen.show(this.root, handlers); }
 
   showLoading(message) { this.showStatus(message, 'loading-screen'); }
   showLoadingError(message) { this.showStatus(message, 'loading-error-screen'); }
@@ -70,6 +73,6 @@ export class UI {
   }
 
   clearScreens() {
-    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen, .loading-screen, .loading-error-screen').forEach(screen => screen.remove());
+    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen, .loading-screen, .loading-error-screen, .game-over-screen').forEach(screen => screen.remove());
   }
 }

@@ -4,8 +4,11 @@ export class Character {
     this.name = data.name;
     this.position = { ...data.position };
     this.worldType = data.worldType;
-    this.chosenOne = true;
-    this.alive = true;
+    this.chosenOne = data.chosenOne ?? true;
+    this.alive = data.alive ?? true;
+    this.householdId = data.householdId ?? null;
+    this.homeBuildingId = data.homeBuildingId ?? null;
+    this.partnerId = data.partnerId ?? null;
     this.appearanceVariant = data.appearanceVariant ?? 'base';
     this.interactionRadius = data.interactionRadius ?? 1.25;
     this.collisionRadius = data.collisionRadius ?? 0.42;
