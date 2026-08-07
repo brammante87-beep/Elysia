@@ -49,6 +49,8 @@ export class Game {
     });
   }
 
+  showGameOver() { this.state.transitionTo(GameState.States.GAME_OVER); this.saveProgress(GameState.States.GAME_OVER); this.ui.showGameOver({ onMenu: () => this.showTitle(), onNewGame: () => this.beginNewGame() }); }
+
   requestNewGame() {
     if (!this.saves.hasSave()) {
       this.beginNewGame();
@@ -169,6 +171,7 @@ export class Game {
     else if (save.data.state === GameState.States.WORLD_SELECTION) this.showWorldSelection();
     else if (this.worldType !== null && this.worldSeed !== null) {
       this.world.restore(this.worldType, this.worldSeed, this.chosenOne, save.data.world);
+      this.chosenOne = this.world.characters.find(character => character.chosenOne) ?? null;
       this.renderer.setWorld(this.world);
       if (save.data.state === GameState.States.WORLD_REVEAL) {
         this.state.transitionTo(GameState.States.WORLD_REVEAL);
@@ -176,18 +179,19 @@ export class Game {
       } else if (save.data.state === GameState.States.CHARACTER_CREATION && !this.chosenOne) {
         this.state.transitionTo(GameState.States.CHARACTER_CREATION);
         this.ui.showCharacterCreation(this.worldType, data => this.createChosenOne(data));
-      } else this.enterPlaying();
+      } else if (save.data.state === GameState.States.GAME_OVER) this.showGameOver();
+      else this.enterPlaying();
     } else this.showIntro();
   }
 
   resize() { this.renderer.resize(); }
 
-  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING) || !this.miracles.selectedPowerId) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); const result = this.miracles.castSelected(worldPoint); if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
+  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
 
   update(deltaTime) {
     this.clock.update(deltaTime);
     this.renderer.update(deltaTime);
-    if (this.state.is(GameState.States.PLAYING)) { this.world.update(deltaTime); this.saveAccumulator += deltaTime; if (this.saveAccumulator >= 2) { this.saveAccumulator = 0; this.saveProgress(GameState.States.PLAYING); } }
+    if (this.state.is(GameState.States.PLAYING)) { this.world.update(deltaTime); if (this.world.plantProgression.complete) { this.showGameOver(); return; } this.saveAccumulator += deltaTime; if (!this.world.plantProgression.triggered && this.saveAccumulator >= 2) { this.saveAccumulator = 0; this.saveProgress(GameState.States.PLAYING); } }
   }
 
   render() { this.renderer.render(); }

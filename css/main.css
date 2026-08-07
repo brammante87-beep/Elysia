@@ -115,3 +115,7 @@ button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
 .divine-power:disabled { border-color: rgb(130 138 137 / 16%); opacity: .38; cursor: not-allowed; filter: grayscale(1); }
 .divine-power:disabled:hover { transform: none; background: rgb(15 24 31 / 80%); }
 @media (max-width: 760px) { .divine-toolbar { overflow-x: auto; } .divine-toolbar__powers { width: 42rem; } }
+.game-over-screen { z-index: 20; background: radial-gradient(circle at 50% 65%, #552b1f99, transparent 28%), linear-gradient(#080b13ee, #160b09fa); }
+.ending-panel { width: min(45rem, 100%); padding: clamp(2rem, 7vw, 4.5rem); border: 1px solid #9d674e; background: #100d12e8; box-shadow: 0 0 7rem #9b3f2633; }
+.ending-panel h1 { margin: .7rem 0 1.4rem; color: #e8c7a8; font: 400 clamp(2.4rem, 9vw, 5rem) Georgia, serif; letter-spacing: .08em; }
+.ending-panel > p:not(.screen-kicker) { color: #cbb9ae; font: clamp(1rem, 2.4vw, 1.25rem)/1.75 Georgia, serif; }
