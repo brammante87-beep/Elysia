@@ -9,6 +9,10 @@ export class Character {
     this.householdId = data.householdId ?? null;
     this.homeBuildingId = data.homeBuildingId ?? null;
     this.partnerId = data.partnerId ?? null;
+    this.parentIds = [...(data.parentIds ?? [])];
+    this.lifeStage = data.lifeStage ?? 'adult';
+    this.birthCycle = data.birthCycle ?? null;
+    this.insideHome = data.insideHome ?? false;
     this.appearanceVariant = data.appearanceVariant ?? 'base';
     this.interactionRadius = data.interactionRadius ?? 1.25;
     this.collisionRadius = data.collisionRadius ?? 0.42;
@@ -16,6 +20,7 @@ export class Character {
     if (data.genderIdentity) this.genderIdentity = data.genderIdentity;
     if (data.sexualOrientation) this.sexualOrientation = data.sexualOrientation;
     if (data.species) this.species = data.species;
+    if (data.reproductiveSex) this.reproductiveSex = data.reproductiveSex;
   }
 
   toJSON() { return { ...this, position: { ...this.position } }; }
