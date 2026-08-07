@@ -105,8 +105,8 @@ export class World {
   addCharacter(character, withAI = true) { if (!this.characters.some(item => item.id === character.id)) this.characters.push(character); if (withAI) this.ensureAI(character); }
   ensureAI(character) { if (!this.ais.has(character.id)) this.ais.set(character.id, new CharacterAI(character, this)); if (character.chosenOne) this.ai = this.ais.get(character.id); return this.ais.get(character.id); }
   getTerrainAt(x, y) { return this.terrain?.getTerrainAt(x, y) ?? null; }
-  inspectCharacter(position) { const character = this.characters.find(item => Math.hypot(item.position.x - position.x, item.position.y - position.y) <= item.interactionRadius); this.selectedCharacterId = character?.id ?? null; return character ?? null; }
-  inspectHome(position) { const home = this.homes.find(item => Math.hypot(item.position.x - position.x, item.position.y - position.y) <= item.collisionRadius + .55) ?? null; this.selectedBuildingId = home?.id ?? null; this.selectedCharacterId = null; return home; }
+  inspectCharacter(position, minimumRadius = 0) { const character = this.characters.find(item => Math.hypot(item.position.x - position.x, item.position.y - position.y) <= Math.max(item.interactionRadius, minimumRadius)); this.selectedCharacterId = character?.id ?? null; return character ?? null; }
+  inspectHome(position, minimumRadius = 0) { const home = this.homes.find(item => Math.hypot(item.position.x - position.x, item.position.y - position.y) <= Math.max(item.collisionRadius + .55, minimumRadius)) ?? null; this.selectedBuildingId = home?.id ?? null; this.selectedCharacterId = null; return home; }
   isTerrainType(x, y, type) { return this.terrain?.isTerrainType(x, y, type) ?? false; }
   isWalkable(x, y) { return this.terrain?.isWalkable(x, y) ?? false; }
 

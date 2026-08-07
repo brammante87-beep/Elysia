@@ -30,12 +30,16 @@ export class Game {
     this.miracles = new Miracles(this.world);
     this.saveAccumulator = 0;
     this.input.onWorldPointer = point => this.handleWorldPointer(point);
+    this.input.onPan = (x, y) => { this.renderer.camera.pan(x, y); this.world.diagnostics.trace('cameraPanStarted'); };
+    this.input.onZoom = (factor, point) => { this.renderer.camera.setZoom(this.renderer.camera.zoom*factor, point); this.world.diagnostics.trace('cameraZoomChanged', { zoom:this.renderer.camera.zoom }); };
+    this.input.onGesture = type => { this.world.diagnostics.trace(type==='tap'?'mobileTapResolved':type==='drag'?'mobileDragResolved':'cameraZoomChanged'); if(type==='drag')this.world.diagnostics.trace('cameraPanEnded'); };
     this.resize = this.resize.bind(this);
   }
 
   start() {
     this.input.connect();
     globalThis.window.addEventListener('resize', this.resize);
+    globalThis.window.addEventListener('orientationchange', () => this.world.diagnostics.trace('orientationChanged'));
     this.resize();
     this.showTitle();
     this.engine.start();
@@ -140,8 +144,26 @@ export class Game {
     }
     this.state.transitionTo(GameState.States.PLAYING);
     this.saveProgress(GameState.States.PLAYING);
-    this.ui.showPlaying(this.worldType, this.miracles);
+    this.ui.showPlaying(this.worldType, this.miracles, null, () => this.focusCamera());
+    this.configurePlayingCamera();
     return true;
+  }
+
+  configurePlayingCamera() {
+    if (!this.canvas?.getBoundingClientRect || !this.renderer?.camera) return;
+    const bounds=this.canvas.getBoundingClientRect();
+    const mobile=bounds.width<=760;
+    const ratio=this.canvas.width/Math.max(1,bounds.width);
+    const zoom=mobile ? Math.max(this.renderer.camera.fitZoom(),10*ratio) : this.renderer.camera.fitZoom();
+    this.renderer.camera.setZoom(zoom);
+    this.focusCamera();
+  }
+
+  focusCamera() {
+    if (!this.renderer?.camera) return;
+    const settlement=this.world.settlements?.find(item=>item.founderId===this.chosenOne?.id);
+    const target=settlement?.center ?? settlement?.position ?? this.chosenOne?.position;
+    if (target) this.renderer.camera.centerOn(target);
   }
 
   createWorldSeed() {
@@ -186,9 +208,9 @@ export class Game {
     } else this.showIntro();
   }
 
-  resize() { this.renderer.resize(); }
+  resize() { this.renderer.resize(); this.world.diagnostics.trace('cameraViewportChanged', { width:this.canvas.width, height:this.canvas.height }); }
 
-  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; if (this.world.rivalAttack?.active && !this.world.rivalAttack.allowsMiracles) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint) ?? this.world.inspectHome(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result?.requiresChoice) this.ui.showSexChoice(result.character, choice => { this.miracles.cast('changeSex', result.character.position, choice); this.saveProgress(GameState.States.PLAYING); }); else if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
+  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; if (this.world.rivalAttack?.active && !this.world.rivalAttack.allowsMiracles) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) { const touchRadius=24*(this.canvas.width/this.canvas.getBoundingClientRect().width)/this.renderer.camera.zoom; return Boolean(this.world.inspectCharacter(worldPoint,touchRadius) ?? this.world.inspectHome(worldPoint,touchRadius)); } const result = this.miracles.castSelected(worldPoint); if (result?.requiresChoice) this.ui.showSexChoice(result.character, choice => { this.miracles.cast('changeSex', result.character.position, choice); this.saveProgress(GameState.States.PLAYING); }); else if (result) this.saveProgress(GameState.States.PLAYING); if(result)this.world.diagnostics.trace('mobileMiracleCast'); return Boolean(result); }
 
   update(deltaTime) {
     this.clock.update(deltaTime);

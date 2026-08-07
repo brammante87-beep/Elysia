@@ -6,6 +6,7 @@ import { TerrainVisualRenderer } from './TerrainVisualRenderer.js';
 import { MigrationNarrative } from '../data/MigrationNarrative.js';
 import { RivalEventRenderer } from './RivalEventRenderer.js';
 import { EnemyRenderer } from './EnemyRenderer.js';
+import { Camera } from './Camera.js';
 
 export class Renderer {
   constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
@@ -21,19 +22,23 @@ export class Renderer {
     this.worldImages = new Map();
     this.rivalEventRenderer = new RivalEventRenderer(this.context, this.canvas, path => this.image(path));
     this.enemyRenderer = new EnemyRenderer(this.context);
+    this.camera = new Camera(canvas.width, canvas.height);
+    this.renderDpr = 1;
   }
 
-  setWorld(world) { this.world = world; this.buildTerrainLayer(); }
+  setWorld(world) { this.world = world; this.camera.configure(world.terrain.width, world.terrain.height, this.canvas.width, this.canvas.height); this.buildTerrainLayer(); }
   update(deltaTime) { this.elapsed += deltaTime; }
 
   resize() {
     const bounds = this.canvas.getBoundingClientRect();
-    const pixelRatio = Math.max(1, this.window?.devicePixelRatio || 1);
+    const pixelRatio = Math.min(2, Math.max(1, this.window?.devicePixelRatio || 1));
+    this.renderDpr = pixelRatio;
     const width = Math.max(1, Math.round(bounds.width * pixelRatio));
     const height = Math.max(1, Math.round(bounds.height * pixelRatio));
     if (this.canvas.width !== width || this.canvas.height !== height) {
       this.canvas.width = width; this.canvas.height = height;
     }
+    this.camera.setViewport(width, height);
   }
 
   render() {
@@ -80,15 +85,19 @@ export class Renderer {
   drawBaseTerrain() {
     const { context, canvas } = this;
     context.clearRect(0, 0, canvas.width, canvas.height);
-    this.terrainVisualRenderer?.drawStatic(context, canvas.width, canvas.height);
-    this.terrainVisualRenderer?.drawDynamic(context, canvas.width, canvas.height, this.elapsed);
+    const origin = this.camera.worldToScreen({ x: 0, y: 0 });
+    const width = this.world.terrain.width * this.camera.zoom;
+    const height = this.world.terrain.height * this.camera.zoom;
+    this.terrainVisualRenderer?.drawStaticAt(context, origin.x, origin.y, width, height);
+    context.save(); context.translate(origin.x, origin.y);
+    this.terrainVisualRenderer?.drawDynamic(context, width, height, this.elapsed); context.restore();
     if (this.world.plantProgression?.triggered) { context.fillStyle = `rgba(15,8,20,${Math.min(.58, this.world.plantProgression.elapsed * .075)})`; context.fillRect(0, 0, canvas.width, canvas.height); }
   }
 
-  screenToWorld(point) { return { x: point.x / this.canvas.width * this.world.terrain.width, y: point.y / this.canvas.height * this.world.terrain.height }; }
-  worldPoint(position) { return { x: position.x / this.world.terrain.width * this.canvas.width, y: position.y / this.world.terrain.height * this.canvas.height }; }
+  screenToWorld(point) { return this.camera.screenToWorld(point); }
+  worldPoint(position) { return this.camera.worldToScreen(position); }
   image(path) { if (!this.worldImages.has(path)) { const image = new Image(); image.src = path; this.worldImages.set(path, image); } return this.worldImages.get(path); }
-  drawAsset(path, position, worldWidth, worldHeight, alpha = 1) { const image = this.image(path); if (!image.complete) return; const point = this.worldPoint(position); const width = worldWidth / this.world.terrain.width * this.canvas.width; const height = worldHeight / this.world.terrain.height * this.canvas.height; this.context.save(); this.context.globalAlpha = alpha; this.context.drawImage(image, point.x - width / 2, point.y - height * .82, width, height); this.context.restore(); }
+  drawAsset(path, position, worldWidth, worldHeight, alpha = 1) { const image = this.image(path); if (!image.complete) return; const point = this.worldPoint(position); const width = worldWidth * this.camera.zoom; const height = worldHeight * this.camera.zoom; this.context.save(); this.context.globalAlpha = alpha; this.context.drawImage(image, point.x - width / 2, point.y - height * .82, width, height); this.context.restore(); }
   drawWorldObjects() { for (const tree of this.world.trees) this.drawAsset(tree.harvestable ? 'assets/entities/tree-healthy.svg' : 'assets/entities/tree-stump.svg', tree.position, 4.1, tree.harvestable ? 5.2 : 2.1); for (const source of this.world.waterSources.filter(e => e.alive)) this.drawAsset('assets/entities/water-source.svg', source.position, 3.5, 2.4); for (const cow of this.world.cows.filter(e => e.alive)) this.drawAsset('assets/entities/cow-idle.svg', cow.position, 4.8, 3.5); for (const food of this.world.animalFoodSources.filter(e => e.alive)) this.drawAsset('assets/entities/animal-food.svg', food.position, 3.8, 2.8); for (const flower of this.world.flowers) this.drawAsset('assets/entities/divine-flower.svg', flower.position, 2.2, 2.8); for (const tree of this.world.appleTrees) this.drawAsset('assets/entities/apple-tree.svg', tree.position, 4.8, 5.6, tree.availableFruit ? 1 : .78); }
   drawBuildings() { for (const home of this.world.homes) { const central = home.kind === 'centralStructure'; const beast = home.visualVariant?.includes('Den') || home.visualVariant?.startsWith('den') || home.visualVariant?.startsWith('establishedDen'); const path = central ? (beast ? 'assets/entities/great-den.svg' : 'assets/entities/castle.svg') : beast ? 'assets/entities/established-den.svg' : home.kind === 'house' ? 'assets/entities/house.svg' : 'assets/entities/hut.svg'; this.drawAsset(path, home.position, central ? 11 : 8, central ? 8 : 6.4, home.completed ? 1 : Math.max(.25, home.buildProgress)); if (home.transformationAge < 1.4) this.drawTransformation(home); } }
   drawMiracleEffects() { for (const effect of this.world.effects) { if (effect.type === 'intimacy') { this.drawIntimacyHearts(effect); continue; } if (effect.type === 'newLife') { this.drawNewLifeEffect(effect); continue; } if(effect.type==='lifeBloom'||effect.type==='lifeBloomEmergence'){this.drawLifeBloom(effect);continue;} if(effect.type==='identityReveal'){this.drawIdentityReveal(effect);continue;} const point = this.worldPoint(effect.position); if (['lightning','blessing','rayOfLight','flowerGrowth','exalted','changeSex','giveWeapons','shield'].includes(effect.type)) { this.drawDivineEffect(effect); continue; } const radius = (12 + effect.age * 35) * (this.canvas.width / 1200); this.context.save(); this.context.globalAlpha = 1 - effect.age / .8; this.context.strokeStyle = effect.type === 'valid' ? '#fff1a8' : '#ef8d79'; this.context.lineWidth = 3; this.context.beginPath(); this.context.arc(point.x, point.y, radius, 0, Math.PI * 2); this.context.stroke(); this.context.restore(); } }
@@ -114,19 +123,17 @@ export class Renderer {
   drawPlantEnding() { const progression = this.world.plantProgression; if (!progression?.triggered) return; const context = this.context; const phase = progression.phase(); if (phase === 'rival') { context.save(); context.textAlign = 'center'; context.fillStyle = '#eee4ff'; context.shadowColor = '#aa8eff'; context.shadowBlur = 18; context.font = `400 ${Math.max(20, this.canvas.width*.026)}px Georgia`; context.fillText('« Interessante. Hai scelto un mondo incapace di difendersi. »', this.canvas.width/2, this.canvas.height*.2); context.restore(); } if (phase === 'meteor' || phase === 'impact') { const target = this.worldPoint({ x: this.world.terrain.width/2, y: this.world.terrain.height/2 }); const t = Math.min(1, Math.max(0, (progression.elapsed-3.3)/1.9)); const start = { x: this.canvas.width*1.08, y: -80 }; const meteor = { x: start.x+(target.x-start.x)*t, y:start.y+(target.y-start.y)*t }; context.save(); const gradient = context.createLinearGradient(start.x,start.y,meteor.x,meteor.y); gradient.addColorStop(0,'rgba(255,80,20,0)'); gradient.addColorStop(1,'#ffd08a'); context.strokeStyle=gradient; context.lineWidth=22; context.beginPath(); context.moveTo(start.x,start.y); context.lineTo(meteor.x,meteor.y); context.stroke(); context.fillStyle='#fff1bd'; context.shadowColor='#ff5b24'; context.shadowBlur=28; context.beginPath(); context.arc(meteor.x,meteor.y,14,0,Math.PI*2); context.fill(); if (phase==='impact') { const radius=(progression.elapsed-5.2)*180; context.strokeStyle='#ffe9bd'; context.lineWidth=12; context.globalAlpha=Math.max(0,1-radius/360); context.beginPath(); context.arc(target.x,target.y,radius,0,Math.PI*2); context.stroke(); context.fillStyle=`rgba(255,225,180,${Math.max(0,.8-radius/300)})`; context.fillRect(0,0,this.canvas.width,this.canvas.height); } context.restore(); } }
 
   characterPoint(character) {
-    return { x: (character.position.x + 0.5) / this.world.terrain.width * this.canvas.width,
-      y: (character.position.y + 0.5) / this.world.terrain.height * this.canvas.height };
+    return this.worldPoint({ x: character.position.x + 0.5, y: character.position.y + 0.5 });
   }
 
   drawCharacters() {
     for (const character of this.world.characters.filter(item => item.alive && !item.insideHome)) {
       const point = this.characterPoint(character);
-      const pixelsPerWorldUnit = Math.min(this.canvas.width / this.world.terrain.width,
-        this.canvas.height / this.world.terrain.height);
+      const pixelsPerWorldUnit = this.camera.zoom;
       this.characterRenderer.render(character, point, this.elapsed, pixelsPerWorldUnit);
     }
   }
-  drawEnemies() { const scale=Math.min(this.canvas.width/this.world.terrain.width,this.canvas.height/this.world.terrain.height);for(const enemy of this.world.invasions.enemies.filter(e=>e.alive))this.enemyRenderer.render(enemy,this.worldPoint(enemy.position),scale,this.elapsed); }
+  drawEnemies() { const scale=this.camera.zoom;for(const enemy of this.world.invasions.enemies.filter(e=>e.alive))this.enemyRenderer.render(enemy,this.worldPoint(enemy.position),scale,this.elapsed); }
   drawProjectiles() { const c=this.context;for(const projectile of this.world.projectiles.projectiles.filter(p=>p.alive)){const p=this.worldPoint(projectile.position),angle=Math.atan2(projectile.velocity.y,projectile.velocity.x);c.save();c.translate(p.x,p.y);c.rotate(angle);if(projectile.type==='arrow'){c.strokeStyle='#432b1b';c.lineWidth=2;c.beginPath();c.moveTo(-10,0);c.lineTo(10,0);c.stroke();c.fillStyle='#d2c19d';c.beginPath();c.moveTo(10,0);c.lineTo(4,-4);c.lineTo(4,4);c.fill();}else{c.fillStyle='#63efff';c.shadowColor='#e541df';c.shadowBlur=12;c.beginPath();c.ellipse(0,0,12,4,0,0,Math.PI*2);c.fill();}c.restore();} }
   drawInvasionPresentation() { const invasion=this.world.invasions;if(!invasion)return;const c=this.context;for(const enemy of invasion.enemies.filter(e=>e.alive)){const p=this.worldPoint(enemy.position),ratio=enemy.health/enemy.type.baseHealth;c.fillStyle='rgba(20,12,18,.8)';c.fillRect(p.x-18,p.y-52,36,4);c.fillStyle=enemy.rivalWorldId==='rivalWorld1'?'#d89a45':enemy.rivalWorldId==='rivalWorld2'?'#b9dbef':'#5cf3ef';c.fillRect(p.x-18,p.y-52,36*ratio,4);}const intro=invasion.introduction;if(!intro)return;c.save();c.fillStyle='rgba(5,10,20,.88)';c.fillRect(this.canvas.width*.13,this.canvas.height*.08,this.canvas.width*.74,96);c.strokeStyle='#c9a76a';c.strokeRect(this.canvas.width*.13,this.canvas.height*.08,this.canvas.width*.74,96);c.textAlign='center';c.fillStyle='#f8eac5';c.font='600 20px Georgia';c.fillText(intro[0],this.canvas.width/2,this.canvas.height*.08+34);c.font='italic 15px Georgia';c.fillText(intro[1],this.canvas.width/2,this.canvas.height*.08+67);c.restore(); }
 

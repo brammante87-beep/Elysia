@@ -45,7 +45,7 @@ export class UI {
 
   showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
-  showPlaying(worldType, miracles, onSelect) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect); }
+  showPlaying(worldType, miracles, onSelect, onFocus) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect, onFocus); }
   showSexChoice(character, onChoose) { this.sexChoicePanel.show(this.root, character, onChoose); }
   showGameOver(handlers) { this.clearScreens(); this.divineToolbar.remove(); this.gameOverScreen.show(this.root, handlers); }
 
