@@ -52,3 +52,6 @@ normal gathering resumes at dawn. The semantic timer and in-progress meal state 
 ## Alpha 0.0.8 — Settlement Growth & First Castle
 
 A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle, one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving resources, residents, surrounding homes, and its generated settlement name. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
+
+## Alpha 0.0.9 — Complete Divine Power Set
+All ten fixed toolbar powers are functional in Human and Beast worlds. Placement miracles create Plants, Water, gameplay Flowers and world-specific food; character miracles apply Lightning, Blessing, Change Sex, Weapons and Shield; Ray of Light issues a temporary navigated rally. Flowers mature into renewable Apple Trees after one simulation cycle.

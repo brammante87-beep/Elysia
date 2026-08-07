@@ -34,7 +34,7 @@ test('visual decoration is absent from gameplay persistence', () => {
   const world = new World(); world.create('plant', 71);
   const visual = new TerrainVisualModel(world.terrain, 'plant', 71);
   assert.ok(visual.decorations.length > 0);
-  assert.doesNotMatch(JSON.stringify(world.toJSON()), /decorations|tuft|flower|shrub|rock/);
+  assert.doesNotMatch(JSON.stringify(world.toJSON()), /decorations|tuft|shrub|rock/);
 });
 
 test('world coordinates and cache size do not depend on viewport dimensions', () => {

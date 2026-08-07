@@ -5,6 +5,7 @@ import { WorldRevealScreen } from './WorldRevealScreen.js';
 import { CharacterCreationScreen } from './CharacterCreationScreen.js';
 import { DivineToolbar } from './DivineToolbar.js';
 import { GameOverScreen } from './GameOverScreen.js';
+import { SexChoicePanel } from './SexChoicePanel.js';
 
 export class UI {
   constructor(root) {
@@ -16,6 +17,7 @@ export class UI {
     this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document);
     this.divineToolbar = new DivineToolbar(root.ownerDocument ?? globalThis.document);
     this.gameOverScreen = new GameOverScreen(root.ownerDocument ?? globalThis.document);
+    this.sexChoicePanel = new SexChoicePanel(root.ownerDocument ?? globalThis.document);
   }
 
   createCanvas() {
@@ -44,6 +46,7 @@ export class UI {
   showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
   showPlaying(worldType, miracles, onSelect) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect); }
+  showSexChoice(character, onChoose) { this.sexChoicePanel.show(this.root, character, onChoose); }
   showGameOver(handlers) { this.clearScreens(); this.divineToolbar.remove(); this.gameOverScreen.show(this.root, handlers); }
 
   showLoading(message) { this.showStatus(message, 'loading-screen'); }
@@ -73,6 +76,7 @@ export class UI {
   }
 
   clearScreens() {
+    this.sexChoicePanel.remove();
     this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen, .loading-screen, .loading-error-screen, .game-over-screen').forEach(screen => screen.remove());
   }
 }

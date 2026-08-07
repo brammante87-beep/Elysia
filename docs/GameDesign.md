@@ -57,3 +57,6 @@ Chosen One → Hut → Partner → House → Immigration → Multiple houses →
 Exalted founders → Up to 3 castles.
 
 This progression is documentation only and is not implemented in Alpha 0.0.4.
+
+## Alpha 0.0.9 boundaries
+Exalted inhabitants are eligible to found settlements, but founding/migration remains future behavior. Weapons and Shield are persistent visible statuses for future combat; there is no attack or damage system, and Shield does not stop the Omnipotent's Lightning. Theft and morality learning remain future systems.
