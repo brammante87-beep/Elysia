@@ -1,5 +1,5 @@
 export class Config {
-  static VERSION = 'Alpha 0.0.7';
+  static VERSION = 'Alpha 0.0.8';
   static MAX_DELTA_SECONDS = 0.1;
   static BACKGROUND_COLOR = '#25282a';
   static SAVE_KEY = 'elysia_reboot_save_v1';
@@ -15,4 +15,10 @@ export class Config {
   static MEAL_ANNOUNCEMENT_SECONDS = 2.25;
   static MEAL_DURATION_SECONDS = 3;
   static NEW_LIFE_MESSAGE_SECONDS = 6;
+  static ANIMAL_FOOD_YIELD = 3;
+  static NEW_HOME_WOOD_COST = 3;
+  static CENTRAL_STORAGE_CAPACITY = 30;
+  static SETTLEMENT_HOME_MILESTONE = 4;
+  static POPULATION_LIMIT = 24;
+  static SOCIAL_OPPORTUNITY_SECONDS = 20;
 }
