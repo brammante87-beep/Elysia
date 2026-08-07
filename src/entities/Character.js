@@ -6,6 +6,9 @@ export class Character {
     this.worldType = data.worldType;
     this.chosenOne = true;
     this.alive = true;
+    this.appearanceVariant = data.appearanceVariant ?? 'base';
+    this.interactionRadius = data.interactionRadius ?? 1.25;
+    this.collisionRadius = data.collisionRadius ?? 0.42;
     if (data.sexCharacteristics) this.sexCharacteristics = data.sexCharacteristics;
     if (data.genderIdentity) this.genderIdentity = data.genderIdentity;
     if (data.sexualOrientation) this.sexualOrientation = data.sexualOrientation;

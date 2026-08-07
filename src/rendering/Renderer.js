@@ -2,15 +2,21 @@ import { Config } from '../core/Config.js';
 import { TerrainMap } from '../world/TerrainMap.js';
 import { WorldTypeId } from '../data/WorldTypes.js';
 import { SeededRandom } from '../world/SeededRandom.js';
+import { CharacterRenderer } from './CharacterRenderer.js';
+import { CharacterAssetRegistry } from '../assets/CharacterAssetRegistry.js';
+import { AssetLoader } from '../assets/AssetLoader.js';
 
 export class Renderer {
-  constructor(canvas, windowObject = globalThis.window) {
+  constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.window = windowObject;
     this.world = null;
     this.elapsed = 0;
     this.terrainLayer = null;
+    this.assetRegistry = registry;
+    this.assetLoader = assetLoader ?? new AssetLoader(registry);
+    this.characterRenderer = new CharacterRenderer(this.context, registry, this.assetLoader);
   }
 
   setWorld(world) { this.world = world; this.buildTerrainLayer(); }
@@ -33,7 +39,6 @@ export class Renderer {
     this.drawWorldObjects();
     this.drawBuildings();
     this.drawCharacters();
-    this.drawCharacterLabels();
     this.drawMiracleEffects();
     this.drawGameplayUI();
   }
@@ -106,43 +111,10 @@ export class Renderer {
 
   drawCharacters() {
     for (const character of this.world.characters) {
-      const point = this.characterPoint(character); const bob = Math.sin(this.elapsed * 2.2) * 1.5;
-      const scale = Math.max(0.8, Math.min(this.canvas.width, this.canvas.height) / 620);
-      this.context.save(); this.context.translate(point.x, point.y + bob); this.context.scale(scale, scale);
-      this.drawHalo();
-      if (character.species) this.drawAnimal(character.species); else this.drawHuman();
-      this.context.restore();
-    }
-  }
-
-  drawHalo() {
-    const context = this.context; context.strokeStyle = 'rgba(255,236,154,.75)'; context.lineWidth = 1.5;
-    context.beginPath(); context.ellipse(0, 8, 13, 6, 0, 0, Math.PI * 2); context.stroke();
-  }
-
-  drawHuman() {
-    const context = this.context;
-    context.fillStyle = '#3d2532'; context.beginPath(); context.ellipse(0, 0, 7, 10, 0, 0, Math.PI * 2); context.fill();
-    context.fillStyle = '#e5b889'; context.beginPath(); context.arc(0, -9, 5, 0, Math.PI * 2); context.fill();
-    context.strokeStyle = '#f1dbb6'; context.lineWidth = 2; context.beginPath(); context.moveTo(-5, 0); context.lineTo(-9, 6); context.moveTo(5, 0); context.lineTo(9, 6); context.stroke();
-  }
-
-  drawAnimal(species) {
-    const context = this.context; const palettes = { deer: '#a7774f', cat: '#d0a86f', dog: '#755443' };
-    context.fillStyle = palettes[species]; context.beginPath(); context.ellipse(0, 0, 10, 7, 0, 0, Math.PI * 2); context.fill();
-    context.beginPath(); context.arc(8, -5, species === 'deer' ? 5 : 6, 0, Math.PI * 2); context.fill();
-    context.strokeStyle = palettes[species]; context.lineWidth = 3;
-    context.beginPath(); context.moveTo(-6, 4); context.lineTo(-7, 11); context.moveTo(4, 4); context.lineTo(5, 11); context.stroke();
-    if (species === 'deer') { context.lineWidth = 1.5; context.beginPath(); context.moveTo(7, -9); context.lineTo(4, -15); context.moveTo(10, -9); context.lineTo(13, -15); context.stroke(); }
-    else { context.beginPath(); context.moveTo(5, -9); context.lineTo(7, -15); context.lineTo(10, -10); context.lineTo(14, -14); context.lineTo(14, -7); context.fill(); }
-  }
-
-  drawCharacterLabels() {
-    const context = this.context; context.textAlign = 'center'; context.font = `600 ${Math.max(11, this.canvas.height * 0.017)}px system-ui, sans-serif`;
-    for (const character of this.world.characters) {
-      const point = this.characterPoint(character); const y = point.y + 29;
-      context.lineWidth = 4; context.strokeStyle = 'rgba(8,18,18,.75)'; context.strokeText(character.name, point.x, y);
-      context.fillStyle = '#fff5d4'; context.fillText(character.name, point.x, y);
+      const point = this.characterPoint(character);
+      const pixelsPerWorldUnit = Math.min(this.canvas.width / this.world.terrain.width,
+        this.canvas.height / this.world.terrain.height);
+      this.characterRenderer.render(character, point, this.elapsed, pixelsPerWorldUnit);
     }
   }
 }
