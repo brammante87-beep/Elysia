@@ -10,6 +10,7 @@ import { House } from '../entities/House.js';
 import { Household } from '../households/Household.js';
 import { Dwelling } from '../entities/Dwelling.js';
 import { SettlementRules } from './SettlementRules.js';
+import { RefugeeIdentity } from '../entities/RefugeeIdentity.js';
 
 export class NewcomerSystem {
   static Speech = 'Ciao, sono stanco di stare solo. Posso unirmi al vostro villaggio?';
@@ -24,7 +25,8 @@ export class NewcomerSystem {
     if (!settlement) return null;
     const target = settlement.center ?? this.world.findHome(settlement.foundingHomeId)?.position; const position = target && this.world.findEdgeReachablePosition(target); if (!position) return null;
     const id = `newcomer-${cycle}-${this.world.nextCharacterId++}`; const seed = this.world.worldSeed + cycle + this.world.nextCharacterId; const originWorld = this.narrative.origin(seed); const arrivalStoryType = this.narrative.story(seed + 3); const species = this.world.worldType === WorldTypeId.BEAST ? CharacterCreator.BeastSpecies[Math.abs(seed) % CharacterCreator.BeastSpecies.length] : null; const dialogue = this.narrative.dialogue(arrivalStoryType, originWorld, species, seed + 7);
-    const base = { id, name: new NameGenerator(this.world.characters.map(character => character.name)).generate(seed), position, arrivalPosition: position, worldType: this.world.worldType, chosenOne: false, lifeStage: 'adult', alive: true, arrivalCycle: cycle, newcomer: true, introductionCompleted: false, settlementId: settlement.id, originWorld, arrivalStoryType, arrivalLineId: dialogue.id, speechText: dialogue.lines[0], speechLines: dialogue.lines };
+    const rivalIdentity = RefugeeIdentity.data(originWorld, this.world.invasions.revealedWorldIds.includes(RefugeeIdentity.worldIdForOrigin(originWorld)));
+    const base = { id, name: new NameGenerator(this.world.characters.map(character => character.name)).generate(seed), position, arrivalPosition: position, worldType: this.world.worldType, chosenOne: false, lifeStage: 'adult', alive: true, arrivalCycle: cycle, newcomer: true, introductionCompleted: false, settlementId: settlement.id, originType: 'externalMigrant', originWorld, ...rivalIdentity, arrivalStoryType, arrivalLineId: dialogue.id, speechText: dialogue.lines[0], speechLines: dialogue.lines };
     const character = species ? new Character({ ...base, species, reproductiveSex: cycle % 2 ? 'female' : 'male' }) : new Character({ ...base, sexCharacteristics: CharacterCreator.SexCharacteristics[cycle % 3], genderIdentity: CharacterCreator.GenderIdentities[(cycle + 1) % 3], sexualOrientation: CharacterCreator.SexualOrientations[(cycle + 2) % 3] });
     this.world.addCharacter(character, false); settlement.externalArrivalCount += 1; this.pendingIds.push(id); this.newcomersCreated += 1; this.progress[id] = { wood: 0, elapsed: 0, stage: 'approaching', speechRemaining: 0, speechIndex: 0 };
     const movement = new CharacterMovement(character); movement.follow(new Pathfinder().findPath(this.world.terrain, position, target).slice(0, -3)); this.movements.set(id, movement); character.visualState = 'walk';

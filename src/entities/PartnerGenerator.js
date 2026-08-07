@@ -7,7 +7,8 @@ import { WorldTypeId } from '../data/WorldTypes.js';
 export class PartnerGenerator {
   generate(chosenOne, position, characters, seed = 0) {
     const name = new NameGenerator(characters.map(character => character.name)).generate(seed + characters.length);
-    const base = { id: `partner-${Number(seed).toString(36)}`, name, position, alive: true, chosenOne: false, worldType: chosenOne.worldType };
+    const base = { id: `partner-${Number(seed).toString(36)}`, name, position, alive: true, chosenOne: false, worldType: chosenOne.worldType,
+      originType: 'elysiaBorn', originWorld: 'ELYSIA', originWorldId: null, trueSpecies: null, isDisguised: false, identityRevealed: false };
     if (chosenOne.worldType === WorldTypeId.BEAST) return new Character({ ...base, species: chosenOne.species, reproductiveSex: chosenOne.reproductiveSex === 'male' ? 'female' : 'male' });
     const candidates = this.humanCandidates(chosenOne);
     const attributes = candidates[Math.abs(seed) % candidates.length];

@@ -1,48 +1,24 @@
-import { Pathfinder } from '../world/Pathfinder.js';
-import { CharacterMovement } from '../entities/CharacterMovement.js';
 import { PartnerGenerator } from '../entities/PartnerGenerator.js';
 import { Household } from '../households/Household.js';
 import { House } from '../entities/House.js';
 import { Dwelling } from '../entities/Dwelling.js';
 
 export class HouseholdProgression {
-  static States = Object.freeze({ WAITING: 'waiting', APPROACHING: 'approaching', SPEAKING: 'speaking', COMPLETE: 'complete' });
-  constructor(world) { this.world = world; this.state = HouseholdProgression.States.WAITING; this.partnerId = null; this.speechRemaining = 0; this.movement = null; this.pathfinder = new Pathfinder(); }
-
-  update(deltaTime) {
-    if (this.state === HouseholdProgression.States.WAITING && this.world.hut?.completed && ['wood', 'water', 'food'].every(resource => this.world.hut.storage.get(resource) >= 3)) this.spawnPartner();
-    if (this.state === HouseholdProgression.States.APPROACHING && this.movement?.update(deltaTime)) { this.state = HouseholdProgression.States.SPEAKING; this.speechRemaining = 4.2; this.partner.visualState = 'idle'; }
-    else if (this.state === HouseholdProgression.States.SPEAKING) { this.speechRemaining -= deltaTime; if (this.speechRemaining <= 0) this.formHousehold(); }
+  static States = Object.freeze({ WAITING: 'waiting', BLOOMING: 'blooming', MATERIALIZING: 'materializing', SPEAKING: 'speaking', COMPLETE: 'complete' });
+  static Narration = 'Elysia ha deciso di donare un degno compagno al tuo Prescelto.';
+  constructor(world) { this.world=world;this.state=HouseholdProgression.States.WAITING;this.partnerId=null;this.speechRemaining=0;this.bloomElapsed=0;this.bloomPosition=null;this.chosenPartnerBloomCompleted=false; }
+  get partner(){return this.world.characters.find(character=>character.id===this.partnerId)??null;}
+  update(deltaTime){
+    if(this.state===HouseholdProgression.States.WAITING&&this.ready())this.beginLifeBloom();
+    if(this.state===HouseholdProgression.States.BLOOMING){this.bloomElapsed+=deltaTime;if(this.bloomElapsed>=3.6)this.materializePartner();}
+    else if(this.state===HouseholdProgression.States.MATERIALIZING){this.bloomElapsed+=deltaTime;if(this.bloomElapsed>=5.2){this.state=HouseholdProgression.States.SPEAKING;this.speechRemaining=4.2;}}
+    else if(this.state===HouseholdProgression.States.SPEAKING){this.speechRemaining-=deltaTime;if(this.speechRemaining<=0)this.formHousehold();}
   }
-
-  get partner() { return this.world.characters.find(character => character.id === this.partnerId) ?? null; }
-  spawnPartner() {
-    if (this.partnerId || this.world.households.length) return;
-    const chosen = this.world.characters.find(character => character.chosenOne);
-    if (!chosen) return;
-    const spawn = this.world.findDistantReachablePosition(chosen.position, this.world.hut.position);
-    if (!spawn) return;
-    const partner = new PartnerGenerator().generate(chosen, spawn, this.world.characters, this.world.worldSeed);
-    this.world.addCharacter(partner, false);
-    this.partnerId = partner.id;
-    const path = this.pathfinder.findPath(this.world.terrain, spawn, chosen.position);
-    this.movement = new CharacterMovement(partner); this.movement.follow(path);
-    partner.visualState = 'walk'; this.state = HouseholdProgression.States.APPROACHING;
-  }
-
-  speechText() { return this.partner?.genderIdentity === 'woman' ? 'Sei forte, sei bella, voglio un mondo con te.' : 'Sei forte, sei bello, voglio un mondo con te.'; }
-  formHousehold() {
-    if (this.world.households.length) { this.state = HouseholdProgression.States.COMPLETE; return; }
-    const chosen = this.world.characters.find(character => character.chosenOne); const partner = this.partner;
-    if (!chosen || !partner || !this.world.hut) return;
-    const household = new Household({ id: 'household-1', memberIds: [chosen.id, partner.id], homeBuildingId: this.world.hut.id });
-    const hut = this.world.hut;
-    this.world.hut = new House({ ...hut.toJSON(), householdId: household.id, transformationAge: 0, visualVariant: Dwelling.variant(this.world.worldType, true, chosen.species) });
-    this.world.households.push(household); this.world.homes = [this.world.hut]; this.world.settlementProgression.ensureFoundingSettlement();
-    for (const member of [chosen, partner]) { member.householdId = household.id; member.homeBuildingId = this.world.hut.id; member.partnerId = member === chosen ? partner.id : chosen.id; this.world.ensureAI(member); }
-    this.world.addEffect(hut.position, 'transform'); this.state = HouseholdProgression.States.COMPLETE;
-  }
-
-  restore(data = {}) { this.state = data.state ?? HouseholdProgression.States.WAITING; this.partnerId = data.partnerId ?? null; this.speechRemaining = data.speechRemaining ?? 0; if ([HouseholdProgression.States.APPROACHING, HouseholdProgression.States.SPEAKING].includes(this.state)) { this.state = HouseholdProgression.States.SPEAKING; this.speechRemaining = Math.max(1, this.speechRemaining); } }
-  toJSON() { return { state: this.state, partnerId: this.partnerId, speechRemaining: this.speechRemaining }; }
+  ready(){return !this.chosenPartnerBloomCompleted&&this.world.hut?.completed&&['wood','water','food'].every(resource=>this.world.hut.storage.get(resource)>=3);}
+  beginLifeBloom(){if(this.partnerId||this.world.households.length)return false;const chosen=this.world.characters.find(character=>character.chosenOne);if(!chosen)return false;this.world.ais.get(chosen.id)?.interrupt();chosen.aiTask='witnessingLifeBloom';this.bloomPosition=this.world.findBuildPosition(this.world.hut.position)??{x:this.world.hut.position.x+1,y:this.world.hut.position.y};this.bloomElapsed=0;this.state=HouseholdProgression.States.BLOOMING;this.world.addEffect(this.bloomPosition,'lifeBloom',{duration:5.2,message:HouseholdProgression.Narration});return true;}
+  materializePartner(){if(this.partnerId)return this.partner;const chosen=this.world.characters.find(character=>character.chosenOne);if(!chosen)return null;const partner=new PartnerGenerator().generate(chosen,this.bloomPosition,this.world.characters,this.world.worldSeed);partner.visualState='idle';partner.materializing=true;this.world.addCharacter(partner,false);this.partnerId=partner.id;this.state=HouseholdProgression.States.MATERIALIZING;this.world.addEffect(this.bloomPosition,'lifeBloomEmergence',{duration:1.6,characterId:partner.id});return partner;}
+  speechText(){return this.partner?.genderIdentity==='woman'?'Sei forte, sei bella, voglio un mondo con te.':'Sei forte, sei bello, voglio un mondo con te.';}
+  formHousehold(){if(this.world.households.length){this.state=HouseholdProgression.States.COMPLETE;this.chosenPartnerBloomCompleted=true;return;}const chosen=this.world.characters.find(character=>character.chosenOne),partner=this.partner;if(!chosen||!partner||!this.world.hut)return;const household=new Household({id:'household-1',memberIds:[chosen.id,partner.id],homeBuildingId:this.world.hut.id});const hut=this.world.hut;this.world.hut=new House({...hut.toJSON(),householdId:household.id,transformationAge:0,visualVariant:Dwelling.variant(this.world.worldType,true,chosen.species)});this.world.households.push(household);this.world.homes=[this.world.hut];this.world.settlementProgression.ensureFoundingSettlement();for(const member of[chosen,partner]){member.householdId=household.id;member.homeBuildingId=this.world.hut.id;member.partnerId=member===chosen?partner.id:chosen.id;member.aiTask=null;member.materializing=false;this.world.ensureAI(member);}this.world.addEffect(hut.position,'transform');this.state=HouseholdProgression.States.COMPLETE;this.chosenPartnerBloomCompleted=true;}
+  restore(data={}){this.state=data.state??HouseholdProgression.States.WAITING;this.partnerId=data.partnerId??null;this.speechRemaining=data.speechRemaining??0;this.bloomElapsed=data.bloomElapsed??0;this.bloomPosition=data.bloomPosition?{...data.bloomPosition}:null;this.chosenPartnerBloomCompleted=data.chosenPartnerBloomCompleted??this.state===HouseholdProgression.States.COMPLETE;if(this.state===HouseholdProgression.States.MATERIALIZING&&!this.partner)this.state=HouseholdProgression.States.BLOOMING;if([HouseholdProgression.States.BLOOMING,HouseholdProgression.States.MATERIALIZING].includes(this.state)&&this.bloomPosition)this.world.addEffect(this.bloomPosition,'lifeBloom',{duration:Math.max(1,5.2-this.bloomElapsed),message:HouseholdProgression.Narration});}
+  toJSON(){return{state:this.state,partnerId:this.partnerId,speechRemaining:this.speechRemaining,bloomElapsed:this.bloomElapsed,bloomPosition:this.bloomPosition?{...this.bloomPosition}:null,chosenPartnerBloomCompleted:this.chosenPartnerBloomCompleted};}
 }

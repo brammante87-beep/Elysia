@@ -45,6 +45,8 @@ export class CharacterAssetRegistry {
   }
 
   resolveId(character) {
+    if (character.visualProfile?.startsWith('civilian.')) return character.visualProfile;
+    if (character.isDisguised && character.disguiseVisualProfile) return character.disguiseVisualProfile;
     if (character.lifeStage === 'child') return character.species ? `beast.${character.species}.child` : 'human.child';
     return character.species ? `beast.${character.species}` : new HumanVisualProfileResolver().resolve(character);
   }
