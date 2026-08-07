@@ -1,11 +1,12 @@
 # Elysia
 
-**Alpha 0.0.2 — Title Screen & Game Start Foundation**
+**Alpha 0.0.3 — Introduction & World Selection**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-current milestone adds an Italian title screen, safe New Game confirmation, and
-validated Continue flow to the Alpha 0.0.1 technical foundation. It intentionally
-contains no playable world or gameplay.
+current milestone adds a four-page Italian introduction, the Circle of the
+Omnipotents, Elysia, and a confirmed choice between Human, Beast, and Plant worlds.
+Progress is saved across the introduction and selection. It intentionally contains
+no terrain, inhabitants, miracles, or playable gameplay.
 
 ## Run
 
@@ -21,6 +22,6 @@ Visit <http://localhost:8000>. Run the lightweight foundation tests with:
 node --test
 ```
 
-Tests may create a supported save through `SaveManager.save({ state: 'INTRO' })` to
-verify Continue without exposing player-facing debug controls. Project direction
-and technical boundaries are recorded in [`docs/`](docs/).
+Version 1 saves now store `state`, `introPage`, and `worldType`; valid Alpha 0.0.2
+minimal saves remain compatible. Project direction and technical boundaries are
+recorded in [`docs/`](docs/).

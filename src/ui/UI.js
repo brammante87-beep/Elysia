@@ -1,9 +1,13 @@
 import { TitleScreen } from './TitleScreen.js';
+import { IntroScreen } from './IntroScreen.js';
+import { WorldSelectionScreen } from './WorldSelectionScreen.js';
 
 export class UI {
   constructor(root) {
     this.root = root;
     this.titleScreen = new TitleScreen(root.ownerDocument ?? globalThis.document);
+    this.introScreen = new IntroScreen(root.ownerDocument ?? globalThis.document);
+    this.worldSelectionScreen = new WorldSelectionScreen(root.ownerDocument ?? globalThis.document);
   }
 
   createCanvas() {
@@ -23,6 +27,12 @@ export class UI {
     this.titleScreen.confirmNewGame(onConfirm, onCancel);
   }
 
+  showIntro(pageIndex, onAdvance) { this.clearScreens(); this.introScreen.show(this.root, pageIndex, onAdvance); }
+
+  showWorldSelection(worldTypes, handlers) { this.clearScreens(); this.worldSelectionScreen.show(this.root, worldTypes, handlers); }
+
+  showWorldConfirmation(worldType, onConfirm, onCancel) { this.worldSelectionScreen.confirm(worldType, onConfirm, onCancel); }
+
   showPlaceholder(lines) {
     this.clearScreens();
     const screen = this.root.ownerDocument.createElement('section');
@@ -39,6 +49,6 @@ export class UI {
   }
 
   clearScreens() {
-    this.root.querySelectorAll('.title-screen, .placeholder-screen').forEach(screen => screen.remove());
+    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen').forEach(screen => screen.remove());
   }
 }

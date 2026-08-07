@@ -19,7 +19,7 @@ export class TitleScreen {
           <button type="button" data-action="continue">CONTINUA</button>
         </nav>
       </div>
-      <small class="version">Alpha 0.0.2</small>`;
+      <small class="version">Alpha 0.0.3</small>`;
     return screen;
   }
 

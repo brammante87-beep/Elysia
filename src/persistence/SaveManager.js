@@ -1,4 +1,6 @@
 import { Config } from '../core/Config.js';
+import { GameState } from '../core/GameState.js';
+import { WorldTypes } from '../data/WorldTypes.js';
 
 export class SaveManager {
   constructor(storage = globalThis.localStorage) { this.storage = storage; }
@@ -17,20 +19,29 @@ export class SaveManager {
     try {
       const record = JSON.parse(serialized);
       if (!this.isValidRecord(record)) return null;
-      return record;
+      return { ...record, data: this.withDefaults(record.data) };
     } catch {
       return null;
     }
   }
 
   isValidRecord(record) {
-    return record !== null
+    const structurallyValid = record !== null
       && typeof record === 'object'
       && !Array.isArray(record)
       && record.version === Config.SAVE_VERSION
       && record.data !== null
       && typeof record.data === 'object'
       && !Array.isArray(record.data);
+    if (!structurallyValid) return false;
+    if ('state' in record.data && !Object.values(GameState.States).includes(record.data.state)) return false;
+    if ('introPage' in record.data && (!Number.isInteger(record.data.introPage) || record.data.introPage < 0)) return false;
+    return !('worldType' in record.data) || record.data.worldType === null || WorldTypes.isValid(record.data.worldType);
+  }
+
+  withDefaults(data) {
+    if (!('state' in data)) return data;
+    return { ...data, introPage: data.introPage ?? 0, worldType: data.worldType ?? null };
   }
 
   deleteSave() { this.storage.removeItem(Config.SAVE_KEY); }
