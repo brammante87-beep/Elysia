@@ -7,6 +7,20 @@ the player a planet called Elysia. The player will choose its dominant life:
 **Humans**, **Beasts**, or **Plants**. Alpha 0.0.4 reveals the chosen procedural world
 and creates the first Human or Beast inhabitant; deeper systems remain planned below.
 
+## Art direction
+
+Elysia uses a soft, elegant fantasy style with clean silhouettes, restrained jewel
+colors, warm natural materials, and a faint magical luminosity. The slightly
+top-down, isometric-adjacent characters favor readable gesture and species-specific
+proportions over photorealism. Their layered vector shading and small authored idle
+motions are designed to remain charming at gameplay scale and crisp on high-DPI
+screens. The Chosen One receives a quiet ground light rather than a mark that hides
+the character.
+
+Terrain shares this identity through intentional procedural painting: organic coast
+curves, visible warm shore, variegated grass, living water, and world-specific detail.
+Asset artwork and procedural artwork meet the same continued-use quality standard.
+
 ## Planned worlds
 
 ### Plant World

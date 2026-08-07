@@ -41,6 +41,17 @@ export class UI {
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
   showPlaying() { this.clearScreens(); }
 
+  showLoading(message) { this.showStatus(message, 'loading-screen'); }
+  showLoadingError(message) { this.showStatus(message, 'loading-error-screen'); }
+
+  showStatus(message, className) {
+    this.clearScreens();
+    const screen = this.root.ownerDocument.createElement('section');
+    screen.className = `${className} celestial-screen`;
+    const panel = this.root.ownerDocument.createElement('p');
+    panel.textContent = message; screen.append(panel); this.root.append(screen);
+  }
+
   showPlaceholder(lines) {
     this.clearScreens();
     const screen = this.root.ownerDocument.createElement('section');
@@ -57,6 +68,6 @@ export class UI {
   }
 
   clearScreens() {
-    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen').forEach(screen => screen.remove());
+    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen, .loading-screen, .loading-error-screen').forEach(screen => screen.remove());
   }
 }

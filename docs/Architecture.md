@@ -40,12 +40,41 @@ resolution, caches the static terrain canvas, and draws ordered terrain, decorat
 future-object, character, effect, and UI layers. Only water highlights, grass sway,
 and character idle details are recomputed per frame; none alters world data.
 
+## Visual Asset Architecture
+
+Canvas is Elysia's production rendering surface. Characters are original,
+project-owned SVG artwork selected through `CharacterAssetRegistry` by semantic IDs
+(`human.base`, `beast.deer`, `beast.cat`, and `beast.dog`); save records never contain
+file paths. `AssetLoader` preloads every idle frame required by the selected world,
+exposes loading and failure state, and prevents `PLAYING` until those assets are
+ready. Plant World has no character preload.
+
+`CharacterRenderer` selects the registered animation and frame, converts centralized
+world-space visual dimensions to canvas pixels, and adds the reusable contact shadow,
+subtle Chosen One light, and name. Artwork contains the species silhouette; renderer
+code contains no species anatomy. Each current idle state has two authored frames,
+while the registry reserves the natural `walk`, `work`, `attack`, `sleep`, `hurt`,
+and `death` state vocabulary for additive animation work.
+
+Every sprite source is 160 × 200 SVG units for high-DPI clarity and modest zoom.
+Intended world-space dimensions are Human 4.2 × 5.2, Deer 5.8 × 4.8, Cat 4.8 × 3.8,
+and Dog 5.2 × 4.0 units. Character collision and interaction radii live on the
+simulation entity and never derive from these visual dimensions. Art therefore
+evolves through registry entries and asset additions, not renderer rewrites.
+
+The seeded terrain renderer is likewise an intentional production procedural art
+system: the high-resolution cached color field, organic island coast, beach band,
+grass detail, and animated sea highlights are designed to remain and develop in
+place. Procedural generation describes how the art is made, not its level of finish.
+
 ## Character model
 
 `CharacterCreator` validates creation choices and constructs the shared `Character`
 model with a seed-stable ID, world position, life flags, and only world-appropriate
 fields. Human sex characteristics, gender identity, and orientation are deliberately
-independent. Beast species use the stable `deer`, `cat`, and `dog` IDs.
+independent. Beast species use the stable `deer`, `cat`, and `dog` IDs. Explicit
+`collisionRadius` and `interactionRadius` values keep gameplay geometry independent
+from appearance and source resolution.
 
 ## Future world, entities, AI, and systems
 

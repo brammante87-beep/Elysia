@@ -122,10 +122,20 @@ export class Game {
     this.enterPlaying();
   }
 
-  enterPlaying() {
+  async enterPlaying() {
+    const requiredAssets = this.renderer.assetRegistry.requiredIds(this.worldType);
+    if (requiredAssets.length > 0) {
+      this.ui.showLoading('Le creature di Elysia si risvegliano…');
+      const ready = await this.renderer.assetLoader.preload(requiredAssets);
+      if (!ready) {
+        this.ui.showLoadingError('Non è stato possibile preparare le creature. Ricarica Elysia per riprovare.');
+        return false;
+      }
+    }
     this.state.transitionTo(GameState.States.PLAYING);
     this.saveProgress(GameState.States.PLAYING);
     this.ui.showPlaying();
+    return true;
   }
 
   createWorldSeed() {
