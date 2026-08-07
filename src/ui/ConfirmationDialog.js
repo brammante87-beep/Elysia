@@ -22,7 +22,11 @@ export class ConfirmationDialog {
     return dialog;
   }
 
-  open(onConfirm, onCancel) {
+  open(onConfirm, onCancel, content = {}) {
+    this.element.querySelector('h2').textContent = content.title ?? 'Esiste già una partita salvata.';
+    this.element.querySelector('p').textContent = content.message ?? 'Vuoi davvero iniziare una nuova partita? I progressi attuali verranno sostituiti.';
+    this.element.querySelector('[data-action="cancel"]').textContent = content.cancelLabel ?? 'ANNULLA';
+    this.element.querySelector('[data-action="confirm"]').textContent = content.confirmLabel ?? 'NUOVA PARTITA';
     const close = (callback) => {
       this.element.remove();
       callback();

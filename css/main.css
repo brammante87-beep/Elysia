@@ -20,7 +20,7 @@ html, body, #app {
   touch-action: none;
 }
 
-.title-screen, .placeholder-screen {
+.title-screen, .placeholder-screen, .celestial-screen {
   position: fixed;
   inset: 0;
   display: grid;
@@ -33,6 +33,21 @@ html, body, #app {
     radial-gradient(circle at 50% 35%, rgb(91 82 151 / 35%), transparent 35%),
     linear-gradient(145deg, rgb(7 11 24 / 92%), rgb(18 24 48 / 82%));
 }
+.celestial-screen { position: fixed; inset: 0; overflow: auto; align-content: center; }
+.intro-panel { width: min(44rem, 100%); padding: clamp(1.5rem, 6vw, 4rem); border: 1px solid rgb(218 201 143 / 35%); background: rgb(10 14 31 / 72%); box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 35%); }
+.screen-kicker { color: #aaa2c0; font-size: .72rem; letter-spacing: .25em; }
+.intro-panel h1, .selection-heading h1 { margin: .65rem 0 1rem; font: 400 clamp(1.8rem, 6vw, 3.2rem)/1.2 Georgia, serif; }
+.intro-panel > p:not(.screen-kicker) { margin: 0 auto 2.2rem; color: #d2ccda; font: clamp(1rem, 2.5vw, 1.25rem)/1.7 Georgia, serif; }
+.intro-panel button { width: min(100%, 24rem); }
+.world-selection-screen { grid-template-rows: auto auto; gap: clamp(1.5rem, 5vh, 3.5rem); }
+.selection-heading { max-width: 42rem; }
+.world-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.75rem, 2vw, 1.5rem); width: min(70rem, 100%); }
+.world-choice { display: grid; align-content: center; gap: 1rem; min-height: 13rem; padding: 1.5rem; line-height: 1.5; letter-spacing: normal; }
+.world-choice strong { font: 400 clamp(1.15rem, 2vw, 1.5rem) Georgia, serif; letter-spacing: .08em; }
+.world-choice span { color: #cbc5d3; font-weight: 400; }
+.world-choice-human { border-color: #b99b73; background: linear-gradient(145deg, rgb(73 46 38 / 65%), rgb(19 20 40 / 80%)); }
+.world-choice-beast { border-color: #81906c; background: linear-gradient(145deg, rgb(39 61 49 / 65%), rgb(18 24 39 / 80%)); }
+.world-choice-plant { border-color: #6f9c77; background: linear-gradient(145deg, rgb(26 70 52 / 65%), rgb(16 29 37 / 80%)); }
 
 .title-screen::before {
   position: absolute;
@@ -66,3 +81,4 @@ button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
 @keyframes divine-breathe { to { opacity: .45; transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }
 @media (max-height: 500px) { .title-screen h1 { margin-bottom: 1.25rem; font-size: clamp(3rem, 15vh, 5rem); } .title-kicker { display: none; } }
+@media (max-width: 760px) { .world-selection-screen { align-content: start; } .world-choices { grid-template-columns: 1fr; } .world-choice { min-height: 9rem; } }

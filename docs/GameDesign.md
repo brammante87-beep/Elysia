@@ -5,14 +5,23 @@
 The player is a newly born omnipotent being. The Circle of the Omnipotents assigns
 the player a planet called Elysia. The player will choose its dominant life:
 **Humans**, **Beasts**, or **Plants**. These choices will eventually branch into the
-planned designs below; Alpha 0.0.1 implements none of them.
+planned designs below; Alpha 0.0.3 implements only the narrative and choice UI.
 
 ## Planned worlds
 
 ### Plant World
 
-A grass world where the player plants ten trees. After the tenth tree, a rival
-omnipotent destroys the undefended planet with a meteorite.
+The Plant World is primarily grass. The player will eventually receive the Plant
+miracle. After the player creates ten trees or plants, a rival omnipotent launches
+a meteorite. Plants cannot defend themselves, and Elysia is destroyed. This is an
+intended game outcome, not a bug or placeholder; it is not implemented or revealed
+in the Alpha 0.0.3 world-selection interface.
+
+## Ray of Light
+
+The player selects a point in the world. All existing characters receive a divine
+call to move toward that location, making Ray of Light a future mass rally command.
+Movement and pathfinding are not implemented in Alpha 0.0.3.
 
 ### Human World
 
@@ -33,4 +42,4 @@ The three planned resources are **WOOD**, **WATER**, and **FOOD**.
 Chosen One → Hut → Partner → House → Immigration → Multiple houses → Castle →
 Exalted founders → Up to 3 castles.
 
-This progression is documentation only and is not implemented in Alpha 0.0.1.
+This progression is documentation only and is not implemented in Alpha 0.0.3.

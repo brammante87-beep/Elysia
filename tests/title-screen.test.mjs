@@ -32,6 +32,9 @@ class GameHarness {
       showTitle: (hasSave, handlers) => { this.hasSave = hasSave; this.handlers = handlers; },
       showNewGameConfirmation: (confirm, cancel) => { this.confirm = confirm; this.cancel = cancel; },
       showPlaceholder: lines => this.calls.push(lines),
+      showIntro: (page, advance) => { this.introPage = page; this.advance = advance; },
+      showWorldSelection: (types, handlers) => { this.types = types; this.worldHandlers = handlers; },
+      showWorldConfirmation: (type, confirmWorld, cancelWorld) => { this.pendingType = type; this.confirmWorld = confirmWorld; this.cancelWorld = cancelWorld; },
     };
   }
 }
@@ -51,7 +54,7 @@ test('title screen contains ELYSIA, NUOVA PARTITA, CONTINUA, and the version', (
   assert.match(markup, />ELYSIA</);
   assert.match(markup, />NUOVA PARTITA</);
   assert.match(markup, />CONTINUA</);
-  assert.match(markup, /Alpha 0\.0\.2/);
+  assert.match(markup, /Alpha 0\.0\.3/);
 });
 
 test('valid saves expose Continue while corrupt and unsupported saves do not', () => {
@@ -70,8 +73,8 @@ test('New Game starts immediately without a save and creates a minimal valid sav
   const harness = new GameHarness();
   harness.game.requestNewGame();
   assert.equal(harness.game.state.current, GameState.States.INTRO);
-  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO });
-  assert.match(harness.calls[0][0], /nuova esistenza/);
+  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null });
+  assert.equal(harness.introPage, 0);
 });
 
 test('New Game with a save confirms; cancel preserves it and confirm replaces it', () => {
@@ -83,10 +86,10 @@ test('New Game with a save confirms; cancel preserves it and confirm replaces it
   assert.equal(harness.game.saves.load().data.marker, 'preserve-me');
   harness.game.requestNewGame();
   harness.confirm();
-  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO });
+  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null });
 });
 
-test('Continue loads through SaveManager and advances to the available placeholder', () => {
+test('Continue loads through SaveManager and restores the introduction', () => {
   const harness = new GameHarness();
   harness.game.saves.save({ state: GameState.States.INTRO });
   const originalLoad = harness.game.saves.load.bind(harness.game.saves);
@@ -95,7 +98,7 @@ test('Continue loads through SaveManager and advances to the available placehold
   harness.game.continueGame();
   assert.equal(loadCalls, 1);
   assert.equal(harness.game.state.current, GameState.States.INTRO);
-  assert.equal(harness.calls[0][0], 'Partita caricata.');
+  assert.equal(harness.introPage, 0);
 });
 
 test('menu updates do not execute world gameplay or instantiate later systems', () => {
