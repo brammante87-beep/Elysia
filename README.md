@@ -13,12 +13,13 @@ a separate tree-creation experience without a character or settlement AI. Its te
 successful player-created Tree now begins a short rival-omnipotent and meteorite ending
 before the centralized `GAME_OVER` screen.
 
-When the first Hut or Beast Den reaches 6 Wood, 6 Water, and 6 Food, one mutually compatible Partner
+When the first Hut or Beast Den reaches 3 Wood, 3 Water, and 3 Food, one mutually compatible Partner
 walks to the Chosen One. After their greeting they form an explicit Household, and the
 same dwelling evolves into a Human House or an Established Beast Den with shared capped storage. Both founders then use the
 existing `CharacterAI`; lightweight target reservations encourage different available
 resources. Human attraction uses gender identity and orientation independently from sex
-characteristics, while natural conception uses reproductive biology independently. Beast
+characteristics. Elysia's supernatural new-life law gives every established compatible couple equal
+eligibility, independently of sex characteristics or orientation. Beast
 partners retain the Chosen One's species. Children remain near home, preserve semantic
 parentage through saves, and mature in place after the complete cycle following birth.
 
@@ -42,3 +43,8 @@ terrain and transient paths/animation remain regenerated. Earlier minimal saves 
 compatible. A completed Plant ending is saved as `GAME_OVER`, so Continue restores the
 ending screen rather than a destroyed playable world. Project direction and technical boundaries are
 recorded in [`docs/`](docs/).
+
+Established households schedule one fixed 2 Wood, 2 Water and 2 Food meal for every 60
+seconds of active daytime simulation. The timer pauses at night and whenever gameplay is
+not in `PLAYING`; a failed atomic meal leaves the family waiting at home until night, and
+normal gathering resumes at dawn. The semantic timer and in-progress meal state are saved.

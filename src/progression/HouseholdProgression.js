@@ -10,7 +10,7 @@ export class HouseholdProgression {
   constructor(world) { this.world = world; this.state = HouseholdProgression.States.WAITING; this.partnerId = null; this.speechRemaining = 0; this.movement = null; this.pathfinder = new Pathfinder(); }
 
   update(deltaTime) {
-    if (this.state === HouseholdProgression.States.WAITING && this.world.hut?.completed && this.world.hut.storage.isCompletelyFull()) this.spawnPartner();
+    if (this.state === HouseholdProgression.States.WAITING && this.world.hut?.completed && ['wood', 'water', 'food'].every(resource => this.world.hut.storage.get(resource) >= 3)) this.spawnPartner();
     if (this.state === HouseholdProgression.States.APPROACHING && this.movement?.update(deltaTime)) { this.state = HouseholdProgression.States.SPEAKING; this.speechRemaining = 4.2; this.partner.visualState = 'idle'; }
     else if (this.state === HouseholdProgression.States.SPEAKING) { this.speechRemaining -= deltaTime; if (this.speechRemaining <= 0) this.formHousehold(); }
   }

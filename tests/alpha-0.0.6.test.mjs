@@ -20,10 +20,10 @@ class Alpha006Harness {
   validPoints(world, count = 12) { const points = []; for (let y = 1; y < world.terrain.height && points.length < count; y += 2) for (let x = 1; x < world.terrain.width && points.length < count; x += 2) { const point = { x: x + .2, y: y + .2 }; if (world.canPlace(point)) points.push(point); } return points; }
 }
 
-test('partner waits for 6/6/6, spawns once, is unique and mutually compatible', () => {
+test('partner waits for 3/3/3, spawns once, is unique and mutually compatible', () => {
   const harness = new Alpha006Harness(); const { world, chosen } = harness.human();
   world.update(.1); assert.equal(world.characters.length, 1);
-  world.hut.storage.add('wood', 6); world.hut.storage.add('water', 6); world.hut.storage.add('food', 5); world.update(.1); assert.equal(world.characters.length, 1);
+  world.hut.storage.add('wood', 3); world.hut.storage.add('water', 3); world.hut.storage.add('food', 2); world.update(.1); assert.equal(world.characters.length, 1);
   world.hut.storage.add('food', 1); world.update(.1); const partner = world.characters.find(character => !character.chosenOne);
   assert.ok(partner); assert.notEqual(partner.name, chosen.name); assert.equal(CharacterCompatibility.isHumanCompatible(chosen, partner), true);
   world.update(.1); assert.equal(world.characters.filter(character => !character.chosenOne).length, 1);
