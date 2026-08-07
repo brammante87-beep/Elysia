@@ -12,6 +12,7 @@ export class CharacterRenderer {
 
   render(character, point, elapsed, pixelsPerWorldUnit) {
     const definition = this.resolve(character);
+    if (!definition && character.visualProfile?.startsWith('civilian.')) return this.renderRefugee(character, point, elapsed, pixelsPerWorldUnit);
     const visualState = this.humanIdleAnimation.state(character, elapsed);
     const animation = definition?.states[visualState] ?? definition?.states.idle;
     if (!animation) return false;
@@ -28,6 +29,15 @@ export class CharacterRenderer {
     if (character.theftIndicator) this.drawTheftIndicator(point, width, height);
     this.drawName(character.name, point, height);
     return true;
+  }
+
+  renderRefugee(character, point, elapsed, scale) {
+    const context=this.context,profile=character.visualProfile,size=Math.max(18,scale*4.5),hover=profile==='civilian.dolphin';context.save();context.translate(point.x,point.y-(hover?size*.18:0));
+    this.drawShadow({x:0,y:hover?size*.18:0},size,size);
+    if(profile==='civilian.lion'){context.fillStyle='#c78d3d';context.beginPath();context.arc(0,-size*.48,size*.29,0,Math.PI*2);context.fill();context.strokeStyle='#754421';context.lineWidth=size*.12;context.stroke();context.fillStyle='#72533c';context.fillRect(-size*.2,-size*.25,size*.4,size*.52);context.fillStyle='#f0d19a';context.beginPath();context.arc(0,-size*.43,size*.1,0,Math.PI*2);context.fill();}
+    else if(profile==='civilian.worldII'){context.fillStyle='#d9e6ec';context.fillRect(-size*.2,-size*.4,size*.4,size*.68);context.fillStyle='#f0cfad';context.beginPath();context.arc(0,-size*.55,size*.22,0,Math.PI*2);context.fill();context.fillStyle='#f5df78';context.beginPath();context.arc(0,-size*.62,size*.23,Math.PI,Math.PI*2);context.fill();context.fillStyle='#8eb4ca';context.fillRect(-size*.2,-size*.2,size*.4,size*.1);}
+    else{context.fillStyle='#66cbd4';context.beginPath();context.ellipse(0,-size*.32,size*.52,size*.25,-.08,0,Math.PI*2);context.fill();context.beginPath();context.moveTo(-size*.42,-size*.3);context.lineTo(-size*.7,-size*.5);context.lineTo(-size*.62,-size*.17);context.fill();context.fillStyle='#dffcff';context.beginPath();context.arc(size*.25,-size*.4,size*.035,0,Math.PI*2);context.fill();context.strokeStyle='#8deaff';context.shadowColor='#68eafa';context.shadowBlur=8;context.lineWidth=2;context.beginPath();context.ellipse(0,size*.04,size*.42,size*.09,0,0,Math.PI*2);context.stroke();}
+    this.drawDivineEquipment(character,{x:0,y:0},size,size);context.restore();this.drawName(character.name,point,size);return true;
   }
 
   drawTheftIndicator(point, width, height) {

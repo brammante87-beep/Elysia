@@ -24,7 +24,7 @@ test('partner waits for 3/3/3, spawns once, is unique and mutually compatible', 
   const harness = new Alpha006Harness(); const { world, chosen } = harness.human();
   world.update(.1); assert.equal(world.characters.length, 1);
   world.hut.storage.add('wood', 3); world.hut.storage.add('water', 3); world.hut.storage.add('food', 2); world.update(.1); assert.equal(world.characters.length, 1);
-  world.hut.storage.add('food', 1); world.update(.1); const partner = world.characters.find(character => !character.chosenOne);
+  world.hut.storage.add('food', 1); world.update(.1); assert.equal(world.householdProgression.state, 'blooming'); assert.equal(world.characters.length, 1); world.update(3.6); const partner = world.characters.find(character => !character.chosenOne);
   assert.ok(partner); assert.notEqual(partner.name, chosen.name); assert.equal(CharacterCompatibility.isHumanCompatible(chosen, partner), true);
   world.update(.1); assert.equal(world.characters.filter(character => !character.chosenOne).length, 1);
   assert.equal(world.isWalkable(partner.position.x, partner.position.y), true);
@@ -40,12 +40,12 @@ test('compatibility supports bisexual and transgender character data independent
 test('beast partner has the chosen creature species', () => {
   const world = new World(); world.create(WorldTypeId.BEAST, 206); const creator = new CharacterCreator();
   const chosen = creator.createBeast({ name: 'Rovo', species: 'deer' }, world.findSpawnPosition(), 206); world.addCharacter(chosen);
-  world.hut = new Hut({ id: 'hut-1', position: world.findBuildPosition(chosen.position), storage: { wood: 6, water: 6, food: 6 } }); world.update(.1);
+  world.hut = new Hut({ id: 'hut-1', position: world.findBuildPosition(chosen.position), storage: { wood: 6, water: 6, food: 6 } }); world.update(3.7);
   const partner = world.characters.find(character => !character.chosenOne); assert.equal(partner.species, 'deer'); assert.equal(CharacterCompatibility.isBeastCompatible(chosen, partner), true);
 });
 
 test('household transforms the same hut into a shared-capacity House and persists', () => {
-  const harness = new Alpha006Harness(); const { world } = harness.human(); harness.fill(world.hut); const position = { ...world.hut.position }; world.update(.1);
+  const harness = new Alpha006Harness(); const { world } = harness.human(); harness.fill(world.hut); const position = { ...world.hut.position }; world.update(5.3);
   world.householdProgression.state = 'speaking'; world.householdProgression.speechRemaining = 0; world.update(.1);
   assert.ok(world.hut instanceof House); assert.deepEqual(world.hut.position, position); assert.equal(world.households.length, 1); assert.equal(world.households[0].memberIds.length, 2); assert.equal(world.ais.size, 2);
   assert.equal(world.hut.storage.add('wood', 2), 0); assert.equal(world.hut.storage.get('wood'), 6);

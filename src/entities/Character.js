@@ -21,6 +21,16 @@ export class Character {
     this.arrivalPosition = data.arrivalPosition ? { ...data.arrivalPosition } : null;
     this.newcomer = data.newcomer ?? false;
     this.originWorld = data.originWorld ?? 'ELYSIA';
+    this.originType = data.originType ?? (this.originWorld === 'ELYSIA' ? 'elysiaNative' : 'externalMigrant');
+    this.originWorldId = data.originWorldId ?? null;
+    this.trueSpecies = data.trueSpecies ?? null;
+    this.isDisguised = data.isDisguised ?? false;
+    this.disguiseVisualProfile = data.disguiseVisualProfile ?? null;
+    this.trueVisualProfile = data.trueVisualProfile ?? null;
+    this.identityRevealed = data.identityRevealed ?? false;
+    this.visualProfile = data.visualProfile ?? (this.isDisguised ? this.disguiseVisualProfile : this.trueVisualProfile);
+    this.citizenship = data.citizenship ?? 'elysia';
+    this.factionId = data.factionId ?? 'elysia';
     this.arrivalStoryType = data.arrivalStoryType ?? null;
     this.arrivalLineId = data.arrivalLineId ?? null;
     this.introductionCompleted = data.introductionCompleted ?? !this.newcomer;
