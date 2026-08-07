@@ -1,6 +1,6 @@
 export class CharacterCompatibility {
   static isHumanCompatible(first, second) {
-    return this.isAttractedTo(first, second) && this.isAttractedTo(second, first);
+    return !this.isCloseFamily(first, second) && this.isAttractedTo(first, second) && this.isAttractedTo(second, first);
   }
 
   static isAttractedTo(character, candidate) {
@@ -13,6 +13,7 @@ export class CharacterCompatibility {
   }
 
   static isBeastCompatible(first, second) {
-    return Boolean(first.species && first.species === second.species);
+    return !this.isCloseFamily(first, second) && Boolean(first.species && first.species === second.species);
   }
+  static isCloseFamily(first, second) { if (first.parentIds?.includes(second.id) || second.parentIds?.includes(first.id)) return true; return first.parentIds?.some(id => second.parentIds?.includes(id)) ?? false; }
 }

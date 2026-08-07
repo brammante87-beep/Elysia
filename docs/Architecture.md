@@ -103,3 +103,9 @@ rendering or orchestration code.
 `WorldEntity` supplies semantic identity, position, life and explicit simulation radius. `Tree`, `WaterSource`, `Cow`, and `Hut` are stored in collections. Art dimensions never define collision. `ResourceStorage` centralizes Wood, Water and Food with a uniform capacity of six.
 
 `CharacterAI` owns task decisions and semantic carried resources. `Pathfinder` performs terrain-only grid search without modifying terrain, while `CharacterMovement` follows world-space waypoints smoothly using delta time. Saves contain semantic entities, Hut storage and recoverable AI intent; paths, effects, and animation frames remain transient and are safely recalculated after Continue.
+
+## Parallel civilizations (Alpha 0.0.8)
+
+Human and Beast worlds are parallel civilizations, not graphical reskins. They share semantic simulation concepts—characters, households, FOOD/WOOD/WATER, time, relationships, settlements and fixed divine-power slots—while `PowerManifestations`, semantic AI tasks and dwelling variants select fiction-appropriate presentation and behavior. Humans hunt summoned Cows and raise Houses into a Castle; Beasts gather finite natural nourishment and raise Dens into a Great Den. Plant World remains isolated and frozen.
+
+Homes keep household-local storage. When two single homeowners pair, the lexicographically first eligible home becomes their shared home and the empty home remains vacant; newcomers prefer a vacant completed home before building. Four completed homes are retained even when the founding home becomes the central structure.

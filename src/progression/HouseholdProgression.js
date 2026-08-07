@@ -38,7 +38,7 @@ export class HouseholdProgression {
     const household = new Household({ id: 'household-1', memberIds: [chosen.id, partner.id], homeBuildingId: this.world.hut.id });
     const hut = this.world.hut;
     this.world.hut = new House({ ...hut.toJSON(), householdId: household.id, transformationAge: 0, visualVariant: Dwelling.variant(this.world.worldType, true, chosen.species) });
-    this.world.households.push(household);
+    this.world.households.push(household); this.world.homes = [this.world.hut]; this.world.settlementProgression.ensureFoundingSettlement();
     for (const member of [chosen, partner]) { member.householdId = household.id; member.homeBuildingId = this.world.hut.id; member.partnerId = member === chosen ? partner.id : chosen.id; this.world.ensureAI(member); }
     this.world.addEffect(hut.position, 'transform'); this.state = HouseholdProgression.States.COMPLETE;
   }

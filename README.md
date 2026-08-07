@@ -48,3 +48,7 @@ Established households schedule one fixed 2 Wood, 2 Water and 2 Food meal for ev
 seconds of active daytime simulation. The timer pauses at night and whenever gameplay is
 not in `PLAYING`; a failed atomic meal leaves the family waiting at home until night, and
 normal gathering resumes at dawn. The semantic timer and in-progress meal state are saved.
+
+## Alpha 0.0.8 — Settlement Growth & First Castle
+
+A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle, one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving resources, residents, surrounding homes, and its generated settlement name. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
