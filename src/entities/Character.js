@@ -16,6 +16,10 @@ export class Character {
     this.lifeStage = data.lifeStage ?? 'adult';
     this.birthCycle = data.birthCycle ?? null;
     this.birthSimulationTime = data.birthSimulationTime ?? null;
+    this.arrivalCycle = data.arrivalCycle ?? null;
+    this.arrivalPosition = data.arrivalPosition ? { ...data.arrivalPosition } : null;
+    this.newcomer = data.newcomer ?? false;
+    this.speechText = data.speechText ?? null;
     this.insideHome = data.insideHome ?? false;
     this.appearanceVariant = data.appearanceVariant ?? 'base';
     this.interactionRadius = data.interactionRadius ?? 1.25;
