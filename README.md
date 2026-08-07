@@ -1,9 +1,8 @@
 # Elysia
 
-**Alpha 1.0.0 — Civilizations, Migration & New Settlements**
+**Alpha 1.1.0 — The Rival Omnipotent & First Attack**
 
-Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-milestone gives Human and Beast households a 90-second active-simulation day/night cycle,
+Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. Built on Alpha 1.0.0 civilization and migration, this milestone introduces the Rival Omnipotent’s first hostile act when the second Settlement is registered. A cinematic warning and ten-second Shield preparation window precede a meteor strike on the original Settlement; an unexplained rainbow and unicorn preserve its Castle while unshielded inhabitants face the established death rules. The game continues after the attack. The foundation also gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving
 the established divine-action loop.
 The player places polished Tree, freshwater and Cow entities through the permanent
@@ -77,3 +76,10 @@ Settlement dwellings now use explicit simulation footprints and a deterministic,
 Elysia belongs to a larger, still-mysterious universe of inhabited worlds. External newcomers are refugees, exiles, survivors, explorers and wanderers. Their generated origin and compatible story persist as character history; other planets remain narrative background rather than playable maps.
 
 Each settlement begins `GROWING`, accepts at most four external arrivals, and becomes `ESTABLISHED` when its fourth completed Home creates a Castle or Great Den. Establishment immediately closes external immigration and ordinary Home construction, including unused arrival capacity, while vacant Homes, births, families, meals and relationships continue. Exalted adults visibly travel with a living partner and minor children to found distant settlements. Every settlement shares this lifecycle, and founding reservations enforce an absolute maximum of three.
+
+
+## Alpha 1.1.0 — The Rival Omnipotent & First Attack
+
+Registering the second Settlement triggers one persisted Rival encounter after the new-settlement announcement. The cosmic manifestation delivers three concise Italian threats, marks the oldest Settlement, freezes WorldTime and AI, and leaves ten seconds of player control for individual Shield miracles—including generous Child targeting. At impact, active Shields flare, save only their bearers, and are consumed; Weapons cannot stop the meteor. All unshielded members use the normal mass-safe death and relationship cleanup, while the second Settlement and every building remain safe.
+
+The Castle retains its exact identity, ownership, storage, position, and capacity beneath a large rainbow as a project-owned illustrated unicorn crosses the arc and absorbs the blast. The aftermath fades back into normal play, persists completion for Continue safety, and never enters `GAME_OVER`. Theft, `BehaviourMemory`, `DivineTeachingSystem`, and contextual Lightning/Blessing teaching were preserved; inter-character combat and Alpha 1.2.0 systems are not included.

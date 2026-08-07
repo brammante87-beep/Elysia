@@ -4,6 +4,7 @@ import { CharacterAssetRegistry } from '../assets/CharacterAssetRegistry.js';
 import { AssetLoader } from '../assets/AssetLoader.js';
 import { TerrainVisualRenderer } from './TerrainVisualRenderer.js';
 import { MigrationNarrative } from '../data/MigrationNarrative.js';
+import { RivalEventRenderer } from './RivalEventRenderer.js';
 
 export class Renderer {
   constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
@@ -17,6 +18,7 @@ export class Renderer {
     this.assetLoader = assetLoader ?? new AssetLoader(registry);
     this.characterRenderer = new CharacterRenderer(this.context, registry, this.assetLoader);
     this.worldImages = new Map();
+    this.rivalEventRenderer = new RivalEventRenderer(this.context, this.canvas, path => this.image(path));
   }
 
   setWorld(world) { this.world = world; this.buildTerrainLayer(); }
@@ -41,6 +43,16 @@ export class Renderer {
     this.drawMiracleEffects();
     this.drawTimeLighting();
     this.drawGameplayUI();
+    this.drawRivalAttack();
+  }
+
+
+  drawRivalAttack() {
+    const event = this.world.rivalAttack;
+    if (!event?.active) return;
+    const target = this.worldPoint(event.targetPosition());
+    const protectedPoints = this.world.characters.filter(character => character.alive && character.settlementId === event.targetSettlementId && (character.hasDivineShield || character.shieldImpactReaction > 0)).map(character => this.characterPoint(character));
+    this.rivalEventRenderer.render(event, target, protectedPoints);
   }
 
   renderFoundation() {
