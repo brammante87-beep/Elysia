@@ -5,8 +5,17 @@ export class WorldTime {
 
   constructor(data = {}) {
     this.cycle = Math.max(1, data.cycle ?? 1);
-    this.elapsed = Math.max(0, data.elapsed ?? 0) % Config.WORLD_CYCLE_SECONDS;
+    this.elapsed = this.restoreElapsed(data);
     this.phase = this.phaseAt(this.elapsed);
+  }
+
+  restoreElapsed(data) {
+    const elapsed = Math.max(0, Number(data.elapsed) || 0);
+    if (data.timingVersion === 2 || !data.phase) return elapsed % Config.WORLD_CYCLE_SECONDS;
+    const legacy = { dawn: [0, 15], day: [15, 225], dusk: [225, 15], night: [240, 60] }[data.phase];
+    const current = { dawn: [0, Config.DAWN_DURATION_SECONDS], day: [Config.DAWN_DURATION_SECONDS, Config.FULL_DAY_DURATION_SECONDS], dusk: [Config.DAY_DURATION_SECONDS - Config.DUSK_DURATION_SECONDS, Config.DUSK_DURATION_SECONDS], night: [Config.DAY_DURATION_SECONDS, Config.NIGHT_DURATION_SECONDS] }[data.phase];
+    if (!legacy || !current) return elapsed % Config.WORLD_CYCLE_SECONDS;
+    return current[0] + Math.min(1, Math.max(0, (elapsed - legacy[0]) / legacy[1])) * current[1];
   }
 
   update(deltaTime, playing = true) {
@@ -47,5 +56,13 @@ export class WorldTime {
     return { phase: this.phase, progress: Math.max(0, Math.min(1, phaseProgress)) };
   }
 
-  toJSON() { return { cycle: this.cycle, elapsed: this.elapsed, phase: this.phase }; }
+  daytimeBetween(startCycle, startElapsed, endCycle = this.cycle, endElapsed = this.elapsed) {
+    const start = (startCycle - 1) * Config.WORLD_CYCLE_SECONDS + startElapsed;
+    const end = (endCycle - 1) * Config.WORLD_CYCLE_SECONDS + endElapsed;
+    const accumulated = absolute => Math.floor(absolute / Config.WORLD_CYCLE_SECONDS) * Config.DAY_DURATION_SECONDS
+      + Math.min(absolute % Config.WORLD_CYCLE_SECONDS, Config.DAY_DURATION_SECONDS);
+    return Math.max(0, accumulated(end) - accumulated(start));
+  }
+
+  toJSON() { return { timingVersion: 2, cycle: this.cycle, elapsed: this.elapsed, phase: this.phase }; }
 }

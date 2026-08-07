@@ -3,7 +3,7 @@
 **Alpha 0.0.10 — Emergent Behaviour, Theft & Divine Teaching**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-milestone gives Human and Beast households a five-minute simulation-time day/night cycle,
+milestone gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving
 the established divine-action loop.
 The player places polished Tree, freshwater and Cow entities through the permanent
@@ -21,7 +21,11 @@ resources. Human attraction uses gender identity and orientation independently f
 characteristics. Elysia's supernatural new-life law gives every established compatible couple equal
 eligibility, independently of sex characteristics or orientation. Beast
 partners retain the Chosen One's species. Children remain near home, preserve semantic
-parentage through saves, and mature in place after the complete cycle following birth.
+parentage through saves, and mature in place after exactly 90 elapsed simulation seconds.
+
+One Human or Beast Elysia day is exactly 90 seconds of active `PLAYING` simulation:
+5 seconds of Dawn (ALBA), 55 seconds of Day (GIORNO), 10 seconds of Dusk
+(TRAMONTO), and 20 seconds of Night (NOTTE). Plant World has no WorldTime.
 
 ## Run
 
@@ -45,16 +49,17 @@ ending screen rather than a destroyed playable world. Project direction and tech
 recorded in [`docs/`](docs/).
 
 Established households schedule one fixed 2 Wood, 2 Water and 2 Food meal for every 60
-seconds of active daytime simulation. The timer pauses at night and whenever gameplay is
+seconds accumulated across active Dawn, Day, and Dusk simulation. The accumulator is not
+reset at Dawn; it pauses at night and whenever gameplay is
 not in `PLAYING`; a failed atomic meal leaves the family waiting at home until night, and
 normal gathering resumes at dawn. The semantic timer and in-progress meal state are saved.
 
 ## Alpha 0.0.8 — Settlement Growth & First Castle
 
-A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle, one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving resources, residents, surrounding homes, and its generated settlement name. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
+A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle (approximately every 90 active seconds), one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving resources, residents, surrounding homes, and its generated settlement name. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
 
 ## Alpha 0.0.9 — Complete Divine Power Set
-All ten fixed toolbar powers are functional in Human and Beast worlds. Placement miracles create Plants, Water, gameplay Flowers and world-specific food; character miracles apply Lightning, Blessing, Change Sex, Weapons and Shield; Ray of Light issues a temporary navigated rally. Flowers mature into renewable Apple Trees after one simulation cycle.
+All ten fixed toolbar powers are functional in Human and Beast worlds. Placement miracles create Plants, Water, gameplay Flowers and world-specific food; character miracles apply Lightning, Blessing, Change Sex, Weapons and Shield; Ray of Light issues a temporary navigated rally. Flowers mature into renewable Apple Trees after exactly 90 elapsed simulation seconds, independently of cycle boundaries.
 
 
 ## Alpha 0.0.10 — Emergent Behaviour, Theft & Divine Teaching
