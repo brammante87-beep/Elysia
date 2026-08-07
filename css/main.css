@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   font-family: system-ui, sans-serif;
-  background: #25282a;
+  background: #070b18;
 }
 
 * { box-sizing: border-box; }
@@ -19,3 +19,50 @@ html, body, #app {
   height: 100%;
   touch-action: none;
 }
+
+.title-screen, .placeholder-screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: clamp(1.25rem, 5vw, 4rem);
+  color: #f4eed8;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 35%, rgb(91 82 151 / 35%), transparent 35%),
+    linear-gradient(145deg, rgb(7 11 24 / 92%), rgb(18 24 48 / 82%));
+}
+
+.title-screen::before {
+  position: absolute;
+  width: min(70vw, 38rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(222 205 143 / 18%);
+  border-radius: 50%;
+  box-shadow: 0 0 5rem rgb(126 108 190 / 14%);
+  content: '';
+  animation: divine-breathe 8s ease-in-out infinite alternate;
+}
+
+.title-content { position: relative; z-index: 1; }
+.title-kicker { margin: 0 0 .5rem; color: #b9b1ce; font-family: Georgia, serif; font-size: clamp(.75rem, 2vw, 1rem); letter-spacing: .14em; }
+.title-screen h1 { margin: 0 0 clamp(2rem, 8vh, 4.5rem); font-family: Georgia, serif; font-size: clamp(4rem, 17vw, 9rem); font-weight: 400; letter-spacing: clamp(.08em, 2vw, .2em); text-shadow: 0 0 2.5rem rgb(218 202 255 / 35%); }
+.title-menu { display: grid; gap: .85rem; width: min(19rem, 76vw); margin: auto; }
+button { min-height: 3rem; padding: .75rem 1rem; border: 1px solid #a99b72; color: #f8f1d8; background: rgb(16 20 42 / 72%); font: 600 .9rem/1 system-ui, sans-serif; letter-spacing: .15em; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+button:hover { border-color: #eadba8; background: rgb(70 63 105 / 70%); transform: translateY(-1px); }
+button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
+.version { position: absolute; right: 1rem; bottom: 1rem; color: #888da3; letter-spacing: .08em; }
+.placeholder-screen { align-content: center; }
+.placeholder-screen h1 { max-width: 38rem; font: 400 clamp(1.7rem, 6vw, 3rem)/1.25 Georgia, serif; }
+.placeholder-screen p { color: #b9b1ce; }
+.confirmation-backdrop { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgb(2 4 12 / 75%); }
+.confirmation-panel { width: min(32rem, 100%); padding: clamp(1.5rem, 5vw, 2.5rem); border: 1px solid #887e64; color: #f4eed8; text-align: center; background: #11162b; box-shadow: 0 1.5rem 5rem #000; }
+.confirmation-panel h2 { font: 400 clamp(1.35rem, 5vw, 1.8rem) Georgia, serif; }
+.confirmation-panel p { color: #c5bfd2; line-height: 1.6; }
+.confirmation-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: 1.75rem; }
+.confirmation-actions button { flex: 1 1 10rem; }
+.button-danger { border-color: #b58a7b; }
+@keyframes divine-breathe { to { opacity: .45; transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }
+@media (max-height: 500px) { .title-screen h1 { margin-bottom: 1.25rem; font-size: clamp(3rem, 15vh, 5rem); } .title-kicker { display: none; } }

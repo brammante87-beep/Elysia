@@ -16,11 +16,21 @@ export class SaveManager {
     if (serialized === null) return null;
     try {
       const record = JSON.parse(serialized);
-      if (!record || record.version !== Config.SAVE_VERSION || !('data' in record)) return null;
+      if (!this.isValidRecord(record)) return null;
       return record;
     } catch {
       return null;
     }
+  }
+
+  isValidRecord(record) {
+    return record !== null
+      && typeof record === 'object'
+      && !Array.isArray(record)
+      && record.version === Config.SAVE_VERSION
+      && record.data !== null
+      && typeof record.data === 'object'
+      && !Array.isArray(record.data);
   }
 
   deleteSave() { this.storage.removeItem(Config.SAVE_KEY); }
