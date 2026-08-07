@@ -10,6 +10,7 @@ export class Character {
     this.alive = data.alive ?? true;
     this.householdId = data.householdId ?? null;
     this.homeBuildingId = data.homeBuildingId ?? null;
+    this.settlementId = data.settlementId ?? null;
     this.partnerId = data.partnerId ?? null;
     this.formerPartnerIds = [...new Set(data.formerPartnerIds ?? [])];
     this.parentIds = [...(data.parentIds ?? [])];
