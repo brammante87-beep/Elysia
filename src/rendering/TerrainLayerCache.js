@@ -53,24 +53,24 @@ export class TerrainLayerCache {
     const { pixelWidth: width, pixelHeight: height, worldType } = this.model;
     if (worldType !== WorldTypeId.HUMAN) {
       const meadow = context.createLinearGradient(0, 0, width, height);
-      meadow.addColorStop(0, worldType === WorldTypeId.PLANT ? '#76b95f' : '#69a955');
-      meadow.addColorStop(.48, worldType === WorldTypeId.PLANT ? '#4f964b' : '#518c48');
-      meadow.addColorStop(1, '#35743f'); context.fillStyle = meadow; context.fillRect(0, 0, width, height);
+      meadow.addColorStop(0, worldType === WorldTypeId.PLANT ? '#91c96d' : '#81bd62');
+      meadow.addColorStop(.48, worldType === WorldTypeId.PLANT ? '#63aa55' : '#62a253');
+      meadow.addColorStop(1, '#43834a'); context.fillStyle = meadow; context.fillRect(0, 0, width, height);
       return;
     }
     const sea = context.createRadialGradient(width * .48, height * .44, 20, width * .5, height * .5, width * .7);
-    sea.addColorStop(0, '#247f96'); sea.addColorStop(.48, '#12617d'); sea.addColorStop(1, '#073a5a');
+    sea.addColorStop(0, '#278ca5'); sea.addColorStop(.48, '#126681'); sea.addColorStop(1, '#073b5c');
     context.fillStyle = sea; context.fillRect(0, 0, width, height);
-    this.fillContour(context, .19, '#258fa2');
-    this.fillContour(context, .13, '#31a9ae');
-    this.fillContour(context, .075, '#68c8bd');
-    this.fillContour(context, .025, '#b2ded0');
+    this.fillContour(context, .19, '#2999ad');
+    this.fillContour(context, .13, '#39b4b9');
+    this.fillContour(context, .075, '#75d2c4');
+    this.fillContour(context, .025, '#c1e7d6');
     const sand = context.createLinearGradient(0, height * .25, width, height * .78);
-    sand.addColorStop(0, '#f2d993'); sand.addColorStop(.55, '#ddb96f'); sand.addColorStop(1, '#c99a58');
-    this.fillContour(context, 0, sand, { color: 'rgba(4,45,50,.28)', blur: 16, y: 7 });
+    sand.addColorStop(0, '#f8e4aa'); sand.addColorStop(.55, '#eac982'); sand.addColorStop(1, '#d6aa63');
+    this.fillContour(context, 0, sand, { color: 'rgba(23,68,64,.22)', blur: 16, y: 7 });
     const grass = context.createRadialGradient(width * .45, height * .4, 10, width * .5, height * .52, width * .38);
-    grass.addColorStop(0, '#83bd5f'); grass.addColorStop(.58, '#559b4b'); grass.addColorStop(1, '#377d43');
-    this.fillContour(context, -.1, grass, { color: 'rgba(48,76,33,.35)', blur: 10, y: 5 });
+    grass.addColorStop(0, '#9bce70'); grass.addColorStop(.58, '#68ab55'); grass.addColorStop(1, '#43884a');
+    this.fillContour(context, -.1, grass, { color: 'rgba(54,82,38,.27)', blur: 10, y: 5 });
   }
 
   drawTexture(context) {
@@ -82,7 +82,7 @@ export class TerrainLayerCache {
       for (let index = 0; index < 95; index += 1) {
         const x = random.range(0, this.model.width) * scale; const y = random.range(0, this.model.height) * scale;
         if (this.model.isVisualGrass(x / scale, y / scale)) continue;
-        context.strokeStyle = `rgba(205,247,231,${random.range(.06, .16)})`; context.lineWidth = random.range(1, 3);
+        context.strokeStyle = `rgba(220,255,241,${random.range(.08, .19)})`; context.lineWidth = random.range(1, 3);
         context.beginPath(); context.moveTo(x, y); context.quadraticCurveTo(x + 10, y - 4, x + random.range(18, 45), y + 1); context.stroke();
       }
     }
@@ -92,7 +92,7 @@ export class TerrainLayerCache {
       if (!this.model.isVisualGrass(x, y)) continue;
       const radius = random.range(22, 75) * scale;
       const glow = context.createRadialGradient(x * scale, y * scale, 0, x * scale, y * scale, radius);
-      glow.addColorStop(0, random.next() > .5 ? 'rgba(210,240,126,.2)' : 'rgba(17,75,47,.18)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+      glow.addColorStop(0, random.next() > .5 ? 'rgba(244,232,145,.2)' : 'rgba(45,105,83,.14)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
       context.fillStyle = glow; context.fillRect(x * scale - radius, y * scale - radius, radius * 2, radius * 2);
     }
     context.restore();
