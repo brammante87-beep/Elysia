@@ -6,6 +6,7 @@ import { WorldTypeId } from '../data/WorldTypes.js';
 import { SeededRandom } from '../world/SeededRandom.js';
 
 export class ReproductionSystem {
+  static NEW_LIFE_MESSAGE = "La nuova vita nasce dal legame tra due esseri, l'amore invoca un briciolo del tuo potere anche senza la tua volontà.";
   constructor(world, data = {}) {
     this.world = world;
     this.random = new SeededRandom(data.randomState ?? ((world.worldSeed ?? 1) ^ 0x7007));
@@ -32,18 +33,15 @@ export class ReproductionSystem {
     this.lastEvaluatedCycle = cycle;
     if (this.random.next() >= Config.INTIMACY_PROBABILITY) return false;
     this.world.addEffect(this.world.hut.position, 'intimacy');
-    if (this.canConceive(partners[0], partners[1])) this.pendingBirth = { cycle, householdId: household.id, parentIds: partners.map(parent => parent.id) };
+    if (this.canConceive(partners[0], partners[1]) && this.random.next() < Config.NEW_LIFE_PROBABILITY_AFTER_INTIMACY) this.pendingBirth = { cycle, householdId: household.id, parentIds: partners.map(parent => parent.id) };
     return true;
   }
 
   canConceive(first, second) {
-    if (first.worldType === WorldTypeId.HUMAN && second.worldType === WorldTypeId.HUMAN) {
-      return new Set([first.sexCharacteristics, second.sexCharacteristics]).size === 2
-        && [first.sexCharacteristics, second.sexCharacteristics].every(value => value === 'male' || value === 'female');
-    }
+    if (!first?.alive || !second?.alive || first.partnerId !== second.id || second.partnerId !== first.id || first.householdId !== second.householdId) return false;
+    if (first.worldType === WorldTypeId.HUMAN && second.worldType === WorldTypeId.HUMAN) return true;
     return first.worldType === WorldTypeId.BEAST && second.worldType === WorldTypeId.BEAST
-      && first.species === second.species && new Set([first.reproductiveSex, second.reproductiveSex]).size === 2
-      && [first.reproductiveSex, second.reproductiveSex].every(value => value === 'male' || value === 'female');
+      && first.species === second.species;
   }
 
   birthAtDawn(cycle) {
@@ -59,6 +57,7 @@ export class ReproductionSystem {
       householdId: household.id, homeBuildingId: this.world.hut.id, parentIds: pending.parentIds, birthCycle: cycle,
       insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
     this.world.addCharacter(child); household.addMember(child.id);
+    this.world.addEffect(this.world.hut.position, 'newLife', { message: ReproductionSystem.NEW_LIFE_MESSAGE });
     return child;
   }
 

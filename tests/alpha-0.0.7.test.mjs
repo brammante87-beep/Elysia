@@ -51,9 +51,9 @@ test('night sends household adults home and dawn resumes their existing AI',()=>
 test('intimacy needs both partners inside and biology is independent from identity and orientation',()=>{
   const {world,first,second}=new Alpha007Harness().family(); world.reproduction.random.next=()=>0;
   assert.equal(world.reproduction.evaluateNight(1),false); first.insideHome=second.insideHome=true; assert.equal(world.reproduction.evaluateNight(1),true); assert.ok(world.reproduction.pendingBirth);
-  const sameSex=new Alpha007Harness().family(WorldTypeId.HUMAN,['female','female']); sameSex.first.insideHome=sameSex.second.insideHome=true; sameSex.world.reproduction.random.next=()=>0; assert.equal(sameSex.world.reproduction.evaluateNight(1),true); assert.equal(sameSex.world.reproduction.pendingBirth,null);
+  const sameSex=new Alpha007Harness().family(WorldTypeId.HUMAN,['female','female']); sameSex.first.insideHome=sameSex.second.insideHome=true; sameSex.world.reproduction.random.next=()=>0; assert.equal(sameSex.world.reproduction.evaluateNight(1),true); assert.ok(sameSex.world.reproduction.pendingBirth);
   second.genderIdentity='woman'; second.sexualOrientation='gayLesbian'; assert.equal(world.reproduction.canConceive(first,second),true);
-  first.sexCharacteristics='intersex'; assert.equal(world.reproduction.canConceive(first,second),false);
+  first.sexCharacteristics='intersex'; assert.equal(world.reproduction.canConceive(first,second),true);
 });
 
 test('one birth has unique semantic lineage, household membership, save continuity and no duplicate',()=>{
@@ -70,4 +70,30 @@ test('children cannot gather, use species visuals, remain in household, then gro
 
 test('Human adulthood assigns independent valid identity fields',()=>{
   const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; world.reproduction.random.next=()=>0; world.reproduction.evaluateNight(1); const child=world.reproduction.birthAtDawn(2); world.reproduction.growChildren(3); assert.ok(CharacterCreator.SexCharacteristics.includes(child.sexCharacteristics)); assert.ok(CharacterCreator.GenderIdentities.includes(child.genderIdentity)); assert.ok(CharacterCreator.SexualOrientations.includes(child.sexualOrientation));
+});
+
+test('meal scheduling is daytime simulation time, unique, persisted, and partner-led',()=>{
+  const {world,first,second}=new Alpha007Harness().family();
+  world.meals.update(59,false); assert.equal(world.meals.elapsed,0);
+  world.meals.update(59,true); assert.equal(world.meals.state,'normal');
+  world.meals.update(1,true); assert.equal(world.meals.events,1); assert.equal(world.meals.state,'mealCalled');
+  second.insideHome=true; world.meals.update(.1,true); assert.equal(world.meals.speechText,'È pronto!'); assert.equal(second.carryingMeal,'pot');
+  assert.equal(world.ais.get(first.id).task,CharacterAI.Tasks.RETURN_HOME);
+  const restored=new World(); restored.restore(world.worldType,world.worldSeed,null,world.toJSON()); assert.equal(restored.meals.events,1); assert.equal(restored.meals.elapsed,0);
+});
+
+test('meal consumes one atomic household 2/2/2 cost regardless of inhabitants',()=>{
+  const {world,first,second}=new Alpha007Harness().family(); world.meals.callMeal(); second.insideHome=true; world.meals.update(.1,true); first.insideHome=true; world.meals.update(3,true);
+  assert.deepEqual(world.hut.storage.values,{wood:4,water:4,food:4}); assert.equal(world.meals.state,'eating');
+});
+
+test('failed meal never partially consumes and waits until night before resuming',()=>{
+  const {world,first,second}=new Alpha007Harness().family(); world.hut.storage.values={wood:2,water:1,food:4}; world.meals.callMeal(); second.insideHome=true; world.meals.update(.1,true); first.insideHome=true; world.meals.update(3,true);
+  assert.deepEqual(world.hut.storage.values,{wood:2,water:1,food:4}); assert.equal(world.meals.state,'mealFailedWaitingForNight'); assert.equal(world.ais.get(first.id).task,CharacterAI.Tasks.WAITING_NIGHT);
+  world.handleTimePhase('night'); assert.equal(world.meals.state,'normal'); world.handleTimePhase('dawn'); assert.equal(world.ais.get(first.id).task,CharacterAI.Tasks.IDLE);
+});
+
+test('intimacy and new life are separate configurable resolutions',()=>{
+  const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; const rolls=[0,.99]; world.reproduction.random.next=()=>rolls.shift();
+  assert.equal(world.reproduction.evaluateNight(1),true); assert.equal(world.reproduction.pendingBirth,null); assert.equal(world.reproduction.birthAtDawn(2),null);
 });
