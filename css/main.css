@@ -114,6 +114,9 @@ button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
 .divine-power.is-selected { border-color: #ffe59b; background: radial-gradient(circle at 50% 25%, rgb(226 199 109 / 35%), rgb(27 37 43 / 92%)); box-shadow: 0 0 1rem rgb(255 224 132 / 35%), inset 0 0 .7rem rgb(255 240 180 / 12%); }
 .divine-power:disabled { border-color: rgb(130 138 137 / 16%); opacity: .38; cursor: not-allowed; filter: grayscale(1); }
 .divine-power:disabled:hover { transform: none; background: rgb(15 24 31 / 80%); }
+.sex-choice-panel { position:fixed; z-index:12; top:12%; left:50%; display:flex; gap:.6rem; align-items:center; padding:1rem; border:1px solid #d9bd70; color:#fff1bc; background:rgba(8,15,28,.94); box-shadow:0 1rem 4rem #000,0 0 2rem #eacb6655; transform:translateX(-50%); }
+.sex-choice-panel h2 { margin:0 .6rem 0 0; font:500 .75rem Georgia; letter-spacing:.15em; }
+.sex-choice-panel button { min-height:2.4rem; font-size:.65rem; }
 @media (max-width: 760px) { .divine-toolbar { overflow-x: auto; } .divine-toolbar__powers { width: 42rem; } }
 .game-over-screen { z-index: 20; background: radial-gradient(circle at 50% 65%, #552b1f99, transparent 28%), linear-gradient(#080b13ee, #160b09fa); }
 .ending-panel { width: min(45rem, 100%); padding: clamp(2rem, 7vw, 4.5rem); border: 1px solid #9d674e; background: #100d12e8; box-shadow: 0 0 7rem #9b3f2633; }

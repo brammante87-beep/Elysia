@@ -54,7 +54,7 @@ test('title screen contains ELYSIA, NUOVA PARTITA, CONTINUA, and the version', (
   assert.match(markup, />ELYSIA</);
   assert.match(markup, />NUOVA PARTITA</);
   assert.match(markup, />CONTINUA</);
-  assert.match(markup, /Alpha 0\.0\.8/);
+  assert.match(markup, /Alpha 0\.0\.9/);
 });
 
 test('valid saves expose Continue while corrupt and unsupported saves do not', () => {

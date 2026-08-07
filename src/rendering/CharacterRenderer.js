@@ -19,8 +19,17 @@ export class CharacterRenderer {
     this.drawShadow(point, width, height);
     if (character.chosenOne) this.drawChosenMarker(point, width);
     this.context.drawImage(image, point.x - width / 2, point.y - height * 0.82, width, height);
+    this.drawDivineEquipment(character, point, width, height);
     this.drawName(character.name, point, height);
     return true;
+  }
+
+  drawDivineEquipment(character, point, width, height) {
+    const context=this.context; context.save();
+    if (character.isExalted) { context.strokeStyle=character.worldType==='beast'?'#a9e6b0':'#e5bc68'; context.lineWidth=Math.max(3,width*.08); context.beginPath(); context.arc(point.x,point.y-height*.42,width*.34,.15,Math.PI-.15); context.stroke(); }
+    if (character.isArmed) { context.strokeStyle=character.worldType==='beast'?'#8be0c2':'#a87947'; context.lineWidth=Math.max(3,width*.07); context.beginPath(); if(character.worldType==='human'){context.moveTo(point.x+width*.3,point.y-height*.65);context.lineTo(point.x+width*.5,point.y+height*.02);}else{context.arc(point.x,point.y-height*.32,width*.43,0,Math.PI*2);} context.stroke(); }
+    if (character.hasShield) { context.strokeStyle='rgba(154,221,255,.72)'; context.shadowColor='#9fe9ff'; context.shadowBlur=10; context.lineWidth=2; context.beginPath(); context.ellipse(point.x,point.y-height*.35,width*.58,height*.58,0,0,Math.PI*2); context.stroke(); }
+    context.restore();
   }
 
   drawShadow(point, width, height) {

@@ -109,3 +109,6 @@ rendering or orchestration code.
 Human and Beast worlds are parallel civilizations, not graphical reskins. They share semantic simulation concepts—characters, households, FOOD/WOOD/WATER, time, relationships, settlements and fixed divine-power slots—while `PowerManifestations`, semantic AI tasks and dwelling variants select fiction-appropriate presentation and behavior. Humans hunt summoned Cows and raise Houses into a Castle; Beasts gather finite natural nourishment and raise Dens into a Great Den. Plant World remains isolated and frozen.
 
 Homes keep household-local storage. When two single homeowners pair, the lexicographically first eligible home becomes their shared home and the empty home remains vacant; newcomers prefer a vacant completed home before building. Four completed homes are retained even when the founding home becomes the central structure.
+
+## Power targeting
+`PowerManager` centralizes three target categories: **placement** (Plant, Water, Flower, Food), **Character** (Lightning, Blessing, Change Sex, Give Weapons, Shield), and **rally/world position** (Ray of Light). `Miracles` creates/casts miracles, while `World` owns validation and semantic results. Miracle input is consumed before inspection. Persistent entities and character statuses serialize semantically; transient effects and rally paths do not.
