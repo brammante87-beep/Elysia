@@ -1,3 +1,5 @@
+import { BehaviourMemory } from '../behaviour/BehaviourMemory.js';
+
 export class Character {
   constructor(data) {
     this.id = data.id;
@@ -23,6 +25,8 @@ export class Character {
     this.canFoundSettlement = data.canFoundSettlement ?? this.isExalted;
     this.isArmed = data.isArmed ?? false;
     this.hasShield = data.hasShield ?? false;
+    this.behaviourMemory = new BehaviourMemory(data.behaviourPreferences ?? (this.lifeStage === 'child' ? { theft: 0 } : null));
+    this.behaviourPreferences = this.behaviourMemory.preferences;
     if (data.sexCharacteristics) this.sexCharacteristics = data.sexCharacteristics;
     if (data.genderIdentity) this.genderIdentity = data.genderIdentity;
     if (data.sexualOrientation) this.sexualOrientation = data.sexualOrientation;

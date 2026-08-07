@@ -20,8 +20,15 @@ export class CharacterRenderer {
     if (character.chosenOne) this.drawChosenMarker(point, width);
     this.context.drawImage(image, point.x - width / 2, point.y - height * 0.82, width, height);
     this.drawDivineEquipment(character, point, width, height);
+    if (character.theftIndicator) this.drawTheftIndicator(point, width, height);
     this.drawName(character.name, point, height);
     return true;
+  }
+
+  drawTheftIndicator(point, width, height) {
+    const context = this.context; const size = Math.max(6, width * .18); const y = point.y - height * .92;
+    context.save(); context.strokeStyle = '#df665b'; context.shadowColor = '#5a1717'; context.shadowBlur = 5; context.lineCap = 'round'; context.lineWidth = Math.max(3, width * .065);
+    context.beginPath(); context.moveTo(point.x-size, y-size); context.lineTo(point.x+size, y+size); context.moveTo(point.x+size, y-size); context.lineTo(point.x-size, y+size); context.stroke(); context.restore();
   }
 
   drawDivineEquipment(character, point, width, height) {

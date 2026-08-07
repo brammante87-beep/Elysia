@@ -29,11 +29,13 @@ export class PowerManager {
   }
   strike(character) {
     character.lightningStrikeCount += 1;
-    this.world.ais.get(character.id)?.interrupt();
+    const learned = this.world.divineTeaching.respond(character, 'lightning');
+    if (!learned) this.world.ais.get(character.id)?.interrupt();
     if (character.lightningStrikeCount === 3) this.world.killCharacter(character);
   }
   bless(character) {
     character.blessingCount += 1;
+    this.world.divineTeaching.respond(character, 'blessing');
     if (character.blessingCount >= 5 && !character.isExalted) { character.isExalted = true; character.canFoundSettlement = true; this.world.addEffect(character.position, 'exalted', { characterId: character.id }); }
   }
   rally(position) {

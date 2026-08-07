@@ -4,6 +4,7 @@ import { CharacterCreator } from '../entities/CharacterCreator.js';
 import { NameGenerator } from '../entities/NameGenerator.js';
 import { WorldTypeId } from '../data/WorldTypes.js';
 import { SeededRandom } from '../world/SeededRandom.js';
+import { BehaviourMemory } from '../behaviour/BehaviourMemory.js';
 
 export class ReproductionSystem {
   static NEW_LIFE_MESSAGE = "La nuova vita nasce dal legame tra due esseri, l'amore invoca un briciolo del tuo potere anche senza la tua volontà.";
@@ -84,7 +85,7 @@ export class ReproductionSystem {
     return firstChild;
   }
 
-  growChildren(cycle) { for (const child of this.world.characters.filter(character => character.lifeStage === 'child' && cycle > character.birthCycle)) { child.lifeStage = 'adult'; child.insideHome = false; if (child.worldType === WorldTypeId.HUMAN) { child.sexCharacteristics = this.pick(CharacterCreator.SexCharacteristics); child.genderIdentity = this.pick(CharacterCreator.GenderIdentities); child.sexualOrientation = this.pick(CharacterCreator.SexualOrientations); } this.world.ensureAI(child).setTask('idle'); } }
+  growChildren(cycle) { for (const child of this.world.characters.filter(character => character.lifeStage === 'child' && cycle > character.birthCycle)) { child.lifeStage = 'adult'; child.behaviourMemory = new BehaviourMemory(); child.behaviourPreferences = child.behaviourMemory.preferences; child.insideHome = false; if (child.worldType === WorldTypeId.HUMAN) { child.sexCharacteristics = this.pick(CharacterCreator.SexCharacteristics); child.genderIdentity = this.pick(CharacterCreator.GenderIdentities); child.sexualOrientation = this.pick(CharacterCreator.SexualOrientations); } this.world.ensureAI(child).setTask('idle'); } }
   pick(values) { return values[Math.floor(this.random.next() * values.length)]; }
   restore(data = {}) { this.random.state = data.randomState ?? this.random.state; this.relationships = { ...(data.relationships ?? {}) }; this.pendingBirths = [...(data.pendingBirths ?? (data.pendingBirth ? [data.pendingBirth] : []))]; }
   toJSON() { return { randomState: this.random.state, relationships: this.relationships, pendingBirths: this.pendingBirths }; }
