@@ -3,6 +3,7 @@ import { CharacterMovement } from '../entities/CharacterMovement.js';
 import { PartnerGenerator } from '../entities/PartnerGenerator.js';
 import { Household } from '../households/Household.js';
 import { House } from '../entities/House.js';
+import { Dwelling } from '../entities/Dwelling.js';
 
 export class HouseholdProgression {
   static States = Object.freeze({ WAITING: 'waiting', APPROACHING: 'approaching', SPEAKING: 'speaking', COMPLETE: 'complete' });
@@ -36,7 +37,7 @@ export class HouseholdProgression {
     if (!chosen || !partner || !this.world.hut) return;
     const household = new Household({ id: 'household-1', memberIds: [chosen.id, partner.id], homeBuildingId: this.world.hut.id });
     const hut = this.world.hut;
-    this.world.hut = new House({ ...hut.toJSON(), householdId: household.id, transformationAge: 0 });
+    this.world.hut = new House({ ...hut.toJSON(), householdId: household.id, transformationAge: 0, visualVariant: Dwelling.variant(this.world.worldType, true, chosen.species) });
     this.world.households.push(household);
     for (const member of [chosen, partner]) { member.householdId = household.id; member.homeBuildingId = this.world.hut.id; member.partnerId = member === chosen ? partner.id : chosen.id; this.world.ensureAI(member); }
     this.world.addEffect(hut.position, 'transform'); this.state = HouseholdProgression.States.COMPLETE;

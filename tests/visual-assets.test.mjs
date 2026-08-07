@@ -29,7 +29,7 @@ test('registry resolves stable semantic IDs for every character kind', () => {
   assert.equal(registry.resolveId({}), 'human.base');
   for (const species of ['deer', 'cat', 'dog']) assert.equal(registry.resolveId({ species }), `beast.${species}`);
   assert.deepEqual(registry.requiredIds('plant'), []);
-  assert.deepEqual(registry.requiredIds('human'), ['human.base']);
+  assert.deepEqual(registry.requiredIds('human'), ['human.base', 'human.child']);
 });
 
 test('CharacterRenderer resolves human and each beast without anatomy methods', async () => {
@@ -61,7 +61,7 @@ test('save representation stays semantic and contains no asset paths', () => {
 test('AssetLoader finishes every required frame before reporting success', async () => {
   class LoadedImage { set src(value) { this.path = value; queueMicrotask(() => this.onload()); } }
   const loader = new AssetLoader(registry, LoadedImage);
-  const pending = loader.preload(['beast.deer', 'beast.cat', 'beast.dog']);
+  const pending = loader.preload(registry.requiredIds('beast'));
   assert.equal(loader.loading, true); assert.equal(await pending, true); assert.equal(loader.loading, false);
   for (const id of registry.requiredIds('beast')) for (const frame of registry.get(id).states.idle.frames) assert.equal(loader.isReady(frame), true);
 });

@@ -3,9 +3,13 @@ export class CharacterAssetRegistry {
 
   static Definitions = Object.freeze({
     'human.base': CharacterAssetRegistry.definition('human', 4.2, 5.2),
+    'human.child': CharacterAssetRegistry.definition('human-child', 3.4, 3.8),
     'beast.deer': CharacterAssetRegistry.definition('deer', 5.8, 4.8),
     'beast.cat': CharacterAssetRegistry.definition('cat', 4.8, 3.8),
     'beast.dog': CharacterAssetRegistry.definition('dog', 5.2, 4.0),
+    'beast.deer.child': CharacterAssetRegistry.definition('fawn', 4.2, 3.5),
+    'beast.cat.child': CharacterAssetRegistry.definition('kitten', 3.6, 2.9),
+    'beast.dog.child': CharacterAssetRegistry.definition('puppy', 4, 3.1),
   });
 
   static definition(folder, worldWidth, worldHeight) {
@@ -26,14 +30,15 @@ export class CharacterAssetRegistry {
   }
 
   resolveId(character) {
+    if (character.lifeStage === 'child') return character.species ? `beast.${character.species}.child` : 'human.child';
     return character.species ? `beast.${character.species}` : 'human.base';
   }
 
   get(id) { return CharacterAssetRegistry.Definitions[id] ?? null; }
 
   requiredIds(worldType) {
-    if (worldType === 'human') return ['human.base'];
-    if (worldType === 'beast') return ['beast.deer', 'beast.cat', 'beast.dog'];
+    if (worldType === 'human') return ['human.base', 'human.child'];
+    if (worldType === 'beast') return ['beast.deer', 'beast.cat', 'beast.dog', 'beast.deer.child', 'beast.cat.child', 'beast.dog.child'];
     return [];
   }
 }

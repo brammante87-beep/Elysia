@@ -19,7 +19,7 @@ export class CharacterCreator {
   createBeast(data, position, seed = 0) {
     this.validateName(data.name);
     this.validateChoice(data.species, CharacterCreator.BeastSpecies, 'species');
-    return new Character({ name: data.name.trim(), species: data.species, position, worldType: WorldTypeId.BEAST, id: this.createId(seed) });
+    return new Character({ name: data.name.trim(), species: data.species, position, worldType: WorldTypeId.BEAST, id: this.createId(seed), reproductiveSex: (Number(seed) & 1) ? 'female' : 'male' });
   }
 
   restore(data) { return data ? new Character(data) : null; }

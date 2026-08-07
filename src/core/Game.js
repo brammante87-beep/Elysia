@@ -186,7 +186,7 @@ export class Game {
 
   resize() { this.renderer.resize(); }
 
-  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
+  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint) ?? this.world.inspectHome(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
 
   update(deltaTime) {
     this.clock.update(deltaTime);
