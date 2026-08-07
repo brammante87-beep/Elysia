@@ -1,28 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elysia Alpha 1.1</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/ui.css">
-</head>
-<body>
-    <canvas id="game" aria-label="Elysia world"></canvas>
-    <div id="ui" aria-live="polite"></div>
-
-    <script type="module">
-        import { Game } from "./js/core/Game.js";
-
-        window.addEventListener("load", () => {
-            if (globalThis.ELYSIA_DEBUG === true) {
-                window.addEventListener("error", (event) => console.error("[Elysia] window.onerror", event.error?.stack || event.message, event.error));
-                window.addEventListener("unhandledrejection", (event) => console.error("[Elysia] unhandledrejection", event.reason?.stack || event.reason));
-            }
-            const game = new Game("game", "ui");
-            if (globalThis.ELYSIA_DEBUG === true) { globalThis.elysiaGame = game; }
-            game.start();
-        });
-    </script>
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Elysia — Alpha 0.0.1</title>
+    <link rel="stylesheet" href="css/main.css">
+  </head>
+  <body>
+    <main id="app" aria-label="Elysia"></main>
+    <script type="module" src="src/main.js"></script>
+  </body>
 </html>

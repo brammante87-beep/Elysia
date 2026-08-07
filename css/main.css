@@ -1,0 +1,21 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #25282a;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
