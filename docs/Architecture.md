@@ -56,6 +56,22 @@ code contains no species anatomy. Each current idle state has two authored frame
 while the registry reserves the natural `walk`, `work`, `attack`, `sleep`, `hurt`,
 and `death` state vocabulary for additive animation work.
 
+`HumanVisualProfileResolver` is the single boundary between independent semantic
+identity data and adult Human game art. Its current expandable presets are
+`human.base`, `human.masculine`, `human.femaleWomanLongHair`,
+`human.femaleWomanShortHair`, `human.femaleWomanTiedHair`, `human.intersexMan`,
+`human.intersexWoman`, `human.intersexNonBinary`, and `human.nonBinary`. These are
+stylized Elysia cosmetic mappings, not claims about how real people look. A future
+variant ID or appearance seed can choose more art within a profile without changing
+identity or save mechanics. Children keep `human.child` until maturation.
+
+Every adult profile implements the same authored idle, walk, work, and three-frame
+arm-gesture contract. `HumanIdleAnimation` independently schedules a 1.35-second
+lift/hold/lower gesture after visual-only intervals of four to nine seconds while a
+Human is genuinely idle. It neither consumes simulation randomness nor mutates the
+Character. Exalted mantle, weapon, and Shield remain renderer layers over the chosen
+profile, and art dimensions remain independent of collision and interaction geometry.
+
 Every sprite source is 160 × 200 SVG units for high-DPI clarity and modest zoom.
 Intended world-space dimensions are Human 4.2 × 5.2, Deer 5.8 × 4.8, Cat 4.8 × 3.8,
 and Dog 5.2 × 4.0 units. Character collision and interaction radii live on the
