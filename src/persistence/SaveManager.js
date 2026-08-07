@@ -43,7 +43,8 @@ export class SaveManager {
   withDefaults(data) {
     if (!('state' in data)) return data;
     return { ...data, introPage: data.introPage ?? 0, worldType: data.worldType ?? null,
-      worldSeed: data.worldSeed ?? null, chosenOne: data.chosenOne ?? null };
+      worldSeed: data.worldSeed ?? null, chosenOne: data.chosenOne ?? null,
+      ...('world' in data ? { world: data.world ?? {} } : {}) };
   }
 
   deleteSave() { this.storage.removeItem(Config.SAVE_KEY); }

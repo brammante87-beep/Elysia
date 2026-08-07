@@ -19,6 +19,8 @@ export class CharacterAssetRegistry {
           `assets/characters/${folder}/idle-01.svg`,
           `assets/characters/${folder}/idle-02.svg`,
         ]) }),
+        walk: Object.freeze({ frameDuration: 0.2, frames: Object.freeze([`assets/characters/${folder}/walk-01.svg`, `assets/characters/${folder}/walk-02.svg`]) }),
+        work: Object.freeze({ frameDuration: 0.16, frames: Object.freeze([`assets/characters/${folder}/walk-02.svg`, `assets/characters/${folder}/idle-01.svg`]) }),
       }),
     });
   }

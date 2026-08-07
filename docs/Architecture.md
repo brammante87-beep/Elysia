@@ -95,3 +95,11 @@ not inspect or migrate abandoned prototype keys.
 `Config` owns application version, maximum frame delta, presentation constants, and
 save schema settings. Future gameplay tuning constants belong there rather than in
 rendering or orchestration code.
+
+## Alpha 0.0.5 simulation architecture
+
+`DIVINE_POWERS` is the single ordered registry used by `DivineToolbar` and `Miracles`. Input converts client coordinates to canvas coordinates; `Renderer.screenToWorld` performs the camera-compatible canvas-to-world transform; `Miracles` delegates validated creation to `World`.
+
+`WorldEntity` supplies semantic identity, position, life and explicit simulation radius. `Tree`, `WaterSource`, `Cow`, and `Hut` are stored in collections. Art dimensions never define collision. `ResourceStorage` centralizes Wood, Water and Food with a uniform capacity of six.
+
+`CharacterAI` owns task decisions and semantic carried resources. `Pathfinder` performs terrain-only grid search without modifying terrain, while `CharacterMovement` follows world-space waypoints smoothly using delta time. Saves contain semantic entities, Hut storage and recoverable AI intent; paths, effects, and animation frames remain transient and are safely recalculated after Continue.
