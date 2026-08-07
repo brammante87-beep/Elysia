@@ -1,17 +1,22 @@
+import { HumanIdleAnimation } from './HumanIdleAnimation.js';
+
 export class CharacterRenderer {
   constructor(context, registry, assetLoader) {
     this.context = context;
     this.registry = registry;
     this.assetLoader = assetLoader;
+    this.humanIdleAnimation = new HumanIdleAnimation();
   }
 
   resolve(character) { return this.registry.get(this.registry.resolveId(character)); }
 
   render(character, point, elapsed, pixelsPerWorldUnit) {
     const definition = this.resolve(character);
-    const animation = definition?.states[character.visualState] ?? definition?.states.idle;
+    const visualState = this.humanIdleAnimation.state(character, elapsed);
+    const animation = definition?.states[visualState] ?? definition?.states.idle;
     if (!animation) return false;
-    const frameIndex = Math.floor(elapsed / animation.frameDuration) % animation.frames.length;
+    const animationTime = this.humanIdleAnimation.animationTime(character, elapsed, visualState);
+    const frameIndex = Math.floor(animationTime / animation.frameDuration) % animation.frames.length;
     const image = this.assetLoader.get(animation.frames[frameIndex]);
     if (!image) return false;
     const width = definition.worldWidth * pixelsPerWorldUnit;

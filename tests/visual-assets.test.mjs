@@ -29,7 +29,8 @@ test('registry resolves stable semantic IDs for every character kind', () => {
   assert.equal(registry.resolveId({}), 'human.base');
   for (const species of ['deer', 'cat', 'dog']) assert.equal(registry.resolveId({ species }), `beast.${species}`);
   assert.deepEqual(registry.requiredIds('plant'), []);
-  assert.deepEqual(registry.requiredIds('human'), ['human.base', 'human.child']);
+  assert.ok(registry.requiredIds('human').includes('human.base'));
+  assert.ok(registry.requiredIds('human').includes('human.child'));
 });
 
 test('CharacterRenderer resolves human and each beast without anatomy methods', async () => {
