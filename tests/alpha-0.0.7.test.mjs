@@ -37,10 +37,10 @@ test('shared dwelling semantics select Human construction and Beast dens',()=>{
   const world=new Alpha007Harness().world(WorldTypeId.BEAST); const chosen=new CharacterCreator().createBeast({name:'Rovo',species:'dog'},world.findSpawnPosition(),2); world.addCharacter(chosen); world.beginHut(world.findBuildPosition(chosen.position)); assert.match(world.hut.visualVariant,/^den/); assert.notEqual(world.hut.visualVariant,'hut');
 });
 
-test('world time is exactly five active minutes and crosses every phase',()=>{
-  assert.equal(Config.WORLD_CYCLE_SECONDS,300); assert.equal(Config.DAY_DURATION_SECONDS,240); assert.equal(Config.NIGHT_DURATION_SECONDS,60);
+test('world time is exactly 90 active seconds and crosses every phase',()=>{
+  assert.equal(Config.WORLD_CYCLE_SECONDS,90); assert.equal(Config.DAY_DURATION_SECONDS,70); assert.equal(Config.NIGHT_DURATION_SECONDS,20);
   const time=new WorldTime(); const start=time.toJSON(); time.update(50,false); assert.deepEqual(time.toJSON(),start);
-  time.update(15); assert.equal(time.phase,'day'); time.update(210); assert.equal(time.phase,'dusk'); time.update(15); assert.equal(time.phase,'night'); time.update(60); assert.equal(time.phase,'dawn'); assert.equal(time.cycle,2); assert.equal(time.elapsed,0);
+  time.update(5); assert.equal(time.phase,'day'); time.update(55); assert.equal(time.phase,'dusk'); time.update(10); assert.equal(time.phase,'night'); time.update(20); assert.equal(time.phase,'dawn'); assert.equal(time.cycle,2); assert.equal(time.elapsed,0);
 });
 
 test('night sends household adults home and dawn resumes their existing AI',()=>{
@@ -65,11 +65,11 @@ test('one birth has unique semantic lineage, household membership, save continui
 test('children cannot gather, use species visuals, remain in household, then grow in place',()=>{
   const {world,first,second}=new Alpha007Harness().family(WorldTypeId.BEAST); first.insideHome=second.insideHome=true; world.reproduction.random.next=()=>0; world.reproduction.evaluateNight(1); const child=world.reproduction.birthAtDawn(2); const id=child.id; const parents=[...child.parentIds]; const home={...world.hut.position}; world.ais.get(id).update(10); assert.equal(world.ais.get(id).task,CharacterAI.Tasks.CHILD_IDLE); assert.ok(Math.hypot(child.position.x-home.x,child.position.y-home.y)<1);
   const registry=new CharacterAssetRegistry(); assert.equal(registry.resolveId(child),'beast.deer.child'); assert.equal(registry.resolveId({...child,species:'cat'}),'beast.cat.child'); assert.equal(registry.resolveId({...child,species:'dog'}),'beast.dog.child');
-  world.reproduction.growChildren(3); assert.equal(child.id,id); assert.deepEqual(child.parentIds,parents); assert.equal(child.lifeStage,'adult'); assert.equal(child.species,'deer'); assert.equal(world.ais.get(id).task,CharacterAI.Tasks.IDLE);
+  world.reproduction.growChildren(child.birthSimulationTime + Config.CHILD_GROWTH_DURATION_SECONDS); assert.equal(child.id,id); assert.deepEqual(child.parentIds,parents); assert.equal(child.lifeStage,'adult'); assert.equal(child.species,'deer'); assert.equal(world.ais.get(id).task,CharacterAI.Tasks.IDLE);
 });
 
 test('Human adulthood assigns independent valid identity fields',()=>{
-  const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; world.reproduction.random.next=()=>0; world.reproduction.evaluateNight(1); const child=world.reproduction.birthAtDawn(2); world.reproduction.growChildren(3); assert.ok(CharacterCreator.SexCharacteristics.includes(child.sexCharacteristics)); assert.ok(CharacterCreator.GenderIdentities.includes(child.genderIdentity)); assert.ok(CharacterCreator.SexualOrientations.includes(child.sexualOrientation));
+  const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; world.reproduction.random.next=()=>0; world.reproduction.evaluateNight(1); const child=world.reproduction.birthAtDawn(2); world.reproduction.growChildren(child.birthSimulationTime + Config.CHILD_GROWTH_DURATION_SECONDS); assert.ok(CharacterCreator.SexCharacteristics.includes(child.sexCharacteristics)); assert.ok(CharacterCreator.GenderIdentities.includes(child.genderIdentity)); assert.ok(CharacterCreator.SexualOrientations.includes(child.sexualOrientation));
 });
 
 test('meal scheduling is daytime simulation time, unique, persisted, and partner-led',()=>{

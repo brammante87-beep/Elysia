@@ -15,6 +15,7 @@ export class Character {
     this.parentIds = [...(data.parentIds ?? [])];
     this.lifeStage = data.lifeStage ?? 'adult';
     this.birthCycle = data.birthCycle ?? null;
+    this.birthSimulationTime = data.birthSimulationTime ?? null;
     this.insideHome = data.insideHome ?? false;
     this.appearanceVariant = data.appearanceVariant ?? 'base';
     this.interactionRadius = data.interactionRadius ?? 1.25;
