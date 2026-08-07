@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { WorldGenerator } from '../src/world/WorldGenerator.js';
 import { TerrainVisualModel } from '../src/rendering/TerrainVisualModel.js';
 import { World } from '../src/world/World.js';
+import { readFileSync } from 'node:fs';
 
 test('visual terrain uses a substantially higher resolution than the logical grid', () => {
   const terrain = new WorldGenerator().generate('human', 42);
@@ -42,4 +43,25 @@ test('world coordinates and cache size do not depend on viewport dimensions', ()
   const visual = new TerrainVisualModel(terrain, 'beast', 3);
   assert.equal(visual.width, 96); assert.equal(visual.height, 60);
   assert.equal('viewportWidth' in visual, false); assert.equal('viewportHeight' in visual, false);
+});
+
+test('one terrain visual renderer owns the independent background layers', () => {
+  const rendererSource = readFileSync(new URL('../src/rendering/Renderer.js', import.meta.url), 'utf8');
+  const visualSource = readFileSync(new URL('../src/rendering/TerrainVisualRenderer.js', import.meta.url), 'utf8');
+  assert.match(rendererSource, /new TerrainVisualRenderer/);
+  assert.doesNotMatch(rendererSource, /TerrainLayerCache|terrainCache/);
+  for (const layer of ['DeepSeaLayer', 'ShallowWaterLayer', 'BeachLayer', 'GrassBaseLayer',
+    'GrassVariationLayer', 'StaticDecorationLayer', 'ShoreFoamLayer']) assert.match(visualSource, new RegExp(layer));
+});
+
+test('Human and Beast visual profiles remain deterministic and distinct', () => {
+  const generator = new WorldGenerator();
+  const firstHuman = new TerrainVisualModel(generator.generate('human', 93), 'human', 93);
+  const secondHuman = new TerrainVisualModel(generator.generate('human', 93), 'human', 93);
+  const beast = new TerrainVisualModel(generator.generate('beast', 93), 'beast', 93);
+  assert.deepEqual(firstHuman.phases, secondHuman.phases);
+  assert.deepEqual(firstHuman.decorations, secondHuman.decorations);
+  assert.notEqual(firstHuman.decorations.length, beast.decorations.length);
+  assert.ok(firstHuman.contour().length > 0);
+  assert.deepEqual(beast.contour(), []);
 });
