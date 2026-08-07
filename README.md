@@ -1,12 +1,13 @@
 # Elysia
 
-**Alpha 0.0.3 — Introduction & World Selection**
+**Alpha 0.0.4 — The World Awakens & Chosen One Creation**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-current milestone adds a four-page Italian introduction, the Circle of the
-Omnipotents, Elysia, and a confirmed choice between Human, Beast, and Plant worlds.
-Progress is saved across the introduction and selection. It intentionally contains
-no terrain, inhabitants, miracles, or playable gameplay.
+current milestone reveals a deterministic, procedurally illustrated Elysia after the
+Italian introduction and world choice. Human worlds are organic islands with animated
+sea, beach, and grass; Beast and Plant worlds are distinct textured grasslands. Human
+and Beast paths shape and place one persistent Prescelto, while Plant enters the calm
+world view without a character. Miracles, resources, movement, and AI remain absent.
 
 ## Run
 
@@ -22,6 +23,7 @@ Visit <http://localhost:8000>. Run the lightweight foundation tests with:
 node --test
 ```
 
-Version 1 saves now store `state`, `introPage`, and `worldType`; valid Alpha 0.0.2
-minimal saves remain compatible. Project direction and technical boundaries are
+Version 1 saves store minimal progress, `worldType`, `worldSeed`, and the optional
+Chosen One; terrain is regenerated rather than serialized. Earlier minimal saves
+remain compatible. Project direction and technical boundaries are
 recorded in [`docs/`](docs/).

@@ -25,11 +25,27 @@ in `BOOT`; later screens will explicitly transition it.
 from the canvas CSS rectangle into backing-buffer coordinates before being exposed.
 It does not invoke gameplay.
 
+## World generation and queries
+
+`WorldGenerator` uses `SeededRandom` to build compact `TerrainMap` data. Human maps
+derive an irregular island, sand transition, and surrounding sea from the seed;
+Beast and Plant maps are gameplay grass. `World` owns the generated result and
+characters, and exposes bounded `getTerrainAt`, `isTerrainType`, and `isWalkable`
+queries. Save records keep the seed, not thousands of cells.
+
 ## Rendering flow
 
 `Game.render()` delegates to `Renderer`, which only draws. `Renderer` owns backing
-resolution and the neutral foundation view. Later world, camera, and entity render
-components can be composed behind this boundary without moving drawing into boot code.
+resolution, caches the static terrain canvas, and draws ordered terrain, decoration,
+future-object, character, effect, and UI layers. Only water highlights, grass sway,
+and character idle details are recomputed per frame; none alters world data.
+
+## Character model
+
+`CharacterCreator` validates creation choices and constructs the shared `Character`
+model with a seed-stable ID, world position, life flags, and only world-appropriate
+fields. Human sex characteristics, gender identity, and orientation are deliberately
+independent. Beast species use the stable `deer`, `cat`, and `dog` IDs.
 
 ## Future world, entities, AI, and systems
 

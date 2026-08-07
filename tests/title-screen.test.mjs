@@ -54,7 +54,7 @@ test('title screen contains ELYSIA, NUOVA PARTITA, CONTINUA, and the version', (
   assert.match(markup, />ELYSIA</);
   assert.match(markup, />NUOVA PARTITA</);
   assert.match(markup, />CONTINUA</);
-  assert.match(markup, /Alpha 0\.0\.3/);
+  assert.match(markup, /Alpha 0\.0\.4/);
 });
 
 test('valid saves expose Continue while corrupt and unsupported saves do not', () => {
@@ -73,7 +73,8 @@ test('New Game starts immediately without a save and creates a minimal valid sav
   const harness = new GameHarness();
   harness.game.requestNewGame();
   assert.equal(harness.game.state.current, GameState.States.INTRO);
-  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null });
+  assert.equal(harness.game.saves.load().data.state, GameState.States.INTRO);
+  assert.equal(Number.isInteger(harness.game.saves.load().data.worldSeed), true);
   assert.equal(harness.introPage, 0);
 });
 
@@ -86,7 +87,7 @@ test('New Game with a save confirms; cancel preserves it and confirm replaces it
   assert.equal(harness.game.saves.load().data.marker, 'preserve-me');
   harness.game.requestNewGame();
   harness.confirm();
-  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null });
+  assert.equal(harness.game.saves.load().data.state, GameState.States.INTRO);
 });
 
 test('Continue loads through SaveManager and restores the introduction', () => {
@@ -95,7 +96,7 @@ test('Continue loads through SaveManager and restores the introduction', () => {
   const originalLoad = harness.game.saves.load.bind(harness.game.saves);
   let loadCalls = 0;
   harness.game.saves.load = () => { loadCalls += 1; return originalLoad(); };
-  harness.game.continueGame();
+  harness.game.characterCreator = { restore: () => null }; harness.game.continueGame();
   assert.equal(loadCalls, 1);
   assert.equal(harness.game.state.current, GameState.States.INTRO);
   assert.equal(harness.introPage, 0);
@@ -106,6 +107,7 @@ test('menu updates do not execute world gameplay or instantiate later systems', 
   let updates = 0;
   harness.game.clock = { update() {} };
   harness.game.world = { update: () => { updates += 1; } };
+  harness.game.renderer = { update() {} };
   harness.game.update(0.016);
   assert.equal(updates, 0);
   for (const name of ['terrain', 'humans', 'animals', 'toolbar', 'miracles']) {

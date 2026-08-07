@@ -5,6 +5,7 @@ import { GameState } from '../src/core/GameState.js';
 import { IntroScreen } from '../src/ui/IntroScreen.js';
 import { SaveManager } from '../src/persistence/SaveManager.js';
 import { WORLD_TYPES, WorldTypeId } from '../src/data/WorldTypes.js';
+import { World } from '../src/world/World.js';
 
 class MemoryStorage {
   constructor() { this.values = new Map(); }
@@ -20,11 +21,17 @@ class AlphaHarness {
     this.game.saves = new SaveManager(new MemoryStorage());
     this.game.introPage = 0;
     this.game.worldType = null;
+    this.game.worldSeed = 42;
+    this.game.world = new World();
+    this.game.renderer = { setWorld() {} };
+    this.game.characterCreator = { restore: () => null };
     this.game.ui = {
       showIntro: (page, advance) => { this.page = page; this.advance = advance; },
       showWorldSelection: (types, handlers) => { this.types = types; this.select = handlers.onSelect; },
       showWorldConfirmation: (type, confirm, cancel) => { this.pending = type; this.confirm = confirm; this.cancel = cancel; },
       showPlaceholder: lines => { this.placeholder = lines; },
+      showWorldReveal: complete => { this.reveal = complete; },
+      showCharacterCreation: () => {}, showPlaying: () => {},
       showTitle: () => {},
     };
   }
@@ -62,28 +69,28 @@ for (const id of Object.values(WorldTypeId)) {
     harness.select(id);
     harness.confirm();
     assert.equal(harness.game.worldType, id);
+    assert.equal(harness.game.state.current, GameState.States.WORLD_REVEAL);
     assert.equal(harness.game.saves.load().data.worldType, id);
   });
 }
 
-test('Continue restores intro pages, world selection, and confirmed placeholders', () => {
+test('Continue restores intro pages and world selection', () => {
   const harness = new AlphaHarness();
   harness.game.saves.save({ state: GameState.States.INTRO, introPage: 2, worldType: null });
   harness.game.continueGame(); assert.equal(harness.page, 2);
   harness.game.saves.save({ state: GameState.States.WORLD_SELECTION, introPage: 3, worldType: null });
   harness.game.continueGame(); assert.equal(harness.game.state.current, GameState.States.WORLD_SELECTION);
-  harness.game.saves.save({ state: GameState.States.CHARACTER_CREATION, introPage: 3, worldType: WorldTypeId.HUMAN });
-  harness.game.continueGame(); assert.match(harness.placeholder[0], /essere umano/);
 });
 
 test('Alpha 0.0.2 minimal INTRO saves receive safe defaults', () => {
   const harness = new AlphaHarness();
   harness.game.saves.save({ state: GameState.States.INTRO });
-  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null });
+  assert.deepEqual(harness.game.saves.load().data, { state: GameState.States.INTRO, introPage: 0, worldType: null, worldSeed: null, chosenOne: null });
 });
 
-test('selection only reaches empty placeholders and creates no gameplay data', () => {
+test('selection creates deterministic terrain but no forbidden gameplay systems', () => {
   const harness = new AlphaHarness();
   harness.game.showWorldSelection(); harness.select(WorldTypeId.PLANT); harness.confirm();
-  for (const name of ['terrain', 'inhabitants', 'characters', 'powers', 'toolbar']) assert.equal(harness.game[name], undefined);
+  assert.ok(harness.game.world.terrain);
+  for (const name of ['inhabitants', 'powers', 'toolbar']) assert.equal(harness.game[name], undefined);
 });
