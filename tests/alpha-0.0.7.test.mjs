@@ -94,6 +94,6 @@ test('failed meal never partially consumes and waits until night before resuming
 });
 
 test('intimacy and new life are separate configurable resolutions',()=>{
-  const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; const rolls=[0,.99]; world.reproduction.random.next=()=>rolls.shift();
-  assert.equal(world.reproduction.evaluateNight(1),true); assert.equal(world.reproduction.pendingBirth,null); assert.equal(world.reproduction.birthAtDawn(2),null);
+  const {world,first,second}=new Alpha007Harness().family(); first.insideHome=second.insideHome=true; let rolls=0; world.reproduction.random.next=()=>{rolls+=1;return .99;};
+  assert.equal(world.reproduction.evaluateNight(1),true); assert.equal(rolls,1); assert.equal(world.reproduction.pendingBirth,null); assert.equal(world.reproduction.birthAtDawn(2),null);
 });

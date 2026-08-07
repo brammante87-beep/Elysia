@@ -16,35 +16,48 @@ export class ReproductionSystem {
 
   relationshipId(first, second) { return [first.id, second.id].sort().join('::'); }
   get pendingBirth() { return this.pendingBirths[0] ?? null; }
-  beginRelationship(first, second) { const id = this.relationshipId(first, second); this.relationships[id] = { partnerIds: [first.id, second.id], intimacySinceLastBirth: 0, lastIntimacyCycle: 0, active: true }; return this.relationships[id]; }
+  beginRelationship(first, second) { const id = this.relationshipId(first, second); this.relationships[id] = { partnerIds: [first.id, second.id], intimacySinceLastBirth: 0, lastIntimacyCycle: null, active: true }; return this.relationships[id]; }
   endRelationshipsFor(characterId) { for (const relationship of Object.values(this.relationships)) if (relationship.partnerIds.includes(characterId)) relationship.active = false; this.pendingBirths = this.pendingBirths.filter(birth => !birth.parentIds.includes(characterId)); }
 
   eligiblePartners(household) {
-    const home = this.world.findHome(household?.homeBuildingId);
-    if (!household || !home) return null;
-    const adults = household.memberIds.map(id => this.world.characters.find(character => character.id === id)).filter(character => character?.alive && character.lifeStage === 'adult' && character.insideHome);
-    for (const first of adults) { const second = adults.find(candidate => candidate.id === first.partnerId && candidate.partnerId === first.id); if (second) return [first, second]; }
-    return null;
+    return this.eligibleCouples(household)[0] ?? null;
   }
+
+  eligibleCouples(household) {
+    const home = this.world.findHome(household?.homeBuildingId);
+    if (!household || !home) return [];
+    const adults = household.memberIds.map(id => this.world.characters.find(character => character.id === id)).filter(character => character?.alive && character.lifeStage === 'adult' && character.insideHome);
+    const couples = [];
+    const included = new Set();
+    for (const first of adults) {
+      const second = adults.find(candidate => candidate.id === first.partnerId && candidate.partnerId === first.id);
+      if (!second) continue;
+      const id = this.relationshipId(first, second);
+      if (!included.has(id)) { included.add(id); couples.push([first, second]); }
+    }
+    return couples;
+  }
+
+  visualVariant(relationshipId, cycle) { let hash = cycle; for (const character of relationshipId) hash = ((hash * 31) + character.charCodeAt(0)) >>> 0; return hash % 4; }
 
   evaluateNight(cycle) {
     let occurred = false;
     for (const household of this.world.households) {
-      const partners = this.eligiblePartners(household);
-      if (!partners) continue;
-      const id = this.relationshipId(...partners);
-      const relationship = this.relationships[id] ?? this.beginRelationship(...partners);
-      if (relationship.lastIntimacyCycle >= cycle) continue;
-      relationship.lastIntimacyCycle = cycle;
-      relationship.intimacySinceLastBirth += 1;
-      const home = this.world.findHome(household.homeBuildingId);
-      this.world.addEffect(home.position, 'intimacy', { relationshipId: id, visualVariant: Math.floor(this.random.next() * 3) });
-      const guaranteed = relationship.intimacySinceLastBirth >= 3;
-      if (this.canConceive(...partners) && (guaranteed || this.random.next() < Config.NEW_LIFE_CHANCE)) {
-        this.pendingBirths.push({ cycle, householdId: household.id, homeBuildingId: home.id, parentIds: partners.map(parent => parent.id), relationshipId: id });
-        relationship.intimacySinceLastBirth = 0;
+      for (const partners of this.eligibleCouples(household)) {
+        const id = this.relationshipId(...partners);
+        const relationship = this.relationships[id] ?? this.beginRelationship(...partners);
+        if (!relationship.active || relationship.lastIntimacyCycle === cycle) continue;
+        relationship.lastIntimacyCycle = cycle;
+        relationship.intimacySinceLastBirth += 1;
+        const home = this.world.findHome(household.homeBuildingId);
+        this.world.addEffect(home.position, 'intimacy', { relationshipId: id, visualVariant: this.visualVariant(id, cycle) });
+        const guaranteed = relationship.intimacySinceLastBirth >= 3;
+        if (this.canConceive(...partners) && (guaranteed || this.random.next() < Config.NEW_LIFE_CHANCE)) {
+          this.pendingBirths.push({ cycle, householdId: household.id, homeBuildingId: home.id, parentIds: partners.map(parent => parent.id), relationshipId: id });
+          relationship.intimacySinceLastBirth = 0;
+        }
+        occurred = true;
       }
-      occurred = true;
     }
     return occurred;
   }
