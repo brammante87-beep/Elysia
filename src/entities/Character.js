@@ -47,5 +47,7 @@ export class Character {
     if (!this.sexCharacteristics && this.reproductiveSex) this.sexCharacteristics = this.reproductiveSex;
   }
 
+  get hasDivineShield() { return this.alive && this.hasShield === true; }
+
   toJSON() { return { ...this, position: { ...this.position } }; }
 }

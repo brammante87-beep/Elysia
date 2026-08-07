@@ -151,10 +151,12 @@ export class Game {
   }
 
   saveProgress(state) {
+    if (this.world?.rivalAttack?.blocksSaving) return false;
     const data = { state, introPage: this.introPage, worldType: this.worldType,
       worldSeed: this.worldSeed, chosenOne: this.chosenOne?.toJSON() ?? null };
     if (this.world?.terrain && this.world.toJSON) data.world = this.world.toJSON();
     this.saves.save(data);
+    return true;
   }
 
   continueGame() {
@@ -186,12 +188,12 @@ export class Game {
 
   resize() { this.renderer.resize(); }
 
-  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint) ?? this.world.inspectHome(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result?.requiresChoice) this.ui.showSexChoice(result.character, choice => { this.miracles.cast('changeSex', result.character.position, choice); this.saveProgress(GameState.States.PLAYING); }); else if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
+  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING)) return false; if (this.world.rivalAttack?.active && !this.world.rivalAttack.allowsMiracles) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); if (!this.miracles.selectedPowerId) return Boolean(this.world.inspectCharacter(worldPoint) ?? this.world.inspectHome(worldPoint)); const result = this.miracles.castSelected(worldPoint); if (result?.requiresChoice) this.ui.showSexChoice(result.character, choice => { this.miracles.cast('changeSex', result.character.position, choice); this.saveProgress(GameState.States.PLAYING); }); else if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
 
   update(deltaTime) {
     this.clock.update(deltaTime);
     this.renderer.update(deltaTime);
-    if (this.state.is(GameState.States.PLAYING)) { this.world.update(deltaTime); if (this.world.plantProgression.complete) { this.showGameOver(); return; } this.saveAccumulator += deltaTime; if (!this.world.plantProgression.triggered && this.saveAccumulator >= 2) { this.saveAccumulator = 0; this.saveProgress(GameState.States.PLAYING); } }
+    if (this.state.is(GameState.States.PLAYING)) { this.world.update(deltaTime); if (this.world.plantProgression.complete) { this.showGameOver(); return; } this.saveAccumulator += deltaTime; if (!this.world.plantProgression.triggered && !this.world.rivalAttack.blocksSaving && this.saveAccumulator >= 2) { this.saveAccumulator = 0; this.saveProgress(GameState.States.PLAYING); } }
   }
 
   render() { this.renderer.render(); }
