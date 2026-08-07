@@ -7,7 +7,7 @@ export class HouseholdMealSystem {
 
   constructor(world, data = {}) { this.world = world; this.elapsed = data.elapsed ?? 0; this.state = data.state ?? HouseholdMealSystem.States.NORMAL; this.stageTime = data.stageTime ?? 0; this.events = data.events ?? 0; }
   get household() { return this.world.households[0] ?? null; }
-  get members() { return this.household?.memberIds.map(id => this.world.characters.find(character => character.id === id)).filter(Boolean) ?? []; }
+  get members() { return this.household?.memberIds.map(id => this.world.characters.find(character => character.id === id)).filter(character => character?.alive) ?? []; }
   get adults() { return this.members.filter(character => character.alive && character.lifeStage === 'adult'); }
   get partner() { return this.adults.find(character => !character.chosenOne && character.partnerId) ?? null; }
   get chosen() { return this.adults.find(character => character.chosenOne) ?? null; }

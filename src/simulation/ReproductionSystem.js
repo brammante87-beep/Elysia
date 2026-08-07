@@ -10,70 +10,69 @@ export class ReproductionSystem {
   constructor(world, data = {}) {
     this.world = world;
     this.random = new SeededRandom(data.randomState ?? ((world.worldSeed ?? 1) ^ 0x7007));
-    this.lastEvaluatedCycle = data.lastEvaluatedCycle ?? 0;
-    this.pendingBirth = data.pendingBirth ?? null;
+    this.relationships = { ...(data.relationships ?? {}) };
+    this.pendingBirths = [...(data.pendingBirths ?? (data.pendingBirth ? [data.pendingBirth] : []))];
   }
 
+  relationshipId(first, second) { return [first.id, second.id].sort().join('::'); }
+  get pendingBirth() { return this.pendingBirths[0] ?? null; }
+  beginRelationship(first, second) { const id = this.relationshipId(first, second); this.relationships[id] = { partnerIds: [first.id, second.id], intimacySinceLastBirth: 0, lastIntimacyCycle: 0, active: true }; return this.relationships[id]; }
+  endRelationshipsFor(characterId) { for (const relationship of Object.values(this.relationships)) if (relationship.partnerIds.includes(characterId)) relationship.active = false; this.pendingBirths = this.pendingBirths.filter(birth => !birth.parentIds.includes(characterId)); }
+
   eligiblePartners(household) {
-    if (!household || !this.world.hut || household.homeBuildingId !== this.world.hut.id) return null;
-    const adults = household.memberIds.map(id => this.world.characters.find(character => character.id === id))
-      .filter(character => character?.alive && character.lifeStage === 'adult' && character.insideHome);
-    for (const first of adults) {
-      const second = adults.find(candidate => candidate.id === first.partnerId && candidate.partnerId === first.id);
-      if (second) return [first, second];
-    }
+    const home = this.world.findHome(household?.homeBuildingId);
+    if (!household || !home) return null;
+    const adults = household.memberIds.map(id => this.world.characters.find(character => character.id === id)).filter(character => character?.alive && character.lifeStage === 'adult' && character.insideHome);
+    for (const first of adults) { const second = adults.find(candidate => candidate.id === first.partnerId && candidate.partnerId === first.id); if (second) return [first, second]; }
     return null;
   }
 
   evaluateNight(cycle) {
-    if (cycle <= this.lastEvaluatedCycle) return false;
-    const household = this.world.households[0];
-    const partners = this.eligiblePartners(household);
-    if (!partners) return false;
-    this.lastEvaluatedCycle = cycle;
-    if (this.random.next() >= Config.INTIMACY_PROBABILITY) return false;
-    this.world.addEffect(this.world.hut.position, 'intimacy');
-    if (this.canConceive(partners[0], partners[1]) && this.random.next() < Config.NEW_LIFE_PROBABILITY_AFTER_INTIMACY) this.pendingBirth = { cycle, householdId: household.id, parentIds: partners.map(parent => parent.id) };
-    return true;
+    let occurred = false;
+    for (const household of this.world.households) {
+      const partners = this.eligiblePartners(household);
+      if (!partners) continue;
+      const id = this.relationshipId(...partners);
+      const relationship = this.relationships[id] ?? this.beginRelationship(...partners);
+      if (relationship.lastIntimacyCycle >= cycle) continue;
+      relationship.lastIntimacyCycle = cycle;
+      relationship.intimacySinceLastBirth += 1;
+      const home = this.world.findHome(household.homeBuildingId);
+      this.world.addEffect(home.position, 'intimacy', { relationshipId: id, visualVariant: Math.floor(this.random.next() * 3) });
+      const guaranteed = relationship.intimacySinceLastBirth >= 3;
+      if (this.canConceive(...partners) && (guaranteed || this.random.next() < Config.NEW_LIFE_CHANCE)) {
+        this.pendingBirths.push({ cycle, householdId: household.id, homeBuildingId: home.id, parentIds: partners.map(parent => parent.id), relationshipId: id });
+        relationship.intimacySinceLastBirth = 0;
+      }
+      occurred = true;
+    }
+    return occurred;
   }
 
   canConceive(first, second) {
     if (!first?.alive || !second?.alive || first.partnerId !== second.id || second.partnerId !== first.id || first.householdId !== second.householdId) return false;
     if (first.worldType === WorldTypeId.HUMAN && second.worldType === WorldTypeId.HUMAN) return true;
-    return first.worldType === WorldTypeId.BEAST && second.worldType === WorldTypeId.BEAST
-      && first.species === second.species;
+    return first.worldType === WorldTypeId.BEAST && second.worldType === WorldTypeId.BEAST && first.species === second.species;
   }
 
   birthAtDawn(cycle) {
-    if (!this.pendingBirth || this.pendingBirth.cycle >= cycle) return null;
-    const pending = this.pendingBirth; this.pendingBirth = null;
-    const parents = pending.parentIds.map(id => this.world.characters.find(character => character.id === id));
-    if (parents.some(parent => !parent?.alive)) return null;
-    const household = this.world.households.find(item => item.id === pending.householdId);
-    if (!household) return null;
-    const name = new NameGenerator(this.world.characters.map(character => character.name)).generate(this.random.state);
-    const child = new Character({ id: `child-${cycle}-${this.world.nextCharacterId++}`, name, position: { ...this.world.hut.position },
-      worldType: parents[0].worldType, species: parents[0].species, chosenOne: false, alive: true, lifeStage: 'child',
-      householdId: household.id, homeBuildingId: this.world.hut.id, parentIds: pending.parentIds, birthCycle: cycle,
-      insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
-    this.world.addCharacter(child); household.addMember(child.id);
-    this.world.addEffect(this.world.hut.position, 'newLife', { message: ReproductionSystem.NEW_LIFE_MESSAGE });
-    return child;
-  }
-
-  growChildren(cycle) {
-    for (const child of this.world.characters.filter(character => character.lifeStage === 'child' && cycle > character.birthCycle)) {
-      child.lifeStage = 'adult'; child.insideHome = false;
-      if (child.worldType === WorldTypeId.HUMAN) {
-        child.sexCharacteristics = this.pick(CharacterCreator.SexCharacteristics);
-        child.genderIdentity = this.pick(CharacterCreator.GenderIdentities);
-        child.sexualOrientation = this.pick(CharacterCreator.SexualOrientations);
-      }
-      this.world.ensureAI(child).setTask('idle');
+    const ready = this.pendingBirths.filter(pending => pending.cycle < cycle);
+    this.pendingBirths = this.pendingBirths.filter(pending => pending.cycle >= cycle);
+    let firstChild = null;
+    for (const pending of ready) {
+      const parents = pending.parentIds.map(id => this.world.characters.find(character => character.id === id));
+      const household = this.world.households.find(item => item.id === pending.householdId);
+      const home = this.world.findHome(pending.homeBuildingId);
+      if (parents.some(parent => !parent?.alive) || !household || !home) continue;
+      const name = new NameGenerator(this.world.characters.map(character => character.name)).generate(this.random.state);
+      const child = new Character({ id: `child-${cycle}-${this.world.nextCharacterId++}`, name, position: { ...home.position }, worldType: parents[0].worldType, species: parents[0].species, chosenOne: false, alive: true, lifeStage: 'child', householdId: household.id, homeBuildingId: home.id, parentIds: pending.parentIds, birthCycle: cycle, insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
+      this.world.addCharacter(child); household.addMember(child.id); this.world.addEffect(home.position, 'newLife', { message: ReproductionSystem.NEW_LIFE_MESSAGE }); firstChild ??= child;
     }
+    return firstChild;
   }
 
+  growChildren(cycle) { for (const child of this.world.characters.filter(character => character.lifeStage === 'child' && cycle > character.birthCycle)) { child.lifeStage = 'adult'; child.insideHome = false; if (child.worldType === WorldTypeId.HUMAN) { child.sexCharacteristics = this.pick(CharacterCreator.SexCharacteristics); child.genderIdentity = this.pick(CharacterCreator.GenderIdentities); child.sexualOrientation = this.pick(CharacterCreator.SexualOrientations); } this.world.ensureAI(child).setTask('idle'); } }
   pick(values) { return values[Math.floor(this.random.next() * values.length)]; }
-  restore(data = {}) { this.random.state = data.randomState ?? this.random.state; this.lastEvaluatedCycle = data.lastEvaluatedCycle ?? 0; this.pendingBirth = data.pendingBirth ?? null; }
-  toJSON() { return { randomState: this.random.state, lastEvaluatedCycle: this.lastEvaluatedCycle, pendingBirth: this.pendingBirth }; }
+  restore(data = {}) { this.random.state = data.randomState ?? this.random.state; this.relationships = { ...(data.relationships ?? {}) }; this.pendingBirths = [...(data.pendingBirths ?? (data.pendingBirth ? [data.pendingBirth] : []))]; }
+  toJSON() { return { randomState: this.random.state, relationships: this.relationships, pendingBirths: this.pendingBirths }; }
 }
