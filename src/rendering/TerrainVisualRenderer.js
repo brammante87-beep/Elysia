@@ -52,5 +52,6 @@ export class TerrainVisualRenderer {
 
   clipContour(context, offset) { if (this.traceContour(context, offset)) context.clip(); }
   drawStatic(context, width, height) { context.drawImage(this.staticLayer, 0, 0, width, height); }
+  drawStaticAt(context, x, y, width, height) { context.drawImage(this.staticLayer, x, y, width, height); }
   drawDynamic(context, width, height, elapsed) { this.foamLayer.render(context, this, width, height, elapsed); }
 }
