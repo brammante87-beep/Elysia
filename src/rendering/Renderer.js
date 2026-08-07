@@ -2,7 +2,7 @@ import { Config } from '../core/Config.js';
 import { CharacterRenderer } from './CharacterRenderer.js';
 import { CharacterAssetRegistry } from '../assets/CharacterAssetRegistry.js';
 import { AssetLoader } from '../assets/AssetLoader.js';
-import { TerrainLayerCache } from './TerrainLayerCache.js';
+import { TerrainVisualRenderer } from './TerrainVisualRenderer.js';
 
 export class Renderer {
   constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
@@ -11,7 +11,7 @@ export class Renderer {
     this.window = windowObject;
     this.world = null;
     this.elapsed = 0;
-    this.terrainCache = null;
+    this.terrainVisualRenderer = null;
     this.assetRegistry = registry;
     this.assetLoader = assetLoader ?? new AssetLoader(registry);
     this.characterRenderer = new CharacterRenderer(this.context, registry, this.assetLoader);
@@ -56,14 +56,14 @@ export class Renderer {
     const terrain = this.world?.terrain;
     const documentObject = this.canvas.ownerDocument ?? globalThis.document;
     if (!terrain || !documentObject?.createElement) return;
-    this.terrainCache = new TerrainLayerCache(documentObject, terrain, this.world.worldType, this.world.worldSeed);
+    this.terrainVisualRenderer = new TerrainVisualRenderer(documentObject, terrain, this.world.worldType, this.world.worldSeed);
   }
 
   drawBaseTerrain() {
     const { context, canvas } = this;
-    context.fillStyle = '#083b59'; context.fillRect(0, 0, canvas.width, canvas.height);
-    this.terrainCache?.drawStatic(context, canvas.width, canvas.height);
-    this.terrainCache?.drawDynamic(context, canvas.width, canvas.height, this.elapsed);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    this.terrainVisualRenderer?.drawStatic(context, canvas.width, canvas.height);
+    this.terrainVisualRenderer?.drawDynamic(context, canvas.width, canvas.height, this.elapsed);
     if (this.world.plantProgression?.triggered) { context.fillStyle = `rgba(15,8,20,${Math.min(.58, this.world.plantProgression.elapsed * .075)})`; context.fillRect(0, 0, canvas.width, canvas.height); }
   }
 

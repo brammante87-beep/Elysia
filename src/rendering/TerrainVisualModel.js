@@ -50,13 +50,12 @@ export class TerrainVisualModel {
   isVisualGrass(x, y) {
     if (this.worldType !== WorldTypeId.HUMAN) return true;
     const point = this.normalizedRadius(x, y);
-    const beachWidth = 0.095 + Math.sin(point.angle * 7 + this.phases[4]) * 0.018;
-    return point.radius < this.coastRadius(point.angle) - beachWidth;
+    return point.radius < this.coastRadius(point.angle) - 0.12;
   }
 
   createDecorations() {
     const random = new SeededRandom(this.seed ^ 0xd3c04a);
-    const target = this.worldType === WorldTypeId.PLANT ? 430 : this.worldType === WorldTypeId.BEAST ? 350 : 260;
+    const target = this.worldType === WorldTypeId.PLANT ? 430 : this.worldType === WorldTypeId.BEAST ? 260 : 220;
     const decorations = [];
     for (let attempt = 0; attempt < target * 12 && decorations.length < target; attempt += 1) {
       const x = random.range(2, this.width - 2);
