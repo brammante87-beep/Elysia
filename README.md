@@ -1,13 +1,13 @@
 # Elysia
 
-**Alpha 0.0.4 — The World Awakens & Chosen One Creation**
+**Alpha 0.0.5 — First Divine Actions, Resources & Chosen One Survival**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-current milestone reveals a deterministic, procedurally illustrated Elysia after the
-Italian introduction and world choice. Human worlds are organic islands with animated
-sea, beach, and grass; Beast and Plant worlds are distinct textured grasslands. Human
-and Beast paths shape and place one persistent Prescelto, while Plant enters the calm
-world view without a character. Miracles, resources, movement, and AI remain absent.
+current milestone adds the first playable dependency between divinity and inhabitant.
+The player places polished Tree, freshwater and Cow entities through the permanent
+ten-power toolbar. In Human and Beast worlds, the autonomous Prescelto gathers three
+Wood, constructs a Hut, then balances Wood, Water and Food storage. Plant World remains
+a separate tree-creation experience without a character or settlement AI.
 
 ## Run
 
@@ -23,7 +23,8 @@ Visit <http://localhost:8000>. Run the lightweight foundation tests with:
 node --test
 ```
 
-Version 1 saves store minimal progress, `worldType`, `worldSeed`, and the optional
-Chosen One; terrain is regenerated rather than serialized. Earlier minimal saves
-remain compatible. Project direction and technical boundaries are
+Version 1 saves now store semantic world entities, Hut storage, carried resources and
+recoverable AI state alongside `worldType`, `worldSeed`, and the optional Chosen One;
+terrain and transient paths/animation remain regenerated. Earlier minimal saves remain
+compatible. Project direction and technical boundaries are
 recorded in [`docs/`](docs/).

@@ -1,9 +1,9 @@
-# Roadmap
+# Elysia Roadmap
 
-- **Alpha 0.0.1 (complete):** Technical reboot and foundation reset.
-- **Alpha 0.0.2 (complete):** Title screen, New Game, and validated Continue.
-- **Alpha 0.0.3 (complete):** Introduction and world selection.
-- **Alpha 0.0.4 (current):** World reveal, procedural terrain, and Chosen One creation.
-- **Alpha 0.0.5 (next):** First divine interaction and resource/AI foundation.
+- **Alpha 0.0.1 — COMPLETE — Foundation**
+- **Alpha 0.0.2 — COMPLETE — Title**
+- **Alpha 0.0.3 — COMPLETE — Introduction / World choice**
+- **Alpha 0.0.4 — COMPLETE — World / Chosen One / final visual foundation**
+- **Alpha 0.0.5 — CURRENT — First divine actions / resources / AI / Hut**
 
-Later milestones are plans only and are not implemented in Alpha 0.0.4.
+The next milestone will complete the first household/settlement loop. Relationship, partner, House, reproduction, day/night and later settlement systems are not part of Alpha 0.0.5.

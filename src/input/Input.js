@@ -6,6 +6,7 @@ export class Input {
     this.handlePointer = this.handlePointer.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.onWorldPointer = null;
   }
 
   connect() {
@@ -28,6 +29,7 @@ export class Input {
     Object.assign(this.pointer, this.toCanvasCoordinates(event.clientX, event.clientY));
     this.pointer.pressed = event.type === 'pointerdown' ||
       (event.type === 'pointermove' && event.buttons > 0);
+    if (event.type === 'pointerdown') this.onWorldPointer?.({ ...this.pointer });
   }
 
   handleKeyDown(event) { this.keys.add(event.code); }

@@ -3,6 +3,7 @@ import { IntroScreen } from './IntroScreen.js';
 import { WorldSelectionScreen } from './WorldSelectionScreen.js';
 import { WorldRevealScreen } from './WorldRevealScreen.js';
 import { CharacterCreationScreen } from './CharacterCreationScreen.js';
+import { DivineToolbar } from './DivineToolbar.js';
 
 export class UI {
   constructor(root) {
@@ -12,6 +13,7 @@ export class UI {
     this.worldSelectionScreen = new WorldSelectionScreen(root.ownerDocument ?? globalThis.document);
     this.worldRevealScreen = new WorldRevealScreen(root.ownerDocument ?? globalThis.document);
     this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document);
+    this.divineToolbar = new DivineToolbar(root.ownerDocument ?? globalThis.document);
   }
 
   createCanvas() {
@@ -39,7 +41,7 @@ export class UI {
 
   showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
-  showPlaying() { this.clearScreens(); }
+  showPlaying(worldType, miracles, onSelect) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect); }
 
   showLoading(message) { this.showStatus(message, 'loading-screen'); }
   showLoadingError(message) { this.showStatus(message, 'loading-error-screen'); }

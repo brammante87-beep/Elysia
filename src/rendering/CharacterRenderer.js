@@ -9,7 +9,7 @@ export class CharacterRenderer {
 
   render(character, point, elapsed, pixelsPerWorldUnit) {
     const definition = this.resolve(character);
-    const animation = definition?.states.idle;
+    const animation = definition?.states[character.visualState] ?? definition?.states.idle;
     if (!animation) return false;
     const frameIndex = Math.floor(elapsed / animation.frameDuration) % animation.frames.length;
     const image = this.assetLoader.get(animation.frames[frameIndex]);

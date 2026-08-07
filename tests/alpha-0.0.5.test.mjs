@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { DIVINE_POWERS } from '../src/data/Powers.js';
+import { World } from '../src/world/World.js';
+import { Miracles } from '../src/miracles/Miracles.js';
+import { ResourceStorage } from '../src/resources/ResourceStorage.js';
+import { Resources } from '../src/data/Resources.js';
+import { Character } from '../src/entities/Character.js';
+import { Pathfinder } from '../src/world/Pathfinder.js';
+import { TerrainMap } from '../src/world/TerrainMap.js';
+
+const expected = ['plant','water','flower','cow','lightning','blessing','rayOfLight','changeSex','giveWeapons','shield'];
+const worldAt = (type='human') => { const world = new World(); world.create(type, 42); return world; };
+
+test('toolbar registry preserves ten stable powers and world availability', () => { assert.deepEqual(DIVINE_POWERS.map(p=>p.id), expected); assert.deepEqual(DIVINE_POWERS.filter(p=>p.worlds.includes('human')).map(p=>p.id), ['plant','water','cow']); assert.deepEqual(DIVINE_POWERS.filter(p=>p.worlds.includes('plant')).map(p=>p.id), ['plant']); });
+test('selection is exclusive and unavailable powers cannot cast', () => { const world=worldAt(); const miracles=new Miracles(world); assert.equal(miracles.select('plant'),true); assert.equal(miracles.selectedPowerId,'plant'); miracles.select('water'); assert.equal(miracles.selectedPowerId,'water'); assert.equal(miracles.select('flower'),false); assert.equal(miracles.cast('flower',{x:48,y:30}),false); });
+test('valid casts create exactly one semantic entity and overlap is rejected', () => { const world=worldAt('beast'); const miracles=new Miracles(world); assert.ok(miracles.cast('plant',{x:10,y:10})); assert.equal(world.trees.length,1); assert.equal(miracles.cast('water',{x:10,y:10}),false); assert.ok(miracles.cast('water',{x:13,y:10})); assert.ok(miracles.cast('cow',{x:16,y:10})); assert.equal(world.waterSources.length,1); assert.equal(world.cows.length,1); });
+test('invalid terrain creates no tree', () => { const world=worldAt('human'); const before=world.trees.length; assert.equal(world.placeEntity('plant',{x:0,y:0}),false); assert.equal(world.trees.length,before); });
+test('resource yields are exactly one and water remains alive', () => { const world=worldAt('beast'); const tree=world.placeEntity('plant',{x:10,y:10}); const source=world.placeEntity('water',{x:13,y:10}); const cow=world.placeEntity('cow',{x:16,y:10}); assert.equal(tree.harvest(),1); assert.equal(tree.harvest(),0); assert.equal(source.collect(),1); assert.equal(source.collect(),1); assert.equal(source.alive,true); assert.equal(cow.hunt(),1); assert.equal(cow.hunt(),0); });
+test('storage provides exact 6/6/6 caps and reusable operations', () => { const storage=new ResourceStorage(); for(const id of Resources.ALL){ assert.equal(storage.add(id,9),6); assert.equal(storage.isFull(id),true); assert.equal(storage.remove(id,2),2); assert.equal(storage.get(id),4); storage.add(id,2); } assert.equal(storage.isCompletelyFull(),true); });
+test('AI idles safely without a tree and resumes toward wood', () => { const world=worldAt('beast'); const character=new Character({id:'chosen',name:'Ada',position:{x:10.5,y:10.5},worldType:'beast',species:'deer'}); world.addCharacter(character); world.update(.1); assert.equal(world.ai.task,'idle'); world.placeEntity('plant',{x:14.5,y:10.5}); world.update(.1); assert.equal(world.ai.task,'moveToTree'); });
+test('pathfinder stays on walkable cells and never mutates terrain', () => { const cells=['grass','sea','grass','grass','sea','grass','grass','grass','grass']; const terrain=new TerrainMap(3,3,cells); const snapshot=[...cells]; const path=new Pathfinder().findPath(terrain,{x:.5,y:.5},{x:2.5,y:.5}); assert.ok(path.every(p=>terrain.isWalkable(p.x,p.y))); assert.deepEqual(terrain.cells,snapshot); });
+test('world semantic save restores entities, hut storage, and one chosen one', () => { const world=worldAt('beast'); const character=new Character({id:'chosen',name:'Ada',position:{x:10.5,y:10.5},worldType:'beast',species:'deer'}); world.addCharacter(character); world.placeEntity('plant',{x:14.5,y:10.5}); world.placeEntity('water',{x:17.5,y:10.5}); world.placeEntity('cow',{x:20.5,y:10.5}); world.beginHut({x:10.5,y:15.5}); world.completeHut(); world.hut.storage.add('water',3); const saved=world.toJSON(); const restored=worldAt('beast'); restored.restore('beast',42,character,saved); assert.equal(restored.trees.length,1); assert.equal(restored.waterSources.length,1); assert.equal(restored.cows.length,1); assert.equal(restored.characters.length,1); assert.equal(restored.hut.storage.get('water'),3); assert.equal(restored.ai.task,'idle'); });

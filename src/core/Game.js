@@ -9,6 +9,7 @@ import { SaveManager } from '../persistence/SaveManager.js';
 import { IntroScreen } from '../ui/IntroScreen.js';
 import { WorldTypeId, WorldTypes } from '../data/WorldTypes.js';
 import { CharacterCreator } from '../entities/CharacterCreator.js';
+import { Miracles } from '../miracles/Miracles.js';
 
 export class Game {
   constructor(root) {
@@ -26,6 +27,9 @@ export class Game {
     this.worldSeed = null;
     this.chosenOne = null;
     this.characterCreator = new CharacterCreator();
+    this.miracles = new Miracles(this.world);
+    this.saveAccumulator = 0;
+    this.input.onWorldPointer = point => this.handleWorldPointer(point);
     this.resize = this.resize.bind(this);
   }
 
@@ -134,7 +138,7 @@ export class Game {
     }
     this.state.transitionTo(GameState.States.PLAYING);
     this.saveProgress(GameState.States.PLAYING);
-    this.ui.showPlaying();
+    this.ui.showPlaying(this.worldType, this.miracles);
     return true;
   }
 
@@ -145,8 +149,10 @@ export class Game {
   }
 
   saveProgress(state) {
-    this.saves.save({ state, introPage: this.introPage, worldType: this.worldType,
-      worldSeed: this.worldSeed, chosenOne: this.chosenOne?.toJSON() ?? null });
+    const data = { state, introPage: this.introPage, worldType: this.worldType,
+      worldSeed: this.worldSeed, chosenOne: this.chosenOne?.toJSON() ?? null };
+    if (this.world?.terrain && this.world.toJSON) data.world = this.world.toJSON();
+    this.saves.save(data);
   }
 
   continueGame() {
@@ -162,7 +168,7 @@ export class Game {
     if (save.data.state === GameState.States.INTRO) this.showIntro();
     else if (save.data.state === GameState.States.WORLD_SELECTION) this.showWorldSelection();
     else if (this.worldType !== null && this.worldSeed !== null) {
-      this.world.restore(this.worldType, this.worldSeed, this.chosenOne);
+      this.world.restore(this.worldType, this.worldSeed, this.chosenOne, save.data.world);
       this.renderer.setWorld(this.world);
       if (save.data.state === GameState.States.WORLD_REVEAL) {
         this.state.transitionTo(GameState.States.WORLD_REVEAL);
@@ -176,10 +182,12 @@ export class Game {
 
   resize() { this.renderer.resize(); }
 
+  handleWorldPointer(screenPoint) { if (!this.state.is(GameState.States.PLAYING) || !this.miracles.selectedPowerId) return false; const worldPoint = this.renderer.screenToWorld(screenPoint); const result = this.miracles.castSelected(worldPoint); if (result) this.saveProgress(GameState.States.PLAYING); return Boolean(result); }
+
   update(deltaTime) {
     this.clock.update(deltaTime);
     this.renderer.update(deltaTime);
-    if (this.state.is(GameState.States.PLAYING)) this.world.update(deltaTime);
+    if (this.state.is(GameState.States.PLAYING)) { this.world.update(deltaTime); this.saveAccumulator += deltaTime; if (this.saveAccumulator >= 2) { this.saveAccumulator = 0; this.saveProgress(GameState.States.PLAYING); } }
   }
 
   render() { this.renderer.render(); }
