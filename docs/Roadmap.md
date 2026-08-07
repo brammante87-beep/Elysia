@@ -2,9 +2,8 @@
 
 - **Alpha 0.0.1 (complete):** Technical reboot and foundation reset.
 - **Alpha 0.0.2 (complete):** Title screen, New Game, and validated Continue.
-- **Alpha 0.0.3 (current):** Introduction and world selection.
-- **Alpha 0.0.4 (next):** Chosen One creation.
-- **Alpha 0.0.5:** World rendering and Chosen One spawn.
-- **Alpha 0.1:** First playable foundation, including the divine toolbar.
+- **Alpha 0.0.3 (complete):** Introduction and world selection.
+- **Alpha 0.0.4 (current):** World reveal, procedural terrain, and Chosen One creation.
+- **Alpha 0.0.5 (next):** First divine interaction and resource/AI foundation.
 
-Later milestones are plans only and are not implemented in Alpha 0.0.3.
+Later milestones are plans only and are not implemented in Alpha 0.0.4.

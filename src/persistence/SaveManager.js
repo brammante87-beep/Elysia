@@ -36,12 +36,14 @@ export class SaveManager {
     if (!structurallyValid) return false;
     if ('state' in record.data && !Object.values(GameState.States).includes(record.data.state)) return false;
     if ('introPage' in record.data && (!Number.isInteger(record.data.introPage) || record.data.introPage < 0)) return false;
+    if ('worldSeed' in record.data && record.data.worldSeed !== null && (!Number.isInteger(record.data.worldSeed) || record.data.worldSeed < 0)) return false;
     return !('worldType' in record.data) || record.data.worldType === null || WorldTypes.isValid(record.data.worldType);
   }
 
   withDefaults(data) {
     if (!('state' in data)) return data;
-    return { ...data, introPage: data.introPage ?? 0, worldType: data.worldType ?? null };
+    return { ...data, introPage: data.introPage ?? 0, worldType: data.worldType ?? null,
+      worldSeed: data.worldSeed ?? null, chosenOne: data.chosenOne ?? null };
   }
 
   deleteSave() { this.storage.removeItem(Config.SAVE_KEY); }

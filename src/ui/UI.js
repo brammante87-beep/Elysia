@@ -1,6 +1,8 @@
 import { TitleScreen } from './TitleScreen.js';
 import { IntroScreen } from './IntroScreen.js';
 import { WorldSelectionScreen } from './WorldSelectionScreen.js';
+import { WorldRevealScreen } from './WorldRevealScreen.js';
+import { CharacterCreationScreen } from './CharacterCreationScreen.js';
 
 export class UI {
   constructor(root) {
@@ -8,6 +10,8 @@ export class UI {
     this.titleScreen = new TitleScreen(root.ownerDocument ?? globalThis.document);
     this.introScreen = new IntroScreen(root.ownerDocument ?? globalThis.document);
     this.worldSelectionScreen = new WorldSelectionScreen(root.ownerDocument ?? globalThis.document);
+    this.worldRevealScreen = new WorldRevealScreen(root.ownerDocument ?? globalThis.document);
+    this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document);
   }
 
   createCanvas() {
@@ -33,6 +37,10 @@ export class UI {
 
   showWorldConfirmation(worldType, onConfirm, onCancel) { this.worldSelectionScreen.confirm(worldType, onConfirm, onCancel); }
 
+  showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
+  showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
+  showPlaying() { this.clearScreens(); }
+
   showPlaceholder(lines) {
     this.clearScreens();
     const screen = this.root.ownerDocument.createElement('section');
@@ -49,6 +57,6 @@ export class UI {
   }
 
   clearScreens() {
-    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen').forEach(screen => screen.remove());
+    this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen').forEach(screen => screen.remove());
   }
 }

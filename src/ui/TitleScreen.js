@@ -1,4 +1,5 @@
 import { ConfirmationDialog } from './ConfirmationDialog.js';
+import { Config } from '../core/Config.js';
 
 export class TitleScreen {
   constructor(documentObject = globalThis.document) {
@@ -19,7 +20,7 @@ export class TitleScreen {
           <button type="button" data-action="continue">CONTINUA</button>
         </nav>
       </div>
-      <small class="version">Alpha 0.0.3</small>`;
+      <small class="version">${Config.VERSION}</small>`;
     return screen;
   }
 

@@ -78,7 +78,29 @@ button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
 .confirmation-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: 1.75rem; }
 .confirmation-actions button { flex: 1 1 10rem; }
 .button-danger { border-color: #b58a7b; }
+.world-reveal-screen { position: fixed; z-index: 4; inset: 0; display: grid; place-content: center; color: #f7efcf; text-align: center; background: radial-gradient(circle, #59677b 0, #172436 24%, #030712 72%); animation: reveal-veil 2.7s ease-in-out both; pointer-events: none; }
+.world-reveal-screen h1 { margin: .25rem 0; font: 400 clamp(3rem, 12vw, 7rem) Georgia, serif; letter-spacing: .25em; text-shadow: 0 0 2rem #fff4bd; animation: reveal-name 2.7s ease both; }
+.world-reveal-screen p { z-index: 1; margin: 0; color: #cabf9e; font-size: .7rem; letter-spacing: .35em; }
+.reveal-orbit { position: absolute; top: 50%; left: 50%; width: min(62vw, 32rem); aspect-ratio: 1; border: 1px solid rgb(255 240 187 / 32%); border-radius: 50%; box-shadow: inset 0 0 5rem #93caca55, 0 0 6rem #c8bdf033; transform: translate(-50%, -50%); animation: world-awaken 2.7s ease-out both; }
+.reveal-orbit span { position: absolute; inset: 8%; border: 1px solid rgb(255 255 255 / 14%); border-radius: 50%; }
+.character-creation-screen { background: radial-gradient(circle at 50% 40%, rgb(63 98 86 / 45%), transparent 38%), linear-gradient(145deg, rgb(7 11 24 / 94%), rgb(18 33 40 / 88%)); }
+.creation-panel { width: min(48rem, 100%); padding: clamp(1.3rem, 4vw, 2.5rem); border: 1px solid rgb(222 203 142 / 42%); background: rgb(7 15 26 / 82%); box-shadow: 0 2rem 6rem rgb(0 0 0 / 45%); }
+.creation-panel h1 { margin: .5rem 0 1.5rem; font: 400 clamp(1.8rem, 5vw, 2.8rem) Georgia, serif; }
+.creation-panel > label { display: grid; gap: .5rem; max-width: 25rem; margin: auto; color: #c9c1a7; font-size: .72rem; letter-spacing: .16em; text-align: left; text-transform: uppercase; }
+.creation-panel input[type='text'], .creation-panel input[name='name'] { width: 100%; padding: .85rem 1rem; border: 1px solid #756d57; border-radius: 0; color: #fff8df; background: rgb(16 29 38 / 85%); font: 1.1rem Georgia, serif; }
+.creation-panel fieldset { margin: 1.25rem 0 0; padding: 0; border: 0; }
+.creation-panel legend { width: 100%; margin-bottom: .6rem; color: #c9c1a7; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; }
+.choice-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.choice-pills input { position: absolute; opacity: 0; }
+.choice-pills span { display: block; min-width: 7rem; padding: .7rem 1rem; border: 1px solid #596863; color: #d5d8cb; cursor: pointer; }
+.choice-pills input:checked + span { border-color: #dfcc8b; color: #fff5cb; background: rgb(99 107 75 / 48%); box-shadow: 0 0 1.2rem rgb(221 199 127 / 12%); }
+.creation-panel > button { margin-top: 1.4rem; }
+.creation-error { min-height: 1.2em; margin: .65rem 0 0; color: #efb0a2; }
+@keyframes reveal-veil { 0% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes world-awaken { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.12); } 65% { opacity: 1; } 100% { opacity: .25; transform: translate(-50%, -50%) scale(2.5); } }
+@keyframes reveal-name { 0%, 25% { opacity: 0; letter-spacing: .5em; transform: scale(.9); } 55%, 82% { opacity: 1; } 100% { opacity: 0; transform: scale(1.06); } }
 @keyframes divine-breathe { to { opacity: .45; transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }
 @media (max-height: 500px) { .title-screen h1 { margin-bottom: 1.25rem; font-size: clamp(3rem, 15vh, 5rem); } .title-kicker { display: none; } }
 @media (max-width: 760px) { .world-selection-screen { align-content: start; } .world-choices { grid-template-columns: 1fr; } .world-choice { min-height: 9rem; } }
+@media (max-height: 720px) { .character-creation-screen { align-content: start; } .creation-panel { margin: auto; } .creation-panel fieldset { margin-top: .7rem; } }
