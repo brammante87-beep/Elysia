@@ -1,10 +1,11 @@
 # Elysia
 
-**Alpha 0.0.1 — Foundation Reset**
+**Alpha 0.0.2 — Title Screen & Game Start Foundation**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
-milestone contains only the application, timing, state, input, rendering, and
-persistence foundations. It intentionally contains no playable world or gameplay.
+current milestone adds an Italian title screen, safe New Game confirmation, and
+validated Continue flow to the Alpha 0.0.1 technical foundation. It intentionally
+contains no playable world or gameplay.
 
 ## Run
 
@@ -20,4 +21,6 @@ Visit <http://localhost:8000>. Run the lightweight foundation tests with:
 node --test
 ```
 
-Project direction and technical boundaries are recorded in [`docs/`](docs/).
+Tests may create a supported save through `SaveManager.save({ state: 'INTRO' })` to
+verify Continue without exposing player-facing debug controls. Project direction
+and technical boundaries are recorded in [`docs/`](docs/).
