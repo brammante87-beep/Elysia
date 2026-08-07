@@ -73,7 +73,7 @@ test('save manager handles absent, corrupt, unsupported, and valid saves', () =>
   storage.setItem(Config.SAVE_KEY, JSON.stringify({ version: Config.SAVE_VERSION })); assert.equal(saves.load(), null);
   storage.setItem(Config.SAVE_KEY, JSON.stringify({ version: Config.SAVE_VERSION, data: null })); assert.equal(saves.load(), null);
   storage.setItem(Config.SAVE_KEY, JSON.stringify([])); assert.equal(saves.load(), null);
-  assert.deepEqual(saves.save({ future: true }), { version: 1, data: { future: true } });
+  assert.deepEqual(saves.save({ future: true }), { version: 1, release: Config.VERSION, data: { future: true } });
   assert.equal(saves.hasSave(), true); saves.deleteSave(); assert.equal(saves.load(), null);
 });
 

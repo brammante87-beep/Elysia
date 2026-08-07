@@ -1,5 +1,5 @@
 export class Config {
-  static VERSION = 'Alpha 0.0.10';
+  static VERSION = 'Alpha 1.0.0';
   static MAX_DELTA_SECONDS = 0.1;
   static BACKGROUND_COLOR = '#25282a';
   static SAVE_KEY = 'elysia_reboot_save_v1';
@@ -27,6 +27,9 @@ export class Config {
   static CENTRAL_PLACEMENT_HALF_HEIGHT = 2.15;
   static CENTRAL_STORAGE_CAPACITY = 30;
   static SETTLEMENT_HOME_MILESTONE = 4;
+  static MAX_EXTERNAL_ARRIVALS = 4;
+  static MAX_SETTLEMENTS = 3;
+  static MIN_SETTLEMENT_DISTANCE = 16;
   static POPULATION_LIMIT = 24;
   static SOCIAL_OPPORTUNITY_SECONDS = 20;
   static THEFT_INITIAL_MIN = 0.03;

@@ -1,6 +1,6 @@
 # Elysia
 
-**Alpha 0.0.10 — Emergent Behaviour, Theft & Divine Teaching**
+**Alpha 1.0.0 — Civilizations, Migration & New Settlements**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
 milestone gives Human and Beast households a 90-second active-simulation day/night cycle,
@@ -70,3 +70,10 @@ Every adult has a persistent, low initial theft preference. Lightning during the
 ## Settlement layout compatibility repair
 
 Settlement dwellings now use explicit simulation footprints and a deterministic, organic ring search around the founding home. A selected construction slot is reserved until its home is completed or cancelled, and Human candidates require the complete footprint to remain on grass. Version 1 saves remain compatible: on Continue, any overlapping or coastline-invalid dwelling positions are repaired once into the nearest safe settlement slots. The repair moves only world positions; building IDs, household and occupant references, relationships, settlement membership, and stored resource amounts are retained.
+
+
+## Alpha 1.0.0 — Civilizations, Migration & New Settlements
+
+Elysia belongs to a larger, still-mysterious universe of inhabited worlds. External newcomers are refugees, exiles, survivors, explorers and wanderers. Their generated origin and compatible story persist as character history; other planets remain narrative background rather than playable maps.
+
+Each settlement begins `GROWING`, accepts at most four external arrivals, and becomes `ESTABLISHED` when its fourth completed Home creates a Castle or Great Den. Establishment immediately closes external immigration and ordinary Home construction, including unused arrival capacity, while vacant Homes, births, families, meals and relationships continue. Exalted adults visibly travel with a living partner and minor children to found distant settlements. Every settlement shares this lifecycle, and founding reservations enforce an absolute maximum of three.

@@ -20,7 +20,13 @@ export class Character {
     this.arrivalCycle = data.arrivalCycle ?? null;
     this.arrivalPosition = data.arrivalPosition ? { ...data.arrivalPosition } : null;
     this.newcomer = data.newcomer ?? false;
+    this.originWorld = data.originWorld ?? 'ELYSIA';
+    this.arrivalStoryType = data.arrivalStoryType ?? null;
+    this.arrivalLineId = data.arrivalLineId ?? null;
+    this.introductionCompleted = data.introductionCompleted ?? !this.newcomer;
+    this.foundingState = data.foundingState ?? null;
     this.speechText = data.speechText ?? null;
+    this.speechLines = [...(data.speechLines ?? (data.speechText ? [data.speechText] : []))];
     this.insideHome = data.insideHome ?? false;
     this.appearanceVariant = data.appearanceVariant ?? 'base';
     this.interactionRadius = data.interactionRadius ?? 1.25;
