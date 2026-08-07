@@ -1,8 +1,23 @@
 # Elysia
 
-Alpha 1.0.1 — Visual Polish and Faster Child Growth.
+**Alpha 0.0.1 — Foundation Reset**
 
-A vanilla JavaScript HTML5 Canvas project using an object-oriented architecture.
+Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. This
+milestone contains only the application, timing, state, input, rendering, and
+persistence foundations. It intentionally contains no playable world or gameplay.
 
-Children grow into adults after five real-time minutes. Older saves preserve their
-growth percentage when migrating from the previous fifteen-minute duration.
+## Run
+
+Serve the repository with any static web server, then open `index.html`:
+
+```sh
+python3 -m http.server 8000
+```
+
+Visit <http://localhost:8000>. Run the lightweight foundation tests with:
+
+```sh
+node --test
+```
+
+Project direction and technical boundaries are recorded in [`docs/`](docs/).

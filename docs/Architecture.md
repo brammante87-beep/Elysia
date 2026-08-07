@@ -1,31 +1,52 @@
 # Architecture
 
-Elysia Alpha 0.1 is a vanilla JavaScript HTML5 Canvas game built with ES modules and object-oriented classes. The runtime starts in `index.html`, loads `js/core/Game.js`, and lets `Game` compose the engine, world, renderer, input, UI, and future miracle subsystem.
+## Application boot
 
-## Subsystems
+`index.html` loads `src/main.js` as an ES module. `main.js` creates `Game`, the
+application coordinator. `UI` creates the canvas; `Game` constructs the other
+systems, performs the initial resize, connects input, and starts `Engine`.
 
-- **Core**: owns application startup and the fixed requestAnimationFrame loop.
-- **World**: owns terrain, entity state, Era progression, compact House-site
-  validation, and reusable settlement bounds.
-- **Terrain**: generates tile data for sea, beach, and grass.
-- **Entities**: model visible world actors with one class per actor type.
-- **Renderer**: draws terrain and entities to the canvas.
-- **Input**: reserves desktop/mobile input wiring for future milestones.
-- **UI**: reserves DOM UI ownership for future milestones.
-- **Miracles**: reserved as an explicit subsystem boundary for later alpha releases.
+## Game loop and clock
 
-## Data Flow
+`Engine` only executes `requestAnimationFrame`. It converts timestamps to seconds,
+clamps the delta using `Config`, then calls separate `Game.update(deltaTime)` and
+`Game.render()` methods. `GameClock` independently tracks future simulation elapsed
+time and supports pause, resume, and reset. Day/night behavior is intentionally absent.
 
-`Game` creates all subsystems, calls `World.initialize()`, then starts `Engine`. Each frame, `Engine` calls `Game.update(delta)` and `Game.render()`. `Game.update()` delegates to `World`; `Game.render()` delegates to `Renderer`, which reads immutable frame state from `World`.
+## State transitions
 
-`World.checkEraProgression()` is the single progression gate. `World` notifies
-`Game` when a genuine transition occurs; `Game` delegates temporary feedback and
-the incrementally updated Statistics panel to `UI`. Era state is serialized by
-`World`, including migration defaults for older saves. Settlement bounds are
-data-only preparation and do not represent a palisade or movement restriction.
+`GameState` is the single high-level state holder. Transitions accept only a member
+of its fixed state registry, avoiding unrelated boolean flags. Alpha 0.0.1 remains
+in `BOOT`; later screens will explicitly transition it.
 
-## Sistemi del Villaggio (Alpha 1.5)
-`World` possiede lo stato stabile della trasformazione, il `VillageBoundary`, il cancello, il `Well` e la migrazione dei salvataggi. `VillageBoundary` incapsula perimetro, collisione e waypoint del cancello; `Well` incapsula il limite di due utilizzatori senza riserva esauribile. `House` espone capacità e stato di miglioramento. `Renderer` si limita al disegno, mentre `MiracleManager` fornisce elenchi specifici per Era e `UI` ricostruisce la toolbar senza creare un nuovo loop.
+## Input flow
 
-## Entità naturali Alpha 1.6
-`Flower` e `FruitTree` sono entità distinte, ciascuna definita nella propria classe. `World` conserva la responsabilità per piazzamento, osservazione, rigenerazione naturale, lavori sulle risorse, consumo alimentare e persistenza; `Renderer` ne cura soltanto il disegno, `Input` inoltra i comandi e `MiracleManager` crea il Fiore tramite l'API del mondo.
+`Input` owns pointer and keyboard listeners. Browser client coordinates are scaled
+from the canvas CSS rectangle into backing-buffer coordinates before being exposed.
+It does not invoke gameplay.
+
+## Rendering flow
+
+`Game.render()` delegates to `Renderer`, which only draws. `Renderer` owns backing
+resolution and the neutral foundation view. Later world, camera, and entity render
+components can be composed behind this boundary without moving drawing into boot code.
+
+## Future world, entities, AI, and systems
+
+`World` owns gameplay orchestration but **World must not become a god object**.
+Entities will hold identity and local state; reusable systems will implement focused
+rules. **Character AI must not become one enormous `update()` method.** Perception,
+decision, navigation, and actions should remain separate systems. Human and Beast
+gameplay should share common systems wherever possible.
+
+## Persistence
+
+`SaveManager` is the only local-storage boundary. It writes a versioned envelope,
+returns `null` for missing, malformed, or unsupported records, and deliberately does
+not inspect or migrate abandoned prototype keys.
+
+## Central configuration
+
+`Config` owns application version, maximum frame delta, presentation constants, and
+save schema settings. Future gameplay tuning constants belong there rather than in
+rendering or orchestration code.

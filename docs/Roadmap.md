@@ -1,49 +1,10 @@
 # Roadmap
 
-## Alpha 0.1
+- **Alpha 0.0.1:** Technical reboot and foundation.
+- **Alpha 0.0.2:** Title screen, New Game, and Continue.
+- **Alpha 0.0.3:** Introduction and world selection.
+- **Alpha 0.0.4:** Chosen One creation.
+- **Alpha 0.0.5:** World rendering and Chosen One spawn.
+- **Alpha 0.1:** First playable foundation, including the divine toolbar.
 
-- Establish clean project structure.
-- Implement canvas, engine loop, terrain, Hero, two Villagers, and rendering.
-
-## Alpha 0.2
-
-- Add basic input handling and selected entity inspection.
-- Introduce a simple non-intrusive UI panel.
-
-## Alpha 0.3
-
-- Add the first miracle interactions.
-- Define miracle costs, targeting rules, and visual feedback.
-
-## Alpha 0.4
-
-- Add village objects and resource loops.
-- Prepare AI behaviors without adding pathfinding complexity prematurely.
-
-## Later
-
-- Families, housing, relationships, long-term simulation, camera controls, mobile polish, audio, and save data.
-
-## Alpha 1.3 — Era System and Compact Settlement
-
-- Add the three planned Era identities: Tribe, Village, and Faith.
-- Advance permanently from Tribe to Village at 15 living inhabitants while
-  retaining the global population maximum of 32.
-- Cluster autonomous Houses around the Prescelto's House.
-- Expose calculated settlement bounds for later Village features.
-- Preserve and migrate Era state through save/load.
-
-## Alpha 1.4 and later
-
-- Palisade, gate, well, Faith mechanics, toolbar replacement, and raiders remain
-  future work; Alpha 1.3 does not claim or create these systems.
-
-## Alpha 1.5 - Village Transformation
-Completata la trasformazione una tantum a 15 abitanti: palizzata e cancello, Pozzo illimitato, Case migliorate con capacità 6, sicurezza dei bambini e barra Miracoli specifica dell'Era. La crescita prosegue fino al limite globale di 32. Flower, Light, Lightning e Blessing restano intenzionalmente non funzionali; Faith e i sistemi di conflitto sono rinviati.
-
-## Alpha 1.6 — completata
-- Rigenerazione graduale di Alberi (obiettivo 2) e Animali (obiettivo 3) all'esterno del Villaggio trasformato.
-- Miracolo Fiore, osservazione da tre abitanti unici e trasformazione in Albero da Frutto.
-- Raccolta, deposito e ricrescita delle Mele; consumo notturno misto Carne/Mele.
-
-Luce, Benedizione, Fede, Predoni e combattimento rimangono pianificati per versioni future.
+Later milestones are plans only and are not implemented in Alpha 0.0.1.
