@@ -73,10 +73,10 @@ test('four completed Beast dens transform the founding den into one Great Den wi
 
 test('newcomer walks, pauses for readable exact speech, then progresses once and persists its introduction stage', () => {
   const world = fixture.create(); world.diagnostics.enabled = true; const newcomer = world.newcomers.spawn(2); const arrival = { ...newcomer.position };
-  assert.equal(newcomer.speechText, NewcomerSystem.Speech); assert.ok(Math.hypot(arrival.x - world.settlements[0].center.x, arrival.y - world.settlements[0].center.y) > 5); assert.equal(world.newcomers.progress[newcomer.id].stage, 'approaching');
+  assert.ok(newcomer.speechText.includes(newcomer.originWorld)); assert.ok(Math.hypot(arrival.x - world.settlements[0].center.x, arrival.y - world.settlements[0].center.y) > 5); assert.equal(world.newcomers.progress[newcomer.id].stage, 'approaching');
   for (let elapsed = 0; elapsed < 30 && world.newcomers.progress[newcomer.id].stage === 'approaching'; elapsed += .1) world.newcomers.update(.1);
   const state = world.newcomers.progress[newcomer.id]; assert.equal(state.stage, 'speaking'); assert.equal(newcomer.visualState, 'idle'); assert.equal(newcomer.aiTask, 'introducing'); const speechPosition = { ...newcomer.position }; world.newcomers.update(Config.NEWCOMER_SPEECH_DURATION_SECONDS / 2); assert.deepEqual(newcomer.position, speechPosition); assert.equal(state.wood, 0);
   const saved = world.toJSON(); const restored = new World(); restored.restore('human', 73, null, saved); const restoredState = restored.newcomers.progress[newcomer.id]; assert.equal(restoredState.stage, 'speaking'); restored.newcomers.update(Config.NEWCOMER_SPEECH_DURATION_SECONDS); assert.equal(restoredState.stage, 'progressing'); assert.equal(restored.diagnostics.events.filter(event => event.type === 'newcomerIntroductionCompleted').length, 0);
   assert.ok(world.diagnostics.events.some(event => event.type === 'newcomerIntroductionStarted')); assert.ok(world.diagnostics.events.some(event => event.type === 'newcomerSpeechShown'));
-  const beast = fixture.create('beast'); const beastNewcomer = beast.newcomers.spawn(2); assert.ok(beastNewcomer.speechText); assert.equal(beastNewcomer.speechText, NewcomerSystem.Speech);
+  const beast = fixture.create('beast'); const beastNewcomer = beast.newcomers.spawn(2); assert.ok(beastNewcomer.speechText); assert.ok(beastNewcomer.speechText.includes(beastNewcomer.originWorld));
 });

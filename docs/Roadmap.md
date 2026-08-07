@@ -4,7 +4,7 @@
 - **Alpha 0.0.2 — COMPLETE — Title**
 - **Alpha 0.0.3 — COMPLETE — Introduction / World choice**
 - **Alpha 0.0.4 — COMPLETE — World / Chosen One / final visual foundation**
-- **Alpha 0.0.5 — CURRENT — First divine actions / resources / AI / Hut**
+- **Alpha 0.0.5 — COMPLETE — First divine actions / resources / AI / Hut**
 
 The next milestone will complete the first household/settlement loop. Relationship, partner, House, reproduction, day/night and later settlement systems are not part of Alpha 0.0.5.
 
@@ -14,3 +14,10 @@ All ten divine powers, Flower/Apple food lifecycle, direct divine approval/disap
 
 ## Completed — Alpha 0.0.10
 Need-driven adult theft in Human and Beast worlds, per-character persistent theft preferences, visible misconduct, one-unit resource integrity, reservations/cooldowns, contextual Lightning disapproval, contextual Blessing approval, Exalted thieves, interruption/death/Continue cleanup, and automated coverage are complete. Plant World remains frozen and complete. The player is not enforcing a predefined morality; inhabitants learn what the Omnipotent approves or disapproves through divine intervention. Combat, wars, raids, second settlements, laws, prisons, and additional learned behaviours remain explicitly unimplemented.
+
+
+## Current — Alpha 1.0.0 — Civilizations, Migration & Expansion
+
+Human and Beast settlements progress from a founding Home through at most four external arrivals to four completed Homes and an explicit `ESTABLISHED` Castle or Great Den. Established settlements close ordinary construction and external migration without stopping internal life. Exalted adults make a visible founding journey; partners and minor children relocate coherently, while history and IDs remain intact. The same progression supports second and third settlements, with reservations preventing any fourth settlement.
+
+Elysia exists amid other inhabited worlds, intentionally left evocative rather than fully defined. Arrivals remember a generated origin and whether they came as refugees, exiles, survivors or wanderers. War, combat, trade, government, diplomacy, religions, planet travel and inter-settlement conflict remain outside this milestone.

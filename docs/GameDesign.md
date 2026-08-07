@@ -66,3 +66,8 @@ Exalted inhabitants are eligible to found settlements, but founding/migration re
 Theft is a need-driven alternative available to any eligible adult, not a scripted thief identity and not a permanent moral label. Its visible cross identifies a questionable action only while the inhabitant approaches, takes, and carries one resource from another household. Human presentation uses subtle hesitation; Beast presentation preserves species-appropriate locomotion.
 
 Divine intervention defines learned meaning contextually. Lightning during theft communicates disapproval; Blessing during theft communicates approval. Blessing still leads to Exalted status regardless of the approved act. There is intentionally no good/evil, karma, sin, or virtue score: the player is not enforcing a predefined morality. The inhabitants learn what the Omnipotent approves or disapproves through divine intervention. Combat, raids, wars, laws, punishment by inhabitants, altruism, and additional settlements are outside this milestone.
+
+
+## Alpha 1.0.0 civilization loop
+
+Other inhabited worlds exist as narrative background; their complete cosmology remains undefined. Migrants bring a persistent origin and personal account of leaving. A settlement is `GROWING` until four Homes are complete, then its founding Home becomes a Castle or Great Den and the state becomes `ESTABLISHED`. Four external arrivals are a maximum, not a prerequisite: establishment forfeits unused slots. Established settlements use vacant Homes and continue internal life but cannot construct ordinary Homes or accept outsiders. Exalted founders can establish distant settlements using the same lifecycle; Elysia has at most three.

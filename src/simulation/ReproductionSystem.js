@@ -91,7 +91,7 @@ export class ReproductionSystem {
       const home = this.world.findHome(pending.homeBuildingId);
       if (parents.some(parent => !parent?.alive) || !household || !home) continue;
       const name = new NameGenerator(this.world.characters.map(character => character.name)).generate(this.random.state);
-      const child = new Character({ id: `child-${cycle}-${this.world.nextCharacterId++}`, name, position: { ...home.position }, worldType: parents[0].worldType, species: parents[0].species, chosenOne: false, alive: true, lifeStage: 'child', householdId: household.id, homeBuildingId: home.id, parentIds: pending.parentIds, birthCycle: cycle, birthSimulationTime: this.world.simulationTime, insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
+      const child = new Character({ id: `child-${cycle}-${this.world.nextCharacterId++}`, name, position: { ...home.position }, worldType: parents[0].worldType, species: parents[0].species, chosenOne: false, alive: true, lifeStage: 'child', householdId: household.id, homeBuildingId: home.id, settlementId: household.settlementId, originWorld: 'ELYSIA', parentIds: pending.parentIds, birthCycle: cycle, birthSimulationTime: this.world.simulationTime, insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
       this.world.addCharacter(child); household.addMember(child.id); this.world.addEffect(home.position, 'newLife', { message: ReproductionSystem.NEW_LIFE_MESSAGE }); firstChild ??= child;
       this.birthsCreated += 1; this.world.diagnostics.trace('BIRTH_CREATED', { childId: child.id, householdId: household.id });
     }

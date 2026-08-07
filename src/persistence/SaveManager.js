@@ -8,7 +8,7 @@ export class SaveManager {
   hasSave() { return this.load() !== null; }
 
   save(data) {
-    const record = { version: Config.SAVE_VERSION, data };
+    const record = { version: Config.SAVE_VERSION, release: Config.VERSION, data };
     this.storage.setItem(Config.SAVE_KEY, JSON.stringify(record));
     return record;
   }

@@ -49,7 +49,7 @@ test('following Dawn creates a visible reachable coastline newcomer across Human
     const newcomer=world.characters.find(character=>character.newcomer); assert.ok(newcomer,`${type} seed ${seed}`);
     assert.equal(world.isWalkable(newcomer.arrivalPosition.x,newcomer.arrivalPosition.y),true); assert.ok(new Pathfinder().findPath(world.terrain,newcomer.arrivalPosition,world.settlements[0].center).length>0);
     if(type==='human') assert.ok([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>!world.isWalkable(newcomer.arrivalPosition.x+dx,newcomer.arrivalPosition.y+dy)));
-    assert.equal(newcomer.speechText,'Ciao, sono stanco di stare solo. Posso unirmi al vostro villaggio?'); assert.equal(world.newcomers.newcomersCreated,1);
+    assert.ok(newcomer.speechText.includes(newcomer.originWorld)); assert.equal(world.newcomers.newcomersCreated,1);
   }
 });
 
