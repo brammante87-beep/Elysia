@@ -1,5 +1,5 @@
 export class Config {
-  static VERSION = 'Alpha 1.1.0';
+  static VERSION = 'Alpha 1.2.0';
   static MAX_DELTA_SECONDS = 0.1;
   static BACKGROUND_COLOR = '#25282a';
   static SAVE_KEY = 'elysia_reboot_save_v1';

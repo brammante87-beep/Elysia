@@ -5,6 +5,7 @@ import { AssetLoader } from '../assets/AssetLoader.js';
 import { TerrainVisualRenderer } from './TerrainVisualRenderer.js';
 import { MigrationNarrative } from '../data/MigrationNarrative.js';
 import { RivalEventRenderer } from './RivalEventRenderer.js';
+import { EnemyRenderer } from './EnemyRenderer.js';
 
 export class Renderer {
   constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
@@ -19,6 +20,7 @@ export class Renderer {
     this.characterRenderer = new CharacterRenderer(this.context, registry, this.assetLoader);
     this.worldImages = new Map();
     this.rivalEventRenderer = new RivalEventRenderer(this.context, this.canvas, path => this.image(path));
+    this.enemyRenderer = new EnemyRenderer(this.context);
   }
 
   setWorld(world) { this.world = world; this.buildTerrainLayer(); }
@@ -40,9 +42,12 @@ export class Renderer {
     this.drawWorldObjects();
     this.drawBuildings();
     this.drawCharacters();
+    this.drawEnemies();
+    this.drawProjectiles();
     this.drawMiracleEffects();
     this.drawTimeLighting();
     this.drawGameplayUI();
+    this.drawInvasionPresentation();
     this.drawRivalAttack();
   }
 
@@ -118,4 +123,8 @@ export class Renderer {
       this.characterRenderer.render(character, point, this.elapsed, pixelsPerWorldUnit);
     }
   }
+  drawEnemies() { const scale=Math.min(this.canvas.width/this.world.terrain.width,this.canvas.height/this.world.terrain.height);for(const enemy of this.world.invasions.enemies.filter(e=>e.alive))this.enemyRenderer.render(enemy,this.worldPoint(enemy.position),scale,this.elapsed); }
+  drawProjectiles() { const c=this.context;for(const projectile of this.world.projectiles.projectiles.filter(p=>p.alive)){const p=this.worldPoint(projectile.position),angle=Math.atan2(projectile.velocity.y,projectile.velocity.x);c.save();c.translate(p.x,p.y);c.rotate(angle);if(projectile.type==='arrow'){c.strokeStyle='#432b1b';c.lineWidth=2;c.beginPath();c.moveTo(-10,0);c.lineTo(10,0);c.stroke();c.fillStyle='#d2c19d';c.beginPath();c.moveTo(10,0);c.lineTo(4,-4);c.lineTo(4,4);c.fill();}else{c.fillStyle='#63efff';c.shadowColor='#e541df';c.shadowBlur=12;c.beginPath();c.ellipse(0,0,12,4,0,0,Math.PI*2);c.fill();}c.restore();} }
+  drawInvasionPresentation() { const invasion=this.world.invasions;if(!invasion)return;const c=this.context;for(const enemy of invasion.enemies.filter(e=>e.alive)){const p=this.worldPoint(enemy.position),ratio=enemy.health/enemy.type.baseHealth;c.fillStyle='rgba(20,12,18,.8)';c.fillRect(p.x-18,p.y-52,36,4);c.fillStyle=enemy.rivalWorldId==='rivalWorld1'?'#d89a45':enemy.rivalWorldId==='rivalWorld2'?'#b9dbef':'#5cf3ef';c.fillRect(p.x-18,p.y-52,36*ratio,4);}const intro=invasion.introduction;if(!intro)return;c.save();c.fillStyle='rgba(5,10,20,.88)';c.fillRect(this.canvas.width*.13,this.canvas.height*.08,this.canvas.width*.74,96);c.strokeStyle='#c9a76a';c.strokeRect(this.canvas.width*.13,this.canvas.height*.08,this.canvas.width*.74,96);c.textAlign='center';c.fillStyle='#f8eac5';c.font='600 20px Georgia';c.fillText(intro[0],this.canvas.width/2,this.canvas.height*.08+34);c.font='italic 15px Georgia';c.fillText(intro[1],this.canvas.width/2,this.canvas.height*.08+67);c.restore(); }
+
 }
