@@ -15,11 +15,30 @@ html, body, #app {
 
 html, body, #app { min-height: 100vh; min-height: 100dvh; }
 
-#game-canvas {
+.desktop-presentation #game-canvas {
   display: block;
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+.desktop-presentation #app.desktop-playing {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #397a91;
+}
+
+.desktop-presentation #app.desktop-playing #game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100%;
+  max-width: none;
+  max-height: none;
 }
 
 .title-screen, .placeholder-screen, .celestial-screen {
@@ -105,10 +124,10 @@ button:focus-visible { outline: 3px solid #fff1ae; outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }
 @media (max-height: 500px) { .title-screen h1 { margin-bottom: 1.25rem; font-size: clamp(3rem, 15vh, 5rem); } .title-kicker { display: none; } }
 @media (max-height: 720px) { .character-creation-screen { align-content: start; } .creation-panel { margin: auto; } .creation-panel fieldset { margin-top: .7rem; } }
-.divine-toolbar { position: fixed; z-index: 8; right: 50%; bottom: max(.7rem, env(safe-area-inset-bottom)); width: min(72rem, calc(100vw - 1rem)); padding: .45rem .65rem .6rem; border: 1px solid rgb(229 207 139 / 48%); border-radius: 1.1rem; color: #f8edc7; background: linear-gradient(180deg, rgb(30 41 48 / 94%), rgb(8 18 25 / 96%)); box-shadow: 0 .8rem 2.5rem #020a0dcc, inset 0 1px #fff3bf33; transform: translateX(50%); backdrop-filter: blur(12px); }
+.divine-toolbar { position: fixed; z-index: 8; right: 50%; bottom: max(.7rem, env(safe-area-inset-bottom)); width: max-content; max-width: calc(100vw - 1.5rem); padding: .45rem .65rem .6rem; border: 1px solid rgb(229 207 139 / 48%); border-radius: 1.1rem; color: #f8edc7; background: linear-gradient(180deg, rgb(30 41 48 / 94%), rgb(8 18 25 / 96%)); box-shadow: 0 .8rem 2.5rem #020a0dcc, inset 0 1px #fff3bf33; transform: translateX(50%); backdrop-filter: blur(12px); }
 .divine-toolbar__title { display: block; margin: 0 0 .3rem; color: #cdbb82; font: 600 .57rem/1 system-ui; letter-spacing: .34em; text-align: center; }
 .camera-focus { position: absolute; top: -3.1rem; right: .55rem; min-width: 44px; min-height: 44px; padding: 0; border-radius: 50%; color: #e8d8a5; background: rgb(8 18 25 / 82%); font-size: 1.25rem; }
-.divine-toolbar__powers { display: grid; grid-template-columns: repeat(10, minmax(3.25rem, 1fr)); gap: .35rem; }
+.divine-toolbar__powers { display: grid; grid-template-columns: repeat(10, clamp(3.25rem, 6.2vw, 6rem)); gap: clamp(.2rem, .35vw, .35rem); }
 .divine-power { display: grid; place-items: center; min-width: 0; min-height: 4.2rem; padding: .25rem; border-color: rgb(190 170 110 / 30%); border-radius: .75rem; background: linear-gradient(160deg, rgb(82 94 92 / 42%), rgb(15 24 31 / 80%)); letter-spacing: .05em; }
 .divine-power img { width: 2rem; height: 2rem; filter: drop-shadow(0 0 .35rem rgb(255 227 144 / 20%)); transition: transform .2s, filter .2s; }
 .divine-power span { overflow: hidden; width: 100%; color: #d9cfb0; font-size: clamp(.42rem, .65vw, .58rem); text-overflow: ellipsis; white-space: nowrap; }

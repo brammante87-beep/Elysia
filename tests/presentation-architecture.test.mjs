@@ -44,7 +44,7 @@ test('mobile presentation changes only UI, input, renderer and camera dependenci
   const mobile=new PresentationProfile(PresentationProfile.MOBILE);
   assert.ok(mobile.createInput(canvas) instanceof MobileInput);
   assert.ok(mobile.createRenderer(canvas).camera instanceof MobileCamera);
-  assert.equal(new PresentationProfile(PresentationProfile.DESKTOP).createRenderer(canvas).camera.constructor.name,'Camera');
+  assert.equal(new PresentationProfile(PresentationProfile.DESKTOP).createRenderer(canvas).camera.constructor.name,'DesktopCamera');
   assert.equal(World, World);
   assert.match(mobile.createUI.toString(),/MobileUI/);
 });

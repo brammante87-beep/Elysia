@@ -85,7 +85,10 @@ export class Renderer {
 
   drawBaseTerrain() {
     const { context, canvas } = this;
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (this.presentationId === 'desktop') {
+      context.fillStyle = this.world.worldType === 'human' ? '#397a91' : '#628852';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    } else context.clearRect(0, 0, canvas.width, canvas.height);
     const origin = this.camera.worldToScreen({ x: 0, y: 0 });
     const width = this.world.terrain.width * this.camera.zoom;
     const height = this.world.terrain.height * this.camera.zoom;
