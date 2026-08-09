@@ -1,0 +1,15 @@
+import { CommunicationIntent } from './CommunicationIntent.js';
+import { LocalDialogueRealizer } from './LocalDialogueRealizer.js';
+import { DialogueScheduler } from './DialogueScheduler.js';
+import { CharacterKnowledge } from '../social/CharacterKnowledge.js';
+export class CharacterDialogueSystem {
+  constructor(world, data = {}) { this.world=world; this.realizer=new LocalDialogueRealizer(); this.scheduler=new DialogueScheduler(data); this.elapsed=0; this.conversations=new Map(); }
+  context() { return { names:Object.fromEntries(this.world.characters.map(c=>[c.id,c.name])), familyMode:this.world.presentationMode==='family' }; }
+  hungerIntent(character) { if(character.needs.hunger>=.38)return null; const urgency=character.needs.hunger<.12?3:character.needs.hunger<.25?2:1; return new CommunicationIntent({speakerId:character.id,targetType:urgency===3?'PLAYER':'SELF',intent:'EXPRESS_NEED',resource:'food',emotion:urgency===3?'DESPERATE':'SAD',priority:urgency===3?'CRITICAL':'NORMAL',urgency}); }
+  say(intent) { const text=this.realizer.realize(intent,this.context()); const accepted=this.scheduler.submit(intent,text); this.world.diagnostics?.trace('DIALOGUE_DECISION',{speakerId:intent.speakerId,target:intent.targetType,communicationIntent:intent.intent,priority:intent.priority,emotion:intent.emotion,knowledgeUsed:intent.knowledgeSource,personalityInfluence:intent.personalityInfluence,grammar:intent.intent, suppressionReason:accepted?null:this.scheduler.lastSuppressionReason}); return accepted ? {intent,text} : null; }
+  ask(speaker,target,topic,subjectId=null) { return this.say(new CommunicationIntent({speakerId:speaker.id,targetType:'NEARBY_CHARACTER',targetId:target.id,intent:'ASK_CHARACTER',topic,subjectId,priority:'NORMAL'})); }
+  answer(character, question) { const fact=character.knowledge.knows(question.topic,question.subjectId); if(!fact)return null; const result=this.say(new CommunicationIntent({speakerId:character.id,targetType:'NEARBY_CHARACTER',targetId:question.speakerId,intent:'ANSWER_CHARACTER',topic:question.topic,subjectId:question.subjectId,location:fact.location,origin:fact.origin,knowledgeSource:fact.source})); if(result){const listener=this.world.characters.find(c=>c.id===question.speakerId); listener?.knowledge.told(fact,character.id,this.world.worldTime?.cycle??0);} return result; }
+  update(deltaTime) { this.elapsed+=deltaTime; if(this.elapsed>=8){this.elapsed=0; const candidates=this.world.characters.filter(c=>c.alive).map(c=>this.hungerIntent(c)).filter(Boolean); if(candidates.length)this.say(candidates.sort((a,b)=>(b.urgency??0)-(a.urgency??0))[0]);} this.scheduler.update(deltaTime); }
+  witness(character,event) { const fact=character.knowledge.learn({...event,source:CharacterKnowledge.Sources.WITNESSED,cycle:this.world.worldTime?.cycle??0}); character.memories.remember({eventType:event.type,participants:[event.subjectId,event.objectId].filter(Boolean),resource:event.resource,knowledgeSource:fact.source,certainty:1,cycle:fact.cycle,importance:event.importance??.6,emotionalImpact:event.emotionalImpact??0}); return fact; }
+  toJSON() { return {}; }
+}

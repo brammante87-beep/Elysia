@@ -41,7 +41,7 @@ export class HouseholdMealSystem {
     if (!this.home.storage.consume(HouseholdMealSystem.Cost)) { this.state = HouseholdMealSystem.States.FAILED; this.world.diagnostics.trace('MEAL_ABORTED', { reason: 'insufficient resources' }); for (const adult of this.adults) { adult.insideHome = true; this.world.ais.get(adult.id)?.setTask(CharacterAI.Tasks.WAITING_NIGHT); } return; }
     this.state = HouseholdMealSystem.States.EATING; this.stageTime = Config.MEAL_DURATION_SECONDS;
   }
-  updateEating(deltaTime) { this.stageTime -= deltaTime; if (this.stageTime > 0) return; this.state = HouseholdMealSystem.States.NORMAL; this.mealEventsCompleted += 1; this.world.diagnostics.trace('MEAL_COMPLETED', { mealEventsCompleted: this.mealEventsCompleted }); for (const adult of this.adults) this.world.ais.get(adult.id)?.wake(); }
+  updateEating(deltaTime) { this.stageTime -= deltaTime; if (this.stageTime > 0) return; this.state = HouseholdMealSystem.States.NORMAL; this.mealEventsCompleted += 1; this.world.diagnostics.trace('MEAL_COMPLETED', { mealEventsCompleted: this.mealEventsCompleted }); for (const adult of this.adults) { adult.needs?.meal(); this.world.ais.get(adult.id)?.wake(); } }
   beginNight() { if (this.state === HouseholdMealSystem.States.FAILED) this.state = HouseholdMealSystem.States.NORMAL; }
   restoreBehavior() {
     if (this.state === HouseholdMealSystem.States.RETURNING) this.world.ais.get(this.partner?.id)?.returnHome();

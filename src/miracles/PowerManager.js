@@ -1,5 +1,6 @@
 import { DIVINE_POWERS } from '../data/Powers.js';
 import { Pathfinder } from '../world/Pathfinder.js';
+import { CommunicationIntent } from '../dialogue/CommunicationIntent.js';
 
 export class PowerManager {
   static TargetTypes = Object.freeze({ PLACEMENT: 'placement', CHARACTER: 'character', RALLY: 'rally' });
@@ -24,21 +25,25 @@ export class PowerManager {
     if (id === 'blessing') this.bless(character);
     if (id === 'changeSex') character.sexCharacteristics = choice;
     if (id === 'giveWeapons') character.isArmed = true;
-    if (id === 'shield') character.hasShield = true;
+    if (id === 'shield') { character.hasShield = true; character.needs.shield(); }
     this.world.addEffect(character.position, id, { characterId: character.id });
+    this.recordDivineWitnesses(id, character);
     return character;
   }
   strike(character) {
     character.lightningStrikeCount += 1;
     const learned = this.world.divineTeaching.respond(character, 'lightning');
     if (!learned) this.world.ais.get(character.id)?.interrupt();
-    if (character.lightningStrikeCount === 3) this.world.killCharacter(character);
+    character.needs.danger(.28);
+    if (character.lightningStrikeCount === 3) this.world.killCharacter(character, 'lightning');
   }
   bless(character) {
     character.blessingCount += 1;
+    character.needs.change('happiness', .12);
     this.world.divineTeaching.respond(character, 'blessing');
     if (character.blessingCount >= 5 && !character.isExalted) { character.isExalted = true; character.canFoundSettlement = true; this.world.addEffect(character.position, 'exalted', { characterId: character.id }); }
   }
+  recordDivineWitnesses(action, target) { const witnesses=this.world.characters.filter(character=>character.alive&&!character.insideHome&&Math.hypot(character.position.x-target.position.x,character.position.y-target.position.y)<=7); for(const witness of witnesses)this.world.dialogue.witness(witness,{type:action,subjectId:target.id,importance:action==='lightning'?.9:.65,emotionalImpact:action==='lightning'?-1:.5}); const speaker=witnesses.sort((a,b)=>b.personality.faithDisposition-a.personality.faithDisposition)[0]; if(!speaker||!['blessing','lightning','shield','giveWeapons'].includes(action))return; this.world.dialogue.say(new CommunicationIntent({speakerId:speaker.id,targetType:'PLAYER',intent:'INTERPRET_DIVINE_ACTION',action,count:target.blessingCount,subjectId:target.id,theftKnown:Boolean(speaker.knowledge.knows('theft',target.id)),knowledgeSource:'WITNESSED',emotion:action==='lightning'?'AFRAID':'GRATEFUL',priority:action==='lightning'?'CRITICAL':'HIGH'})); }
   rally(position) {
     if (!this.world.isWalkable(position.x, position.y)) { this.world.addEffect(position, 'invalid'); return false; }
     const pathfinder = new Pathfinder(); const living = this.world.characters.filter(character => character.alive);

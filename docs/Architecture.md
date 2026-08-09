@@ -1,5 +1,13 @@
 # Architecture
 
+## Alpha 1.4 social-intelligence boundary
+
+`Character` owns four bounded, serializable value objects: `CharacterNeeds`, deterministic `CharacterPersonality`, `CharacterMemory` (24 entries), and `CharacterKnowledge` (32 compact facts). Missing legacy fields receive stable defaults; personality derives from the persistent character ID and therefore does not change after Continue. Pair scores live in `RelationshipSystem` and remain separate from semantic Partner, parent, child and Household links.
+
+Gameplay events create semantic `CommunicationIntent` objects. `CharacterDialogueSystem` evaluates knowledge, emotion, relationship and information value; replaceable `LocalDialogueRealizer` then composes Italian from evidence, action, object, urgency and address components. `DialogueScheduler` owns priority, cooldown, repetition and density. Only `Renderer` calculates transient bubble geometry. No network, backend, API key, external generator, pixel position, or stale active bubble enters persistence.
+
+Memory is pruned by importance and recency at 24 entries per Character. Knowledge is compacted by semantic key and capped at 32 facts per Character. Conversation threads accept two to four turns and transfer answered facts as `TOLD_BY_OTHER`, never as witnessed truth.
+
 ## Application boot
 
 `index.html` loads `src/main.js` as an ES module. `main.js` creates `Game`, the
