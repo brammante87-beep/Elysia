@@ -148,3 +148,8 @@ Saves persist behaviour preferences and theft cooldown. They never serialize pat
 `FirstRivalAttack` owns the unique persisted phase machine (`DORMANT`, founding `DELAY`, `MANIFESTATION`, `DIALOGUE`, `WARNING`, `PREPARATION`, `METEOR`, `CASTLE_RESCUE`, `IMPACT`, `AFTERMATH`, `COMPLETE`). `ExaltedFoundingSystem` notifies it only after the second founding Home and Settlement have been registered. While active it freezes `World` simulation; `Game` blocks saves, except that Shield casts remain player-controlled during preparation. Completed state persists so Continue and later settlements cannot repeat it.
 
 `RivalMeteorAttack` selects casualties from authoritative current Settlement membership and delegates deaths to `World.killCharacter`; it neither damages buildings nor invokes Plant World's ending. `RivalEventRenderer` exclusively paints the rift, apparition, meteor, warning, impact, shield reaction, rainbow, unicorn asset, and aftermath. Future audio may bind to manifestation, meteor, impact, and rescue phase transitions; Alpha 1.1.0 adds no audio engine. Theft, contextual behaviour memory, and divine teaching remain unchanged. Character combat, weapon damage, armies, and attacks on the Rival remain deliberately outside this release.
+
+
+## WorldEventSystem
+
+`WorldEventSystem` owns all non-combat event scheduling, eligibility, lifecycle, density, intervention, local knowledge, semantic resolution history and serialization. `WorldEvent` is the persisted semantic record and `WorldEventConfig` centralizes pacing, durations and bounded fire spread. `World.update()` delegates once to this system; invasions remain independent.

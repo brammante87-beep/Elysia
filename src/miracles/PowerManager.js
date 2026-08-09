@@ -10,7 +10,7 @@ export class PowerManager {
   targetType(id) { return this.definition(id)?.targetType ?? null; }
   cast(id, position, choice = null) {
     const type = this.targetType(id);
-    if (type === PowerManager.TargetTypes.PLACEMENT) return this.world.placeEntity(id, position);
+    if (type === PowerManager.TargetTypes.PLACEMENT) { const crisis=this.world.events?.activeEvents?.find(event=>['DRY_WATER_SOURCE','TREE_FIRE'].includes(event.type)&&Math.hypot(event.target.position.x-position.x,event.target.position.y-position.y)<=3); if(id==='water'&&crisis){this.world.events.intervene(id,position);this.world.addEffect(position,id);return crisis;} return this.world.placeEntity(id, position); }
     if (type === PowerManager.TargetTypes.RALLY) return this.rally(position);
     if (type === PowerManager.TargetTypes.CHARACTER) return this.affectCharacter(id, position, choice);
     return false;
@@ -19,7 +19,7 @@ export class PowerManager {
   affectCharacter(id, position, choice) {
     if (id === 'lightning') { const enemy=this.world.invasions?.lightningAt(position); if (enemy) return enemy; }
     const character = this.livingCharacterAt(position);
-    if (!character) { this.world.addEffect(position, 'invalid'); return false; }
+    if (!character) { const crisis=this.world.events?.activeEvents?.find(event=>event.type==='SICK_FOOD_SOURCE'&&Math.hypot(event.target.position.x-position.x,event.target.position.y-position.y)<=3); if(id==='blessing'&&crisis){this.world.events.intervene(id,position);this.world.addEffect(position,id);return crisis;} this.world.addEffect(position, 'invalid'); return false; }
     if (id === 'changeSex' && !choice) return { requiresChoice: true, character };
     if (id === 'lightning') this.strike(character);
     if (id === 'blessing') this.bless(character);
@@ -28,6 +28,7 @@ export class PowerManager {
     if (id === 'shield') { character.hasShield = true; character.needs.shield(); }
     this.world.addEffect(character.position, id, { characterId: character.id });
     this.recordDivineWitnesses(id, character);
+    this.world.events?.intervene(id, character.position, character);
     return character;
   }
   strike(character) {
@@ -53,6 +54,7 @@ export class PowerManager {
     if (!assigned && living.length) { this.world.addEffect(position, 'invalid'); return false; }
     this.world.rally = { position: {...position}, remaining: 12 };
     this.world.addEffect(position, 'rayOfLight', { duration: 12 });
+    this.world.events?.intervene('rayOfLight', position);
     return this.world.rally;
   }
 }

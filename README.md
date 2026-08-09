@@ -1,8 +1,8 @@
 # Elysia
 
-**Alpha 1.4.0 — Needs, Social Memory & Intelligent Dialogue**
+**Alpha 1.5.0 — Events, Crisis & Divine Choice**
 
-Alpha 1.4.0 gives every inhabitant normalized Hunger, Safety and Happiness; persistent pair-specific relationships, deterministic continuous personality, bounded memories and source-aware knowledge; and a completely local semantic dialogue pipeline. Characters choose a `CommunicationIntent` before `LocalDialogueRealizer` composes readable Italian. Short conversations can transfer knowledge without omniscience, while cooldowns, information-value suppression, priorities, and Desktop/Mobile density limits keep world-anchored speech useful. The same system runs offline in Standard and Family Mode, where presentation-sensitive identity language is filtered.
+Alpha 1.5.0 preserves Alpha 1.4.0 and gives every inhabitant normalized Hunger, Safety and Happiness; persistent pair-specific relationships, deterministic continuous personality, bounded memories and source-aware knowledge; and a completely local semantic dialogue pipeline. Characters choose a `CommunicationIntent` before `LocalDialogueRealizer` composes readable Italian. Short conversations can transfer knowledge without omniscience, while cooldowns, information-value suppression, priorities, and Desktop/Mobile density limits keep world-anchored speech useful. The same system runs offline in Standard and Family Mode, where presentation-sensitive identity language is filtered.
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. Built on Alpha 1.0.0 civilization and migration, this milestone introduces the Rival Omnipotent’s first hostile act when the second Settlement is registered. A cinematic warning and ten-second Shield preparation window precede a meteor strike on the original Settlement; an unexplained rainbow and unicorn preserve its Castle while unshielded inhabitants face the established death rules. The game continues after the attack. The foundation also gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving
@@ -85,3 +85,8 @@ Each settlement begins `GROWING`, accepts at most four external arrivals, and be
 Registering the second Settlement triggers one persisted Rival encounter after the new-settlement announcement. The cosmic manifestation delivers three concise Italian threats, marks the oldest Settlement, freezes WorldTime and AI, and leaves ten seconds of player control for individual Shield miracles—including generous Child targeting. At impact, active Shields flare, save only their bearers, and are consumed; Weapons cannot stop the meteor. All unshielded members use the normal mass-safe death and relationship cleanup, while the second Settlement and every building remain safe.
 
 The Castle retains its exact identity, ownership, storage, position, and capacity beneath a large rainbow as a project-owned illustrated unicorn crosses the arc and absorbs the blast. The aftermath fades back into normal play, persists completion for Continue safety, and never enters `GAME_OVER`. Theft, `BehaviourMemory`, `DivineTeachingSystem`, and contextual Lightning/Blessing teaching were preserved; inter-character combat and Alpha 1.2.0 systems are not included.
+
+
+## Events, Crisis & Divine Choice
+
+A dedicated `WorldEventSystem` schedules bounded, world-state-eligible local crises after stabilization. Dry sources, tree fires, unsafe food, lost children, disputes, injuries, family tension and vulnerable migrants alter real entities and behavior. Miracles are the player’s response—not modal quest choices—and ignored events resolve naturally with accurate local knowledge, memories, semantic outcomes and bounded history. Active events persist through Continue. Plant World remains frozen.

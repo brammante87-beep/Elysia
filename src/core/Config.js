@@ -1,5 +1,6 @@
 export class Config {
-  static VERSION = 'Alpha 1.4.0';
+  static VERSION = 'Alpha 1.5.0';
+  static MILESTONE = 'Events, Crisis & Divine Choice';
   static MAX_DELTA_SECONDS = 0.1;
   static BACKGROUND_COLOR = '#25282a';
   static SAVE_KEY = 'elysia_reboot_save_v1';

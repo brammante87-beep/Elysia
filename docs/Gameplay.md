@@ -1,4 +1,4 @@
-# Gameplay — Alpha 1.4.0
+# Gameplay — Alpha 1.5.0
 
 ## Needs and social intelligence
 
@@ -51,3 +51,8 @@ Lightning applied during the observable sequence decreases the preference and im
 The completed registration of Elysia's second Settlement begins a unique hostile encounter after a three-second founding pause. A cosmic Rival manifests and accuses the player—without making that accusation objective truth—of using arrivals from other worlds. After the warning, **“Proteggi chi vuoi salvare.”**, normal WorldTime and autonomous inhabitants pause for a ten-second preparation window while direct miracle input remains available.
 
 The meteor always targets the oldest Settlement. Every living member, Adult or Child, is resolved independently: an active semantic Divine Shield saves only its bearer and is consumed on impact; age and Weapons provide no protection. The ordinary death pipeline handles everyone else in a stable snapshot. The second Settlement, all Homes, and the original Castle storage and identity remain untouched. A rainbow and cosmic unicorn visibly absorb the force around the Castle. This first attack never enters `GAME_OVER`, and normal simulation resumes after the aftermath.
+
+
+## Events and Divine Choice
+
+After cycle 3, eligible Human and Beast settlements may face a paced local event every 2–4 cycles. World visuals and contextual dialogue identify the crisis. WATER restores dry springs and extinguishes fire, BLESSING heals injuries and purifies unsafe food, RAY OF LIGHT helps rally a lost child, and non-intervention remains valid because events have natural outcomes.
