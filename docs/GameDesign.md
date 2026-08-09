@@ -1,5 +1,11 @@
 # Elysia Game Design
 
+## Thinking inhabitants
+
+Alpha 1.4.0 communicates simulation state through conduct, reactions and speech. Hunger, perceived danger, family bonds, personal memories and pair-specific opinions produce a temporary semantic emotion. Continuous courage, kindness, selfishness, curiosity, sociability and faith disposition alter how strongly an inhabitant responds without becoming rigid archetypes or overriding core safety rules.
+
+The Omnipotent is a known presence, but inhabitants interpret only witnessed or socially learned actions. Blessings progress from confusion toward recognition without changing the established fifth-Blessing Exalted threshold. Theft retains its existing mechanics; known thieves can lose trust, while an unwitnessed theft assigns no magical blame. This foundation intentionally excludes religion, commandments, factions, prejudice, trade, quests, and external AI.
+
 ## Premise
 
 The player is a newly born omnipotent being. The Circle of the Omnipotents assigns

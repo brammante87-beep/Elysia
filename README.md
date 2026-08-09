@@ -1,6 +1,8 @@
 # Elysia
 
-**Alpha 1.3.0 — Visual & Presentation Consolidation**
+**Alpha 1.4.0 — Needs, Social Memory & Intelligent Dialogue**
+
+Alpha 1.4.0 gives every inhabitant normalized Hunger, Safety and Happiness; persistent pair-specific relationships, deterministic continuous personality, bounded memories and source-aware knowledge; and a completely local semantic dialogue pipeline. Characters choose a `CommunicationIntent` before `LocalDialogueRealizer` composes readable Italian. Short conversations can transfer knowledge without omniscience, while cooldowns, information-value suppression, priorities, and Desktop/Mobile density limits keep world-anchored speech useful. The same system runs offline in Standard and Family Mode, where presentation-sensitive identity language is filtered.
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. Built on Alpha 1.0.0 civilization and migration, this milestone introduces the Rival Omnipotent’s first hostile act when the second Settlement is registered. A cinematic warning and ten-second Shield preparation window precede a meteor strike on the original Settlement; an unexplained rainbow and unicorn preserve its Castle while unshielded inhabitants face the established death rules. The game continues after the attack. The foundation also gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving

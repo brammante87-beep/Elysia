@@ -5,6 +5,7 @@ import { NameGenerator } from '../entities/NameGenerator.js';
 import { WorldTypeId } from '../data/WorldTypes.js';
 import { SeededRandom } from '../world/SeededRandom.js';
 import { BehaviourMemory } from '../behaviour/BehaviourMemory.js';
+import { CommunicationIntent } from '../dialogue/CommunicationIntent.js';
 
 export class ReproductionSystem {
   static NEW_LIFE_MESSAGE = "La nuova vita nasce dal legame tra due esseri, l'amore invoca un briciolo del tuo potere anche senza la tua volontà.";
@@ -93,6 +94,8 @@ export class ReproductionSystem {
       const name = new NameGenerator(this.world.characters.map(character => character.name)).generate(this.random.state);
       const child = new Character({ id: `child-${cycle}-${this.world.nextCharacterId++}`, name, position: { ...home.position }, worldType: parents[0].worldType, species: parents[0].species, chosenOne: false, alive: true, lifeStage: 'child', householdId: household.id, homeBuildingId: home.id, settlementId: household.settlementId, originWorld: 'ELYSIA', parentIds: pending.parentIds, birthCycle: cycle, birthSimulationTime: this.world.simulationTime, insideHome: false, reproductiveSex: parents[0].species ? (this.random.next() < .5 ? 'male' : 'female') : undefined });
       this.world.addCharacter(child); household.addMember(child.id); this.world.addEffect(home.position, 'newLife', { message: ReproductionSystem.NEW_LIFE_MESSAGE }); firstChild ??= child;
+      for (const parent of parents) { parent.needs.familyEvent(true, true); parent.memories.remember({eventType:'CHILD_BIRTH',participants:[child.id],cycle,emotionalImpact:1,importance:1,knowledgeSource:'WITNESSED'}); this.world.relationships.set(parent.id,child.id,78); }
+      this.world.dialogue.say(new CommunicationIntent({speakerId:parents[0].id,targetType:'FAMILY_MEMBER',targetId:child.id,intent:'CELEBRATE',topic:'birth',subjectId:child.id,emotion:'HAPPY',priority:'HIGH'}));
       this.birthsCreated += 1; this.world.diagnostics.trace('BIRTH_CREATED', { childId: child.id, householdId: household.id });
     }
     return firstChild;

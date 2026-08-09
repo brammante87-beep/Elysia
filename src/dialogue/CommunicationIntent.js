@@ -1,0 +1,6 @@
+export class CommunicationIntent {
+  static Types = Object.freeze(['EXPRESS_NEED','REQUEST_HELP','THANK_DIVINITY','QUESTION_DIVINITY','REPORT_EVENT','REPORT_THEFT','ACCUSE_CHARACTER','DEFEND_CHARACTER','EXPRESS_FEAR','EXPRESS_GRIEF','EXPRESS_LOVE','GREET_CHARACTER','GREET_NEWCOMER','WELCOME_NEWCOMER','ASK_CHARACTER','ANSWER_CHARACTER','COMMENT_ON_RESOURCE','COMMENT_ON_FAMILY','COMMENT_ON_MEMORY','WARN_DANGER','CALL_FOR_HELP','EXPRESS_CONFUSION','INTERPRET_DIVINE_ACTION','APOLOGIZE','COMPLAIN','CELEBRATE','AMBIENT_OBSERVATION','JUSTIFY_THEFT','HIDE_THEFT','DENY_THEFT']);
+  static Priorities = Object.freeze({ LOW: 1, NORMAL: 2, HIGH: 3, CRITICAL: 4 });
+  constructor(data) { if (!data?.speakerId || !CommunicationIntent.Types.includes(data.intent)) throw new Error('CommunicationIntent requires a speaker and supported intent.'); Object.assign(this, { targetType: 'SELF', priority: 'NORMAL', emotion: 'CALM', knowledgeSource: null, certainty: 1, ...data }); }
+  signature() { return [this.speakerId, this.intent, this.subjectId, this.resource, this.topic, this.urgency].filter(value => value !== undefined && value !== null).join(':'); }
+}

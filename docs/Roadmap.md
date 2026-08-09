@@ -1,5 +1,9 @@
 # Elysia Roadmap
 
+## Completed — Alpha 1.4.0 — Needs, Social Memory & Intelligent Dialogue
+
+Inhabitants now have persistent normalized needs, pair opinions, deterministic continuous personalities, bounded event memory and source-aware knowledge. A local `CommunicationIntent` → `LocalDialogueRealizer` pipeline composes contextual Italian for needs, family events, witnessed theft, Divine action and short question/answer exchanges. Priority scheduling, speaker/category repetition control, responsive Desktop/Mobile bubbles and shared Family Mode filtering make dialogue a gameplay interface without network services. Alpha 1.3.0 presentation and all prior simulation systems remain intact.
+
 ## Completed — Alpha 1.3.0
 Four founding dwellings now consolidate into one Castle or Great Den without losing households, relationships, characters, or resources. Legacy Castle-plus-three-Home saves are repaired only when all three registered obsolete dwellings are occupied. Rival combatants and civilian reveal forms have rebuilt presentations, Desktop play fills the viewport without a camera button, Mobile WorldTime sits immediately above its toolbar, and selection order is Plants, Beasts, Humans.
 

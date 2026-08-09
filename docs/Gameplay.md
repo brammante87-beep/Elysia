@@ -1,4 +1,12 @@
-# Gameplay — Alpha 1.3.0
+# Gameplay — Alpha 1.4.0
+
+## Needs and social intelligence
+
+Every living inhabitant has Hunger, Safety, and Happiness on an internal `0.0` (critical) to `1.0` (excellent) scale. Active time slowly reduces satiety, meals restore it, danger harms Safety, peace and Shields restore Safety, and family events influence Happiness. Normal play presents qualitative states and contextual speech rather than raw numbers; starvation death is not part of this milestone.
+
+Inhabitants remember important births, deaths, thefts, journeys, reveals, and Divine interventions. Knowledge records whether a fact was witnessed, told by another inhabitant, shared as a major Settlement fact, or merely assumed. Consequently, dialogue can report evidence or uncertainty without consulting omniscient world state. Relationships range internally from hostility to affection and supplement—not replace—Partner and genealogy data.
+
+Speech is scheduled by priority. Desktop permits three ordinary world-anchored bubbles and Mobile one; Critical speech can briefly exceed that limit. Per-speaker cooldowns, semantic signatures and worsening-urgency checks suppress unchanged repetition. Text remains on screen for roughly 2.2–4.7 seconds according to length.
 
 ## Central dwelling consolidation
 

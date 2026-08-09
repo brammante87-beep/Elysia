@@ -1,0 +1,31 @@
+import { CharacterKnowledge } from '../social/CharacterKnowledge.js';
+export class LocalDialogueRealizer {
+  realize(intent, context = {}) { const method = this[intent.intent] ?? this.REPORT_EVENT; const text = method.call(this, intent, context); return this.filter(text, context.familyMode); }
+  pick(intent, variants) { let hash = 0; for (const char of intent.signature()) hash = ((hash * 31) + char.charCodeAt(0)) >>> 0; return variants[(hash + (intent.variant ?? 0)) % variants.length]; }
+  resource(resource = 'food') { return ({ food: 'cibo', water: 'acqua', wood: 'legna' })[resource] ?? resource; }
+  name(id, context) { return context.names?.[id] ?? id ?? 'qualcuno'; }
+  EXPRESS_NEED(i) { const thing=this.resource(i.resource); if ((i.urgency ?? 0) >= 3) return `Onnipotente, aiutaci: non abbiamo più ${thing}!`; if ((i.urgency ?? 0) >= 2) return `Non abbiamo abbastanza ${thing}.`; return `Avrei bisogno di un po' di ${thing}.`; }
+  REQUEST_HELP(i) { return i.targetType === 'PLAYER' ? 'Onnipotente, ti prego, aiutaci.' : 'Puoi aiutarmi?'; }
+  REPORT_THEFT(i,c) { const name=this.name(i.subjectId,c), object=i.resource==='wood'?'la legna della nostra casa':i.resource==='water'?'la nostra acqua':'il nostro cibo'; if ([CharacterKnowledge.Sources.ASSUMED,CharacterKnowledge.Sources.UNCERTAIN].includes(i.knowledgeSource)) return `Credo che qualcuno stia prendendo ${object}. Non ne sono sicuro.`; if (i.knowledgeSource===CharacterKnowledge.Sources.TOLD_BY_OTHER) return `${this.name(i.toldBy,c)} dice che ${name} ha preso ${object}.`; return `${i.targetType==='PLAYER'?'Onnipotente, ':''}ho visto ${name} ${this.pick(i,['rubare','prendere di nascosto','portare via'])} ${object}.`;
+  }
+  ASK_CHARACTER(i,c) { if(i.topic==='location') return `Dov'è ${this.name(i.subjectId,c)}?`; if(i.topic==='origin') return 'Da dove vieni?'; return 'Che cosa sai di tutto questo?'; }
+  ANSWER_CHARACTER(i,c) { if(i.topic==='location') return `Ho visto ${this.name(i.subjectId,c)} vicino ${i.location ?? 'al villaggio'}.`; if(i.topic==='origin') return i.avoidsAnswer?'Preferirei non parlare di casa.':`Vengo da ${i.origin ?? 'un luogo lontano'}.`; return i.textMeaning ?? 'Questo è ciò che so.'; }
+  THANK_DIVINITY() { return 'Onnipotente, grazie.'; }
+  QUESTION_DIVINITY() { return 'Onnipotente, ci stai guardando?'; }
+  EXPRESS_FEAR(i) { return i.courage > .6?'Dobbiamo difenderci.':'Dobbiamo nasconderci!'; }
+  EXPRESS_GRIEF(i,c) { return i.cause==='lightning'?'Onnipotente, perché l’hai fatto?':`${this.name(i.subjectId,c)} mi manca.`; }
+  EXPRESS_LOVE(i,c) { return `${this.name(i.subjectId,c)}, sono felice che tu sia qui.`; }
+  GREET_CHARACTER(i,c) { return `Ciao, ${this.name(i.subjectId,c)}.`; }
+  GREET_NEWCOMER() { return 'Posso restare qui?'; }
+  WELCOME_NEWCOMER(i,c) { return `Benvenuto, ${this.name(i.subjectId,c)}.`; }
+  CELEBRATE(i,c) { return i.topic==='birth'?`Benvenuta su Elysia, ${this.name(i.subjectId,c)}!`:'Oggi abbiamo qualcosa da celebrare!'; }
+  INTERPRET_DIVINE_ACTION(i,c) { if(i.action==='blessing') return i.count>=4?'Ho compreso la tua volontà.':i.count>=3?'Credo di capire...':i.count>=2?'Stai parlando con me?':'Che cosa è stato?'; if(i.action==='lightning') return i.theftKnown?`Credo che abbia punito ${this.name(i.subjectId,c)} perché aveva rubato.`:'Forse era la sua ira.'; return 'Credo che l’Onnipotente voglia dirci qualcosa.'; }
+  EXPRESS_CONFUSION() { return 'Che cosa...?'; }
+  JUSTIFY_THEFT(i) { return i.reason==='family'?'Serviva alla mia famiglia.':'Avevo fame.'; }
+  DENY_THEFT() { return 'Non sono stato io.'; }
+  APOLOGIZE() { return 'Mi dispiace. Non lo farò più.'; }
+  COMMENT_ON_RESOURCE(i) { return i.abundant?`${this.resource(i.resource)} non manca.`:`Ci serve ${this.resource(i.resource)}.`; }
+  AMBIENT_OBSERVATION(i) { return i.recentAttack?'È strano vedere tutto così tranquillo.':i.recentBirth?'C’è una nuova vita nel villaggio.':'È una bella alba.'; }
+  REPORT_EVENT(i,c) { return i.textMeaning ?? `${this.name(i.subjectId,c)} ha visto qualcosa di importante.`; }
+  filter(text, familyMode) { if (!familyMode) return text; return text.replace(/\b(sesso|sessuale|orientamento|identità di genere)\b/gi, 'vita privata'); }
+}

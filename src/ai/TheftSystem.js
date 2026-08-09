@@ -1,6 +1,7 @@
 import { Config } from '../core/Config.js';
 import { Resources } from '../data/Resources.js';
 import { WorldTime } from '../world/WorldTime.js';
+import { CommunicationIntent } from '../dialogue/CommunicationIntent.js';
 
 export class TheftSystem {
   constructor(ai) { this.ai = ai; this.world = ai.world; this.character = ai.character; this.state = null; this.cooldown = 0; this.decisionTimer = 0; }
@@ -56,9 +57,20 @@ export class TheftSystem {
     this.state.carrying = true; this.state.phase = 'returning'; this.ai.carried[this.state.resource] += 1;
     this.world.reservations.releaseTarget(this.state.reservationId);
     this.world.addEffect(victim.position, 'theft', { characterId: this.character.id });
+    this.recordWitnesses(victim);
     const own = this.world.findHome(this.state.ownHomeId);
     if (!own) return this.cancel('invalidHome');
     this.ai.movement.follow(this.ai.pathfinder.findPath(this.world.terrain, this.character.position, own.position)); this.ai.setTask('returnStolenResource');
+  }
+
+  recordWitnesses(victim) {
+    const witnesses = this.world.characters.filter(character => character.alive && character.id !== this.character.id && !character.insideHome && Math.hypot(character.position.x-victim.position.x,character.position.y-victim.position.y) <= 6);
+    if (!witnesses.length) return false;
+    const victimIds = this.world.households.find(household => household.id === victim.householdId)?.memberIds ?? [];
+    this.world.relationships.recordTheft(this.character.id, victimIds, true);
+    for (const witness of witnesses) { this.world.dialogue.witness(witness,{type:'theft',subjectId:this.character.id,objectId:victim.id,resource:this.state.resource,importance:.75,emotionalImpact:-.5}); this.world.relationships.change(witness.id,this.character.id,-12); }
+    const witness=witnesses[0]; this.world.dialogue.say(new CommunicationIntent({speakerId:witness.id,targetType:'NEARBY_CHARACTER',targetId:this.character.id,intent:'REPORT_THEFT',subjectId:this.character.id,resource:this.state.resource,knowledgeSource:'WITNESSED',emotion:'ANGRY',priority:'HIGH'}));
+    return true;
   }
 
   deposit() {
