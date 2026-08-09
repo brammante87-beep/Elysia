@@ -55,7 +55,7 @@ test('intro begins at zero, advances through every page, and finishes at world s
 
 test('world registry has exactly the three stable IDs', () => {
   assert.equal(WORLD_TYPES.length, 3);
-  assert.deepEqual(WORLD_TYPES.map(type => type.id), ['human', 'beast', 'plant']);
+  assert.deepEqual(WORLD_TYPES.map(type => type.id), ['plant', 'beast', 'human']);
 });
 
 for (const id of Object.values(WorldTypeId)) {

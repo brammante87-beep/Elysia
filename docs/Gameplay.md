@@ -1,4 +1,11 @@
-# Gameplay
+# Gameplay — Alpha 1.3.0
+
+## Central dwelling consolidation
+
+The fourth completed Home or Den in a growing Settlement triggers one explicit consolidation. The exact four registered qualifying dwellings are removed from rendering, collision, and interaction; their average position becomes the Castle or Great Den position. Every household remains distinct but its `homeBuildingId`, and every member's home reference, changes to the shared central structure. Wood, Water, and Food are independently summed into capacity 30 storage.
+
+Version 1 saves remain valid. An established legacy Settlement is repaired only when it contains one registered central structure and exactly three registered, completed, occupied obsolete dwellings. Unregistered, vacant, or later structures are not consumed.
+
 
 Alpha 0.0.4 advances through four player-controlled
 Italian `INTRO` pages and then to `WORLD_SELECTION`. Human, Beast, and Plant are
