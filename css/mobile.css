@@ -1,0 +1,40 @@
+:root { --mobile-toolbar-height: 5.6rem; }
+
+html, body, #app { height: 100dvh; min-height: 100dvh; overscroll-behavior: none; }
+body { padding-top: env(safe-area-inset-top); background: #070b18; }
+#game-canvas { height: 100%; touch-action: none; }
+
+.mobile-divine-toolbar {
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  padding: .35rem .4rem max(.4rem, env(safe-area-inset-bottom));
+  border-radius: .8rem .8rem 0 0;
+  transform: none;
+}
+.mobile-divine-toolbar .divine-toolbar__title { margin-bottom: .2rem; font-size: .5rem; }
+.mobile-divine-toolbar .divine-toolbar__powers {
+  display: flex;
+  gap: .35rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
+}
+.mobile-divine-toolbar .divine-power { flex: 0 0 calc((100vw - 2rem) / 4); min-width: 64px; min-height: 3.8rem; scroll-snap-align: start; }
+.mobile-divine-toolbar .divine-power img { width: 1.9rem; height: 1.9rem; }
+.mobile-divine-toolbar .camera-focus { top: -3.25rem; min-width: 48px; min-height: 48px; }
+
+.mobile-presentation .celestial-screen { align-content: center; overflow-y: auto; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+.mobile-presentation .world-choices { grid-template-columns: 1fr; }
+.mobile-presentation .world-choice { min-height: 8rem; }
+.mobile-presentation .creation-panel { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.mobile-presentation button, .mobile-presentation .choice-pills span { min-height: 48px; }
+
+@media (orientation: landscape) {
+  :root { --mobile-toolbar-height: 4.4rem; }
+  .mobile-divine-toolbar .divine-toolbar__title { display: none; }
+  .mobile-divine-toolbar .divine-power { flex-basis: calc((100vw - 3rem) / 6); min-height: 3.25rem; }
+  .mobile-divine-toolbar .divine-power img { width: 1.55rem; height: 1.55rem; }
+  .mobile-presentation .celestial-screen { align-content: start; }
+}

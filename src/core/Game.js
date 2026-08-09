@@ -1,22 +1,21 @@
 import { Engine } from './Engine.js';
 import { GameClock } from './GameClock.js';
 import { GameState } from './GameState.js';
-import { Input } from '../input/Input.js';
-import { Renderer } from '../rendering/Renderer.js';
-import { UI } from '../ui/UI.js';
 import { World } from '../world/World.js';
 import { SaveManager } from '../persistence/SaveManager.js';
 import { IntroScreen } from '../ui/IntroScreen.js';
 import { WorldTypeId, WorldTypes } from '../data/WorldTypes.js';
 import { CharacterCreator } from '../entities/CharacterCreator.js';
 import { Miracles } from '../miracles/Miracles.js';
+import { PresentationProfile } from '../presentation/PresentationProfile.js';
 
 export class Game {
-  constructor(root) {
-    this.ui = new UI(root);
+  constructor(root, presentation = new PresentationProfile(PresentationProfile.DESKTOP)) {
+    this.presentation = presentation;
+    this.ui = presentation.createUI(root);
     this.canvas = this.ui.createCanvas();
-    this.renderer = new Renderer(this.canvas);
-    this.input = new Input(this.canvas);
+    this.renderer = presentation.createRenderer(this.canvas);
+    this.input = presentation.createInput(this.canvas);
     this.world = new World();
     this.clock = new GameClock();
     this.state = new GameState();
@@ -152,9 +151,8 @@ export class Game {
   configurePlayingCamera() {
     if (!this.canvas?.getBoundingClientRect || !this.renderer?.camera) return;
     const bounds=this.canvas.getBoundingClientRect();
-    const mobile=bounds.width<=760;
     const ratio=this.canvas.width/Math.max(1,bounds.width);
-    const zoom=mobile ? Math.max(this.renderer.camera.fitZoom(),10*ratio) : this.renderer.camera.fitZoom();
+    const zoom=this.presentation.initialZoom(this.renderer.camera, ratio);
     this.renderer.camera.setZoom(zoom);
     this.focusCamera();
   }
