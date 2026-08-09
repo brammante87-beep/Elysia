@@ -41,3 +41,8 @@ World-state-driven crises, autonomous and Divine outcomes, local event knowledge
 ## Completed — Alpha 1.6.0 — Faith, Interpretation & Divine Will
 
 Persistent personal faith, evidence-bound subjective beliefs, Exalted social teaching, disagreement, dynamic Italian realization, derived settlement trends, legacy-save migration, and concise inspection presentation are complete. Organized religion remains outside this milestone.
+
+
+## Completed — Alpha 1.7.0 — Culture, Customs & Settlement Identity
+
+Each Settlement owns a persistent multidimensional `SettlementCulture`. Aggregate event signals change it gradually with inertia; stable dimensions form probabilistic Customs. Founder personality, faith and Exalted status provide only an initial bias. Culture remains separate from personal belief and informal: it creates no laws, government or organized religion. Bounded, observer-local reputation evidence and culture memories preserve social knowledge without omniscience. `CultureSystem` updates periodically rather than scanning inhabitants every frame, while `CultureBehaviorSystem` performs conservative within-settlement sharing and assistance. Human and Beast worlds use the same semantics with community-appropriate realization.

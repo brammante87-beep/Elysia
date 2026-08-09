@@ -1,6 +1,6 @@
 export class Config {
-  static VERSION = 'Alpha 1.6.0';
-  static MILESTONE = 'Faith, Interpretation & Divine Will';
+  static VERSION = 'Alpha 1.7.0';
+  static MILESTONE = 'Culture, Customs & Settlement Identity';
   static MAX_DELTA_SECONDS = 0.1;
   static BACKGROUND_COLOR = '#25282a';
   static SAVE_KEY = 'elysia_reboot_save_v1';

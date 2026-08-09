@@ -19,7 +19,9 @@ export class TheftSystem {
     if (!this.eligible() || this.cooldown > 0 || this.decisionTimer > 0) return false;
     this.decisionTimer = Config.THEFT_DECISION_INTERVAL_SECONDS;
     const choice = this.selectTarget();
-    if (!choice || random() >= this.character.behaviourMemory.tendency('theft')) return false;
+    const culture = this.world.settlements.find(item => item.id === this.character.settlementId)?.culture;
+    const restraint = culture?.hasCustom('AVOID_THEFT') ? .72 : 1;
+    if (!choice || random() >= this.character.behaviourMemory.tendency('theft') * restraint) return false;
     return this.start(choice);
   }
 
@@ -68,8 +70,8 @@ export class TheftSystem {
     if (!witnesses.length) return false;
     const victimIds = this.world.households.find(household => household.id === victim.householdId)?.memberIds ?? [];
     this.world.relationships.recordTheft(this.character.id, victimIds, true);
-    for (const witness of witnesses) { this.world.dialogue.witness(witness,{type:'theft',subjectId:this.character.id,objectId:victim.id,resource:this.state.resource,importance:.75,emotionalImpact:-.5}); this.world.relationships.change(witness.id,this.character.id,-12); }
-    const witness=witnesses[0]; this.world.dialogue.say(new CommunicationIntent({speakerId:witness.id,targetType:'NEARBY_CHARACTER',targetId:this.character.id,intent:'REPORT_THEFT',subjectId:this.character.id,resource:this.state.resource,knowledgeSource:'WITNESSED',emotion:'ANGRY',priority:'HIGH'}));
+    for (const witness of witnesses) { witness.reputation.learn(this.character.id,'THIEF',{source:'WITNESSED'}); this.world.diagnostics?.trace('reputationChanged',{observerId:witness.id,subjectId:this.character.id,label:'THIEF'}); this.world.dialogue.witness(witness,{type:'theft',subjectId:this.character.id,objectId:victim.id,resource:this.state.resource,importance:.75,emotionalImpact:-.5}); this.world.relationships.change(witness.id,this.character.id,-12); }
+    this.world.cultures?.addSignal(this.character.settlementId,'theft',1); const witness=witnesses[0]; this.world.dialogue.say(new CommunicationIntent({speakerId:witness.id,targetType:'NEARBY_CHARACTER',targetId:this.character.id,intent:'REPORT_THEFT',subjectId:this.character.id,resource:this.state.resource,knowledgeSource:'WITNESSED',emotion:'ANGRY',priority:'HIGH'}));
     return true;
   }
 

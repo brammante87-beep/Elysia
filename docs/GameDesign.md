@@ -84,3 +84,8 @@ Alpha 1.6.0 adds embodied crises. They target existing settlements, characters a
 ## Subjective Divine interpretation
 
 Divine action is the player's only answer: no menu establishes commandments. Personality shades inference, refugees may retain up to three former-world influences, and even an Exalted interpretation can be wrong. Belief modestly influences future expression without replacing needs, personality, BehaviourMemory, or theft decisions. The rainbow and unicorn remain mysterious observable events rather than proof of a named cause.
+
+
+## Alpha 1.7.0 — Emergent settlement identity
+
+Each Settlement owns a persistent multidimensional `SettlementCulture`. Aggregate event signals change it gradually with inertia; stable dimensions form probabilistic Customs. Founder personality, faith and Exalted status provide only an initial bias. Culture remains separate from personal belief and informal: it creates no laws, government or organized religion. Bounded, observer-local reputation evidence and culture memories preserve social knowledge without omniscience. `CultureSystem` updates periodically rather than scanning inhabitants every frame, while `CultureBehaviorSystem` performs conservative within-settlement sharing and assistance. Human and Beast worlds use the same semantics with community-appropriate realization.

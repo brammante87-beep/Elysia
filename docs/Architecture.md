@@ -159,3 +159,8 @@ Saves persist behaviour preferences and theft cooldown. They never serialize pat
 Every adult `Character` owns persistent `PersonalFaith` and bounded `PersonalBeliefs` value objects. `BeliefSystem` interprets only compact references to memories the character experienced or heard about; it never reads a hidden divine intention. Knowledge continues to record observable facts, while beliefs contain subjective meaning, confidence, source, and at most five supporting and contradicting memory references. Social teaching preserves attribution and admits acceptance, doubt, partial acceptance, and rejection.
 
 `SettlementBeliefSummary` recalculates trends from current residents and never stores an official doctrine or overwrites a founder's beliefs. Consequently each of the three supported settlements can develop a different interpretation. There are no religions, commandments, clergy, temples, conversion rules, or divine answer menus.
+
+
+## Alpha 1.7.0 — Culture architecture
+
+Each Settlement owns a persistent multidimensional `SettlementCulture`. Aggregate event signals change it gradually with inertia; stable dimensions form probabilistic Customs. Founder personality, faith and Exalted status provide only an initial bias. Culture remains separate from personal belief and informal: it creates no laws, government or organized religion. Bounded, observer-local reputation evidence and culture memories preserve social knowledge without omniscience. `CultureSystem` updates periodically rather than scanning inhabitants every frame, while `CultureBehaviorSystem` performs conservative within-settlement sharing and assistance. Human and Beast worlds use the same semantics with community-appropriate realization.
