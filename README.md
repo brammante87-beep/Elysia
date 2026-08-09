@@ -1,6 +1,6 @@
 # Elysia
 
-**Alpha 1.7.0 — Culture, Customs & Settlement Identity**
+**Alpha 1.8.0 — Culture, Customs & Settlement Identity**
 
 Alpha 1.7.0 adds emergent per-settlement culture, customs, social reputation and culture-aware behavior while preserving every completed Alpha 1.6.0 system, including normalized Hunger, Safety and Happiness; persistent pair-specific relationships, deterministic continuous personality, bounded memories and source-aware knowledge; and a completely local semantic dialogue pipeline. Characters choose a `CommunicationIntent` before `LocalDialogueRealizer` composes readable Italian. Short conversations can transfer knowledge without omniscience, while cooldowns, information-value suppression, priorities, and Desktop/Mobile density limits keep world-anchored speech useful. The same system runs offline in Standard and Family Mode, where presentation-sensitive identity language is filtered.
 
@@ -90,3 +90,7 @@ The Castle retains its exact identity, ownership, storage, position, and capacit
 ## Events, Crisis & Divine Choice
 
 A dedicated `WorldEventSystem` schedules bounded, world-state-eligible local crises after stabilization. Dry sources, tree fires, unsafe food, lost children, disputes, injuries, family tension and vulnerable migrants alter real entities and behavior. Miracles are the player’s response—not modal quest choices—and ignored events resolve naturally with accurate local knowledge, memories, semantic outcomes and bounded history. Active events persist through Continue. Plant World remains frozen.
+
+## Alpha 1.8.0 — Diplomacy, Exchange & Settlement Relations
+
+Settlements now form persistent, perspective-specific relationships from witnessed aid, visits, family links, culture, belief and known wrongdoing. Trust, affinity, cooperation and tension remain internal; Castle and Great Den inspection presents stable qualitative relations and important remembered aid instead of scores or diplomacy buttons. Real shortages can produce representative requests and autonomous, scarcity-aware decisions. Accepted Food, Water or Wood is removed from donor storage, physically carried by a visiting adult, delivered exactly once and reported on return. Visitors retain their original membership, family visits require real kinship, and limited cultural influence requires completed contact. Hostility changes social behavior only: Alpha 1.8.0 adds no war, treaties, markets, currency or territory.

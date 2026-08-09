@@ -71,6 +71,7 @@ export class TheftSystem {
     const victimIds = this.world.households.find(household => household.id === victim.householdId)?.memberIds ?? [];
     this.world.relationships.recordTheft(this.character.id, victimIds, true);
     for (const witness of witnesses) { witness.reputation.learn(this.character.id,'THIEF',{source:'WITNESSED'}); this.world.diagnostics?.trace('reputationChanged',{observerId:witness.id,subjectId:this.character.id,label:'THIEF'}); this.world.dialogue.witness(witness,{type:'theft',subjectId:this.character.id,objectId:victim.id,resource:this.state.resource,importance:.75,emotionalImpact:-.5}); this.world.relationships.change(witness.id,this.character.id,-12); }
+    if (victim.settlementId && victim.settlementId !== this.character.settlementId) this.world.diplomacy?.recordTheft({ victimSettlementId:victim.settlementId, thief:this.character, originKnown:this.character.visitorSettlementId === victim.settlementId, resource:this.state.resource });
     this.world.cultures?.addSignal(this.character.settlementId,'theft',1); const witness=witnesses[0]; this.world.dialogue.say(new CommunicationIntent({speakerId:witness.id,targetType:'NEARBY_CHARACTER',targetId:this.character.id,intent:'REPORT_THEFT',subjectId:this.character.id,resource:this.state.resource,knowledgeSource:'WITNESSED',emotion:'ANGRY',priority:'HIGH'}));
     return true;
   }
