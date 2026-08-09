@@ -1,5 +1,7 @@
 import { Game } from './core/Game.js';
 import { PresentationProfile } from './presentation/PresentationProfile.js';
+import { EntryPresentation } from './presentation/EntryPresentation.js';
 
-const game = new Game(document.querySelector('#app'), new PresentationProfile(PresentationProfile.MOBILE));
+const entry = new EntryPresentation();
+const game = new Game(document.querySelector('#app'), new PresentationProfile(PresentationProfile.MOBILE, entry.mode(), entry.modeLockedByEntry()));
 game.start();

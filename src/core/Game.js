@@ -8,6 +8,7 @@ import { WorldTypeId, WorldTypes } from '../data/WorldTypes.js';
 import { CharacterCreator } from '../entities/CharacterCreator.js';
 import { Miracles } from '../miracles/Miracles.js';
 import { PresentationProfile } from '../presentation/PresentationProfile.js';
+import { FamilyIdentityGenerator } from '../entities/FamilyIdentityGenerator.js';
 
 export class Game {
   constructor(root, presentation = new PresentationProfile(PresentationProfile.DESKTOP)) {
@@ -26,6 +27,7 @@ export class Game {
     this.worldSeed = null;
     this.chosenOne = null;
     this.characterCreator = new CharacterCreator();
+    this.familyIdentityGenerator = new FamilyIdentityGenerator();
     this.miracles = new Miracles(this.world);
     this.saveAccumulator = 0;
     this.input.onWorldPointer = point => this.handleWorldPointer(point);
@@ -124,8 +126,10 @@ export class Game {
 
   createChosenOne(data) {
     const position = this.world.findSpawnPosition();
+    const characterData = this.presentation.isFamily && this.worldType === WorldTypeId.HUMAN
+      ? this.familyIdentityGenerator.generate(data, this.worldSeed) : data;
     this.chosenOne = this.worldType === WorldTypeId.HUMAN
-      ? this.characterCreator.createHuman(data, position, this.worldSeed)
+      ? this.characterCreator.createHuman(characterData, position, this.worldSeed)
       : this.characterCreator.createBeast(data, position, this.worldSeed);
     this.world.addCharacter(this.chosenOne);
     this.enterPlaying();

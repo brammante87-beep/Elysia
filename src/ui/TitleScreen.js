@@ -2,8 +2,9 @@ import { ConfirmationDialog } from './ConfirmationDialog.js';
 import { Config } from '../core/Config.js';
 
 export class TitleScreen {
-  constructor(documentObject = globalThis.document) {
+  constructor(documentObject = globalThis.document, presentation = null) {
     this.document = documentObject;
+    this.presentation = presentation;
     this.element = this.createElement();
   }
 
@@ -15,6 +16,7 @@ export class TitleScreen {
       <div class="title-content">
         <p class="title-kicker">Un mondo attende il tuo volere</p>
         <h1 id="elysia-title">ELYSIA</h1>
+        ${this.presentation?.isFamily ? '<p class="family-mode-label">MODALITÀ FAMIGLIA</p>' : ''}
         <nav class="title-menu" aria-label="Menu principale">
           <button type="button" data-action="new-game">NUOVA PARTITA</button>
           <button type="button" data-action="continue">CONTINUA</button>

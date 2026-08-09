@@ -8,14 +8,15 @@ import { GameOverScreen } from './GameOverScreen.js';
 import { SexChoicePanel } from './SexChoicePanel.js';
 
 export class UI {
-  constructor(root) {
+  constructor(root, presentation = null) {
     this.root = root;
-    this.titleScreen = new TitleScreen(root.ownerDocument ?? globalThis.document);
+    this.presentation = presentation;
+    this.titleScreen = new TitleScreen(root.ownerDocument ?? globalThis.document, presentation);
     this.introScreen = new IntroScreen(root.ownerDocument ?? globalThis.document);
     this.worldSelectionScreen = new WorldSelectionScreen(root.ownerDocument ?? globalThis.document);
     this.worldRevealScreen = new WorldRevealScreen(root.ownerDocument ?? globalThis.document);
-    this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document);
-    this.divineToolbar = new DivineToolbar(root.ownerDocument ?? globalThis.document);
+    this.characterCreationScreen = new CharacterCreationScreen(root.ownerDocument ?? globalThis.document, presentation);
+    this.divineToolbar = new DivineToolbar(root.ownerDocument ?? globalThis.document, presentation);
     this.gameOverScreen = new GameOverScreen(root.ownerDocument ?? globalThis.document);
     this.sexChoicePanel = new SexChoicePanel(root.ownerDocument ?? globalThis.document);
   }
