@@ -46,7 +46,7 @@ export class UI {
 
   showWorldReveal(onComplete) { this.clearScreens(); this.worldRevealScreen.show(this.root, onComplete); }
   showCharacterCreation(worldType, onSubmit) { this.clearScreens(); this.characterCreationScreen.show(this.root, worldType, onSubmit); }
-  showPlaying(worldType, miracles, onSelect, onFocus) { this.clearScreens(); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect, onFocus); }
+  showPlaying(worldType, miracles, onSelect, onFocus) { this.clearScreens(); if (this.presentation?.id === 'desktop') this.root.classList.add('desktop-playing'); this.divineToolbar.remove(); this.divineToolbar.show(this.root, worldType, miracles, onSelect, onFocus); }
   showSexChoice(character, onChoose) { this.sexChoicePanel.show(this.root, character, onChoose); }
   showGameOver(handlers) { this.clearScreens(); this.divineToolbar.remove(); this.gameOverScreen.show(this.root, handlers); }
 
@@ -77,6 +77,7 @@ export class UI {
   }
 
   clearScreens() {
+    this.root.classList.remove('desktop-playing');
     this.sexChoicePanel.remove();
     this.root.querySelectorAll('.title-screen, .placeholder-screen, .intro-screen, .world-selection-screen, .world-reveal-screen, .character-creation-screen, .loading-screen, .loading-error-screen, .game-over-screen').forEach(screen => screen.remove());
   }

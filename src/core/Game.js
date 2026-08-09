@@ -159,6 +159,7 @@ export class Game {
     const zoom=this.presentation.initialZoom(this.renderer.camera, ratio);
     this.renderer.camera.setZoom(zoom);
     this.focusCamera();
+    this.renderer.camera.enableResponsiveFraming?.();
   }
 
   focusCamera() {
