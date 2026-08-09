@@ -52,6 +52,10 @@ export class Character {
     this.isArmed = data.isArmed ?? false;
     this.hasShield = data.hasShield ?? false;
     this.health = data.health ?? 100;
+    this.injured = data.injured ?? false;
+    this.injuryRemaining = data.injuryRemaining ?? 0;
+    this.lost = data.lost ?? false;
+    this.migrantNeed = data.migrantNeed ?? null;
     this.needs = new CharacterNeeds(data.needs);
     this.personality = new CharacterPersonality(data.personality, this.id);
     this.memories = new CharacterMemory(data.memories);

@@ -2,7 +2,7 @@
 
 ## Thinking inhabitants
 
-Alpha 1.4.0 communicates simulation state through conduct, reactions and speech. Hunger, perceived danger, family bonds, personal memories and pair-specific opinions produce a temporary semantic emotion. Continuous courage, kindness, selfishness, curiosity, sociability and faith disposition alter how strongly an inhabitant responds without becoming rigid archetypes or overriding core safety rules.
+Alpha 1.5.0 communicates simulation state through conduct, reactions and speech. Hunger, perceived danger, family bonds, personal memories and pair-specific opinions produce a temporary semantic emotion. Continuous courage, kindness, selfishness, curiosity, sociability and faith disposition alter how strongly an inhabitant responds without becoming rigid archetypes or overriding core safety rules.
 
 The Omnipotent is a known presence, but inhabitants interpret only witnessed or socially learned actions. Blessings progress from confusion toward recognition without changing the established fifth-Blessing Exalted threshold. Theft retains its existing mechanics; known thieves can lose trust, while an unwitnessed theft assigns no magical blame. This foundation intentionally excludes religion, commandments, factions, prejudice, trade, quests, and external AI.
 
@@ -77,3 +77,6 @@ Divine intervention defines learned meaning contextually. Lightning during theft
 ## Alpha 1.0.0 civilization loop
 
 Other inhabited worlds exist as narrative background; their complete cosmology remains undefined. Migrants bring a persistent origin and personal account of leaving. A settlement is `GROWING` until four Homes are complete, then its founding Home becomes a Castle or Great Den and the state becomes `ESTABLISHED`. Four external arrivals are a maximum, not a prerequisite: establishment forfeits unused slots. Established settlements use vacant Homes and continue internal life but cannot construct ordinary Homes or accept outsiders. Exalted founders can establish distant settlements using the same lifecycle; Elysia has at most three.
+
+
+Alpha 1.5.0 adds embodied crises. They target existing settlements, characters and resources, communicate through the semantic dialogue pipeline, and change temporary state rather than base personality. Player credit is recorded only when a matching Divine Power resolved the event.
