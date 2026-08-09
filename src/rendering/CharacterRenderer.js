@@ -1,4 +1,6 @@
 import { HumanIdleAnimation } from './HumanIdleAnimation.js';
+import { DivineWeaponRenderer } from './DivineWeaponRenderer.js';
+import { LionRenderer } from './LionRenderer.js';
 
 export class CharacterRenderer {
   constructor(context, registry, assetLoader) {
@@ -6,6 +8,8 @@ export class CharacterRenderer {
     this.registry = registry;
     this.assetLoader = assetLoader;
     this.humanIdleAnimation = new HumanIdleAnimation();
+    this.weaponRenderer = new DivineWeaponRenderer(this.context);
+    this.lionRenderer = new LionRenderer(this.context);
   }
 
   resolve(character) { return this.registry.get(this.registry.resolveId(character)); }
@@ -34,7 +38,7 @@ export class CharacterRenderer {
   renderRefugee(character, point, elapsed, scale) {
     const context=this.context,profile=character.visualProfile,size=Math.max(18,scale*4.5),hover=profile==='civilian.dolphin';context.save();context.translate(point.x,point.y-(hover?size*.18:0));
     this.drawShadow({x:0,y:hover?size*.18:0},size,size);
-    if(profile==='civilian.lion'){context.fillStyle='#c78d3d';context.beginPath();context.arc(0,-size*.48,size*.29,0,Math.PI*2);context.fill();context.strokeStyle='#754421';context.lineWidth=size*.12;context.stroke();context.fillStyle='#72533c';context.fillRect(-size*.2,-size*.25,size*.4,size*.52);context.fillStyle='#f0d19a';context.beginPath();context.arc(0,-size*.43,size*.1,0,Math.PI*2);context.fill();}
+    if(profile==='civilian.lion') this.lionRenderer.render({civilian:true,phase:character.visualState,time:elapsed});
     else if(profile==='civilian.worldII'){context.fillStyle='#d9e6ec';context.fillRect(-size*.2,-size*.4,size*.4,size*.68);context.fillStyle='#f0cfad';context.beginPath();context.arc(0,-size*.55,size*.22,0,Math.PI*2);context.fill();context.fillStyle='#f5df78';context.beginPath();context.arc(0,-size*.62,size*.23,Math.PI,Math.PI*2);context.fill();context.fillStyle='#8eb4ca';context.fillRect(-size*.2,-size*.2,size*.4,size*.1);}
     else{context.fillStyle='#66cbd4';context.beginPath();context.ellipse(0,-size*.32,size*.52,size*.25,-.08,0,Math.PI*2);context.fill();context.beginPath();context.moveTo(-size*.42,-size*.3);context.lineTo(-size*.7,-size*.5);context.lineTo(-size*.62,-size*.17);context.fill();context.fillStyle='#dffcff';context.beginPath();context.arc(size*.25,-size*.4,size*.035,0,Math.PI*2);context.fill();context.strokeStyle='#8deaff';context.shadowColor='#68eafa';context.shadowBlur=8;context.lineWidth=2;context.beginPath();context.ellipse(0,size*.04,size*.42,size*.09,0,0,Math.PI*2);context.stroke();}
     this.drawDivineEquipment(character,{x:0,y:0},size,size);context.restore();this.drawName(character.name,point,size);return true;
@@ -49,7 +53,7 @@ export class CharacterRenderer {
   drawDivineEquipment(character, point, width, height) {
     const context=this.context; context.save();
     if (character.isExalted) { context.strokeStyle=character.worldType==='beast'?'#a9e6b0':'#e5bc68'; context.lineWidth=Math.max(3,width*.08); context.beginPath(); context.arc(point.x,point.y-height*.42,width*.34,.15,Math.PI-.15); context.stroke(); }
-    if (character.isArmed) { context.strokeStyle=character.worldType==='beast'?'#8be0c2':'#a87947'; context.lineWidth=Math.max(3,width*.07); context.beginPath(); if(character.worldType==='human'){context.moveTo(point.x+width*.3,point.y-height*.65);context.lineTo(point.x+width*.5,point.y+height*.02);}else{context.arc(point.x,point.y-height*.32,width*.43,0,Math.PI*2);} context.stroke(); }
+    if (character.isArmed) this.weaponRenderer.render(character,point,width,height,this.humanIdleAnimation.animationTime(character,0,'idle'));
     if (character.hasShield) { context.strokeStyle='rgba(154,221,255,.72)'; context.shadowColor='#9fe9ff'; context.shadowBlur=10; context.lineWidth=2; context.beginPath(); context.ellipse(point.x,point.y-height*.35,width*.58,height*.58,0,0,Math.PI*2); context.stroke(); }
     context.restore();
   }

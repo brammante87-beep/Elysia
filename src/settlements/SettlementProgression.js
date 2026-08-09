@@ -27,6 +27,10 @@ export class SettlementProgression {
       if (character) character.settlementId = settlement.id;
     }
     this.world.settlements.push(settlement);
+    this.world.settlementWater.ensureSources();
+    const source=this.world.settlementWater.availableSource(home.position, []);
+    if (!this.world.settlementWater.claim(settlement,source)) { this.world.settlements.pop(); return null; }
+    for (const id of household.memberIds) { const character=this.world.characters.find(item=>item.id===id); if(character) character.homeSettlementId=settlement.id; }
     return settlement;
   }
 

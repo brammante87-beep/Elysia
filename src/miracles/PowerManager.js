@@ -24,9 +24,9 @@ export class PowerManager {
     if (id === 'lightning') this.strike(character);
     if (id === 'blessing') this.bless(character);
     if (id === 'changeSex') character.sexCharacteristics = choice;
-    if (id === 'giveWeapons') character.isArmed = true;
+    if (id === 'giveWeapons') { character.isArmed = true; character.weaponVisualId = character.worldType === 'human' ? 'divineBlade' : `${character.species ?? 'beast'}Armament`; }
     if (id === 'shield') { character.hasShield = true; character.needs.shield(); }
-    this.world.addEffect(character.position, id, { characterId: character.id });
+    this.world.addEffect(character.position, id, { characterId: character.id, duration:id==='lightning'?1.25:id==='giveWeapons'?2.2:undefined });
     this.recordDivineWitnesses(id, character);
     this.world.events?.intervene(id, character.position, character);
     return character;
