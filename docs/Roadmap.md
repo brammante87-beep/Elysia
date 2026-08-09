@@ -34,6 +34,10 @@ Elysia exists amid other inhabited worlds, intentionally left evocative rather t
 The registered second Settlement now draws the first direct attention of another Omnipotent. Its once-per-game cinematic pauses ordinary simulation, provides a ten-second Shield preparation window, attacks the original Settlement without ending play, and preserves its Castle through an unexplained rainbow-and-unicorn intervention. Adult and Child casualties use semantic Settlement membership, Shield state, and the established mass-safe death cleanup. The encounter is persistent and Continue-safe. Full character combat, weapon damage, armies, diplomacy, conquest, and a Rival boss fight remain deferred.
 
 
-## Completed — Alpha 1.5.0 — Events, Crisis & Divine Choice
+## Completed — Alpha 1.6.0 — Events, Crisis & Divine Choice
 
 World-state-driven crises, autonomous and Divine outcomes, local event knowledge, bounded history, presentation, and persistence are complete. Invasions remain separate.
+
+## Completed — Alpha 1.6.0 — Faith, Interpretation & Divine Will
+
+Persistent personal faith, evidence-bound subjective beliefs, Exalted social teaching, disagreement, dynamic Italian realization, derived settlement trends, legacy-save migration, and concise inspection presentation are complete. Organized religion remains outside this milestone.

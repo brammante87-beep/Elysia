@@ -1,4 +1,4 @@
-# Gameplay — Alpha 1.5.0
+# Gameplay — Alpha 1.6.0
 
 ## Needs and social intelligence
 
@@ -56,3 +56,7 @@ The meteor always targets the oldest Settlement. Every living member, Adult or C
 ## Events and Divine Choice
 
 After cycle 3, eligible Human and Beast settlements may face a paced local event every 2–4 cycles. World visuals and contextual dialogue identify the crisis. WATER restores dry springs and extinguishes fire, BLESSING heals injuries and purifies unsafe food, RAY OF LIGHT helps rally a lost child, and non-intervention remains valid because events have natural outcomes.
+
+## Faith, interpretation and Divine will
+
+Adults describe faith as skeptical, uncertain, believing, or devoted without exposing numbers. Repeated witnessed interventions, crisis outcomes, contradictions, and meaningful abandonment can alter faith and support personal beliefs. One ambiguous event remains uncertain. Exalted inhabitants teach only beliefs they actually hold; listeners can agree, doubt, reject, or reinterpret them. Player inspection shows concise personal beliefs and Castle/Great Den inspection derives uncertain settlement trends. The same bounded dialogue scheduler protects Mobile density and the same language filter remains active in Family Mode.
