@@ -153,3 +153,9 @@ Saves persist behaviour preferences and theft cooldown. They never serialize pat
 ## WorldEventSystem
 
 `WorldEventSystem` owns all non-combat event scheduling, eligibility, lifecycle, density, intervention, local knowledge, semantic resolution history and serialization. `WorldEvent` is the persisted semantic record and `WorldEventConfig` centralizes pacing, durations and bounded fire spread. `World.update()` delegates once to this system; invasions remain independent.
+
+## Alpha 1.6 faith and interpretation boundary
+
+Every adult `Character` owns persistent `PersonalFaith` and bounded `PersonalBeliefs` value objects. `BeliefSystem` interprets only compact references to memories the character experienced or heard about; it never reads a hidden divine intention. Knowledge continues to record observable facts, while beliefs contain subjective meaning, confidence, source, and at most five supporting and contradicting memory references. Social teaching preserves attribution and admits acceptance, doubt, partial acceptance, and rejection.
+
+`SettlementBeliefSummary` recalculates trends from current residents and never stores an official doctrine or overwrites a founder's beliefs. Consequently each of the three supported settlements can develop a different interpretation. There are no religions, commandments, clergy, temples, conversion rules, or divine answer menus.

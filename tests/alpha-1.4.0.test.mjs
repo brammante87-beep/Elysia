@@ -13,7 +13,7 @@ import { Config } from '../src/core/Config.js';
 
 const character=(id,extra={})=>new Character({id,name:id,position:{x:0,y:0},worldType:'human',...extra});
 
-test('Alpha 1.4 version and Exalted threshold remain stable',()=>{assert.equal(Config.VERSION,'Alpha 1.4.0'); const source=String.raw`fifth Blessing`; assert.match(source,/fifth/);});
+test('Alpha 1.4 version and Exalted threshold remain stable',()=>{assert.equal(Config.VERSION,'Alpha 1.6.0'); const source=String.raw`fifth Blessing`; assert.match(source,/fifth/);});
 test('hunger falls over active simulation and a meal restores hunger and happiness',()=>{const needs=new CharacterNeeds({hunger:.8,happiness:.5});needs.update(60);assert.ok(needs.hunger<.8);const before=needs.hunger;needs.meal();assert.ok(needs.hunger>before&&needs.happiness>.5);});
 test('danger, Shield, peace and family events influence normalized needs',()=>{const needs=new CharacterNeeds();const safety=needs.safety;needs.danger(.3);assert.ok(needs.safety<safety);needs.shield();const shielded=needs.safety;needs.update(30,{shielded:true});assert.ok(needs.safety>shielded);const happy=needs.happiness;needs.familyEvent(false,true);assert.ok(needs.happiness<happy);});
 test('qualitative inspection and emotion hide raw values',()=>{const c=character('a',{needs:{hunger:.1}});assert.equal(c.needs.qualitative(),'Affamato');assert.equal(EmotionalState.derive(c),'DESPERATE');});
