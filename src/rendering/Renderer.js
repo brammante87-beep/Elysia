@@ -9,7 +9,7 @@ import { EnemyRenderer } from './EnemyRenderer.js';
 import { Camera } from './Camera.js';
 
 export class Renderer {
-  constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null) {
+  constructor(canvas, windowObject = globalThis.window, registry = new CharacterAssetRegistry(), assetLoader = null, camera = null) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.window = windowObject;
@@ -22,7 +22,7 @@ export class Renderer {
     this.worldImages = new Map();
     this.rivalEventRenderer = new RivalEventRenderer(this.context, this.canvas, path => this.image(path));
     this.enemyRenderer = new EnemyRenderer(this.context);
-    this.camera = new Camera(canvas.width, canvas.height);
+    this.camera = camera ?? new Camera(canvas.width, canvas.height);
     this.renderDpr = 1;
   }
 
