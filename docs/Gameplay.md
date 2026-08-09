@@ -1,4 +1,4 @@
-# Gameplay — Alpha 1.7.0
+# Gameplay — Alpha 1.8.0
 
 ## Needs and social intelligence
 
@@ -64,3 +64,7 @@ Adults describe faith as skeptical, uncertain, believing, or devoted without exp
 ## Culture, Customs & Settlement Identity
 
 Established settlements develop distinct semantic identities from founder influence and accumulated cooperation, theft, migration, crisis, combat and belief signals. Stable tendencies can become informal customs that alter—but never force—sharing, assistance, protection, welcome and theft decisions. Castle and Great Den inspection shows qualitative culture and customs without internal values, plus a compact comparison when multiple settlements exist. Reputation remains evidence local to each witness and may spread with reduced certainty.
+
+## Diplomacy, Exchange & Settlement Relations
+
+Relationships are observed through speech, physical visitors, aid deliveries and the concise **RAPPORTI** section on a selected Castle or Great Den. There are no diplomatic action buttons. A hungry or undersupplied community can send a living adult representative; another community evaluates the real request from its surplus, cooperative or hospitable customs, trust and tension. A successful gift removes one to three real units at departure and adds the same cargo only on arrival. Visitors stay citizens and household members of home, return after their purpose, and can carry firsthand knowledge and a very small cultural signal home. Known theft can create tension, while unknown origins never magically implicate a Settlement. `HOSTILE` remains peaceful distrust in this milestone.
