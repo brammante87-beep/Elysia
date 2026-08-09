@@ -1,4 +1,4 @@
-# Gameplay — Alpha 1.6.0
+# Gameplay — Alpha 1.7.0
 
 ## Needs and social intelligence
 
@@ -60,3 +60,7 @@ After cycle 3, eligible Human and Beast settlements may face a paced local event
 ## Faith, interpretation and Divine will
 
 Adults describe faith as skeptical, uncertain, believing, or devoted without exposing numbers. Repeated witnessed interventions, crisis outcomes, contradictions, and meaningful abandonment can alter faith and support personal beliefs. One ambiguous event remains uncertain. Exalted inhabitants teach only beliefs they actually hold; listeners can agree, doubt, reject, or reinterpret them. Player inspection shows concise personal beliefs and Castle/Great Den inspection derives uncertain settlement trends. The same bounded dialogue scheduler protects Mobile density and the same language filter remains active in Family Mode.
+
+## Culture, Customs & Settlement Identity
+
+Established settlements develop distinct semantic identities from founder influence and accumulated cooperation, theft, migration, crisis, combat and belief signals. Stable tendencies can become informal customs that alter—but never force—sharing, assistance, protection, welcome and theft decisions. Castle and Great Den inspection shows qualitative culture and customs without internal values, plus a compact comparison when multiple settlements exist. Reputation remains evidence local to each witness and may spread with reduced certainty.

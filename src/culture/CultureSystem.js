@@ -1,0 +1,28 @@
+import { SettlementCulture } from './SettlementCulture.js';
+
+export class CultureSystem {
+  static SIGNALS = Object.freeze({ cooperation:{COOPERATION:1,INDIVIDUALISM:-.45}, theft:{COOPERATION:-.7,INDIVIDUALISM:.45}, welcome:{HOSPITALITY:1,DISTRUST:-.45}, outsiderConflict:{HOSPITALITY:-.5,DISTRUST:1}, defense:{COURAGE:1,CAUTION:.15}, shelter:{CAUTION:1,COURAGE:-.1}, devotion:{DEVOTION:1}, skepticism:{SKEPTICISM:1}, mercy:{MERCY:1,SEVERITY:-.3}, severity:{SEVERITY:1,MERCY:-.25} });
+  static CUSTOM_RULES = Object.freeze({ SHARE_FOOD_IN_CRISIS:['COOPERATION',.42], WELCOME_TRAVELERS:['HOSPITALITY',.42], DEFEND_SETTLEMENT:['COURAGE',.48], PROTECT_CHILDREN_FIRST:['CAUTION',.4], AVOID_THEFT:['COOPERATION',.36], HELP_INJURED:['MERCY',.36], RETURN_HOME_EARLY_DURING_DANGER:['CAUTION',.48] });
+  constructor(world, data = {}) { this.world=world; this.accumulator=data.accumulator ?? 0; }
+  ensure(settlement) { settlement.culture ??= new SettlementCulture(); return settlement.culture; }
+  initialize(settlement) {
+    const culture=this.ensure(settlement); if(culture.founderInfluence) return culture;
+    const founder=this.world.characters.find(item=>item.id===settlement.founderId) ?? this.world.characters.find(item=>item.settlementId===settlement.id);
+    if(!founder) return culture;
+    const strength=founder.isExalted?.22:.13; const signals={ COOPERATION:(founder.personality.kindness-founder.personality.selfishness)*strength, COURAGE:(founder.personality.courage-.5)*strength, HOSPITALITY:(founder.personality.sociability-.5)*strength, DEVOTION:(founder.faith.value-.5)*strength, SKEPTICISM:(.5-founder.faith.value)*strength };
+    for(const [key,value] of Object.entries(signals)) culture.dimensions[key]=culture.clamp(value);
+    culture.founderInfluence={ characterId:founder.id, exalted:founder.isExalted, strength, initializedAt:this.world.simulationTime }; return culture;
+  }
+  addSignal(settlementId, type, impact = 1, details = {}) {
+    const settlement=this.world.settlements.find(item=>item.id===settlementId); const mapping=CultureSystem.SIGNALS[type]; if(!settlement||!mapping)return false;
+    const culture=this.initialize(settlement); for(const [dimension,direction] of Object.entries(mapping)){const before=culture.value(dimension); const inertia=1+culture.stability[dimension]*.12; culture.dimensions[dimension]=culture.clamp(before+direction*Math.min(.06,Math.abs(impact)*.025)/inertia); culture.stability[dimension]+=Math.abs(impact); if(Math.abs(culture.dimensions[dimension]-before)>.001)this.world.diagnostics?.trace('cultureDimensionChanged',{settlementId,dimension,before,after:culture.dimensions[dimension]});}
+    this.world.diagnostics?.trace('cultureSignalAdded',{settlementId,type,impact}); if(details.important)culture.remember({type,cycle:this.world.worldTime?.cycle ?? 0,description:details.description ?? null}); this.refresh(settlement); return true;
+  }
+  refresh(settlement){const culture=this.ensure(settlement), previous=culture.identityDimensions.join(':'); for(const [custom,[dimension,threshold]] of Object.entries(CultureSystem.CUSTOM_RULES)){const value=culture.value(dimension), active=culture.hasCustom(custom); if(!active&&value>=threshold&&culture.stability[dimension]>=6){culture.customs.push(custom);this.world.diagnostics?.trace('customFormed',{settlementId:settlement.id,custom});}else if(active&&value<threshold-.18){culture.customs=culture.customs.filter(item=>item!==custom);this.world.diagnostics?.trace('customLost',{settlementId:settlement.id,custom});}else if(active&&value<threshold)this.world.diagnostics?.trace('customWeakened',{settlementId:settlement.id,custom});}
+    culture.identityDimensions=SettlementCulture.Dimensions.filter(key=>culture.value(key)>=.28).sort((a,b)=>culture.value(b)-culture.value(a)).slice(0,3); if(previous!==culture.identityDimensions.join(':'))this.world.diagnostics?.trace('settlementIdentityChanged',{settlementId:settlement.id,dimensions:[...culture.identityDimensions]});}
+  update(deltaTime){this.accumulator+=deltaTime;if(this.accumulator<15)return;this.accumulator=0;for(const settlement of this.world.settlements){this.initialize(settlement);const summary=this.world.settlementBeliefs?.forSettlement(settlement.id);if(summary?.population){const faith=this.world.characters.filter(c=>c.alive&&c.lifeStage==='adult'&&c.settlementId===settlement.id).reduce((sum,c)=>sum+c.faith.value,0)/summary.population;if(faith>.65)this.addSignal(settlement.id,'devotion',.25);if(faith<.35)this.addSignal(settlement.id,'skepticism',.25);}}}
+  probability(character, custom, base = 0) { const culture=this.world.settlements.find(item=>item.id===character.settlementId)?.culture; if(!culture?.hasCustom(custom))return base; const personality=custom==='SHARE_FOOD_IN_CRISIS'||custom==='HELP_INJURED'?character.personality.kindness:custom==='DEFEND_SETTLEMENT'?character.personality.courage:1-character.personality.selfishness; return Math.min(.9,base+.2+personality*.35); }
+  labels(culture){const names={COOPERATION:'Cooperativa',INDIVIDUALISM:'Individualista',COURAGE:'Coraggiosa',CAUTION:'Prudente',HOSPITALITY:'Accogliente',DISTRUST:'Diffidente',DEVOTION:'Devota',SKEPTICISM:'Scettica',MERCY:'Misericordiosa',SEVERITY:'Severa'};return culture.identityDimensions.map(key=>names[key]);}
+  identity(settlement, beast=false){const labels=this.labels(this.ensure(settlement));if(!labels.length)return beast?'Un branco dalla giovane identità.':'Un insediamento dalla giovane identità.';return `${beast?'Una comunità':'Un insediamento'} ${labels.map(x=>x.toLocaleLowerCase('it')).join(' e ')}.`;}
+  toJSON(){return {accumulator:this.accumulator};}
+}

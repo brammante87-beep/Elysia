@@ -5,6 +5,7 @@ import { CharacterMemory } from '../social/CharacterMemory.js';
 import { CharacterKnowledge } from '../social/CharacterKnowledge.js';
 import { PersonalFaith } from '../beliefs/PersonalFaith.js';
 import { PersonalBeliefs } from '../beliefs/PersonalBeliefs.js';
+import { SocialReputation } from '../social/SocialReputation.js';
 
 export class Character {
   constructor(data) {
@@ -65,6 +66,7 @@ export class Character {
     this.faith = new PersonalFaith(data.faith, { faithDisposition: this.personality.faithDisposition, createdByElysia: this.chosenOne, externalMigrant: this.originType === 'externalMigrant' });
     this.beliefs = new PersonalBeliefs(data.beliefs);
     this.formerDivineBeliefs = [...new Set(data.formerDivineBeliefs ?? [])].slice(0, 3);
+    this.reputation = new SocialReputation(data.reputation);
     this.behaviourMemory = new BehaviourMemory(data.behaviourPreferences ?? (this.lifeStage === 'child' ? { theft: 0 } : null));
     this.behaviourPreferences = this.behaviourMemory.preferences;
     if (data.sexCharacteristics) this.sexCharacteristics = data.sexCharacteristics;
@@ -77,5 +79,5 @@ export class Character {
 
   get hasDivineShield() { return this.alive && this.hasShield === true; }
 
-  toJSON() { return { ...this, position: { ...this.position }, needs: this.needs.toJSON(), personality: this.personality.toJSON(), memories: this.memories.toJSON(), knowledge: this.knowledge.toJSON(), faith: this.faith.toJSON(), beliefs: this.beliefs.toJSON(), formerDivineBeliefs: [...this.formerDivineBeliefs] }; }
+  toJSON() { return { ...this, position: { ...this.position }, needs: this.needs.toJSON(), personality: this.personality.toJSON(), memories: this.memories.toJSON(), knowledge: this.knowledge.toJSON(), faith: this.faith.toJSON(), beliefs: this.beliefs.toJSON(), reputation: this.reputation.toJSON(), formerDivineBeliefs: [...this.formerDivineBeliefs] }; }
 }
