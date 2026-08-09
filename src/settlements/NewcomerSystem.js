@@ -21,7 +21,7 @@ export class NewcomerSystem {
   eligibleSettlements() { return this.world.settlements.filter(settlement => SettlementRules.canReceiveExternalArrival(settlement) && !this.pendingIds.some(id => this.world.characters.find(character => character.id === id)?.settlementId === settlement.id)); }
   spawn(cycle) {
     this.world.settlementProgression.ensureFoundingSettlement();
-    const eligible = this.eligibleSettlements(); const settlement = eligible[Math.abs(cycle) % Math.max(1, eligible.length)];
+    const eligible = this.eligibleSettlements().sort((a,b)=>b.homeBuildingIds.length-a.homeBuildingIds.length || a.id.localeCompare(b.id)); const settlement = eligible[0];
     if (!settlement) return null;
     const target = settlement.center ?? this.world.findHome(settlement.foundingHomeId)?.position; const position = target && this.world.findEdgeReachablePosition(target); if (!position) return null;
     const id = `newcomer-${cycle}-${this.world.nextCharacterId++}`; const seed = this.world.worldSeed + cycle + this.world.nextCharacterId; const originWorld = this.narrative.origin(seed); const arrivalStoryType = this.narrative.story(seed + 3); const species = this.world.worldType === WorldTypeId.BEAST ? CharacterCreator.BeastSpecies[Math.abs(seed) % CharacterCreator.BeastSpecies.length] : null; const dialogue = this.narrative.dialogue(arrivalStoryType, originWorld, species, seed + 7);

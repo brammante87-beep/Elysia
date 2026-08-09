@@ -1,5 +1,6 @@
+import { LionRenderer } from './LionRenderer.js';
 export class EnemyRenderer {
-  constructor(context) { this.context = context; }
+  constructor(context) { this.context = context; this.lionRenderer = new LionRenderer(context); }
 
   render(enemy, point, scale, time) {
     const context = this.context;
@@ -12,21 +13,7 @@ export class EnemyRenderer {
     context.restore();
   }
 
-  drawLionArcher(enemy, time) {
-    const c=this.context, walk=Math.sin(time*6)*3, tail=Math.sin(time*3.2)*8, draw=['draw','aim'].includes(enemy.attackPhase), hit=enemy.attackPhase==='hit'?-.18:0;
-    c.rotate(hit); c.lineCap='round';
-    c.strokeStyle='#9b6430';c.lineWidth=7;c.beginPath();c.moveTo(-10,-27);c.bezierCurveTo(-30,-29,-34,-10,-23,tail);c.stroke();c.fillStyle='#4b2530';c.beginPath();c.ellipse(-23,tail,6,10,.3,0,Math.PI*2);c.fill();
-    c.strokeStyle='#8c623c';c.lineWidth=7;c.beginPath();c.moveTo(-7,-8);c.lineTo(-9+walk,10);c.moveTo(7,-8);c.lineTo(9-walk,10);c.stroke();
-    c.fillStyle='#392937';c.beginPath();c.moveTo(-15,-37);c.lineTo(14,-37);c.lineTo(12,-7);c.lineTo(-12,-7);c.closePath();c.fill();
-    c.fillStyle='#a87338';c.fillRect(-14,-35,28,8);c.strokeStyle='#dfbc6c';c.lineWidth=2;c.strokeRect(-12,-32,24,19);
-    c.fillStyle='#6c3b2d';c.beginPath();c.moveTo(-16,-37);c.lineTo(-9,-45);c.lineTo(-2,-34);c.fill();c.beginPath();c.moveTo(16,-37);c.lineTo(9,-45);c.lineTo(2,-34);c.fill();
-    c.fillStyle='#6f3826';c.beginPath();c.arc(0,-51,20,0,Math.PI*2);c.fill();
-    c.fillStyle='#c88a43';c.beginPath();c.moveTo(-11,-65);c.lineTo(-5,-75);c.lineTo(0,-64);c.moveTo(11,-65);c.lineTo(5,-75);c.lineTo(0,-64);c.fill();c.beginPath();c.ellipse(0,-53,14,17,0,0,Math.PI*2);c.fill();
-    c.fillStyle='#e2b56f';c.beginPath();c.ellipse(7,-49,12,8,0,0,Math.PI*2);c.fill();c.fillStyle='#3a211b';c.beginPath();c.arc(15,-52,3,0,Math.PI*2);c.fill();c.fillStyle='#f3d66f';c.beginPath();c.arc(5,-59,2,0,Math.PI*2);c.fill();
-    c.strokeStyle='#d19a45';c.lineWidth=4;c.beginPath();c.arc(23,-28,23,-Math.PI/2,Math.PI/2);c.stroke();c.strokeStyle='#f6e1b5';c.lineWidth=1.5;c.beginPath();c.moveTo(23,-51);c.lineTo(draw?0:23,-28);c.lineTo(23,-5);c.stroke();
-    c.strokeStyle='#bd8142';c.lineWidth=6;c.beginPath();c.moveTo(-8,-32);c.lineTo(draw?0:-2,-28);c.moveTo(8,-32);c.lineTo(draw?1:18,-28);c.stroke();
-    c.fillStyle='#5a3424';c.fillRect(-19,-39,6,27);c.strokeStyle='#eee0b5';c.lineWidth=2;for(let i=0;i<4;i++){c.beginPath();c.moveTo(-16,-38+i);c.lineTo(-10,-57+i);c.stroke();}
-  }
+  drawLionArcher(enemy, time) { this.lionRenderer.render({civilian:false,phase:enemy.attackPhase,time}); }
 
   drawWorldIIWarrior(enemy, time) {
     const c=this.context, step=Math.sin(time*6)*4, attack=enemy.attackPhase==='thrust'?16:0, reaction=enemy.attackPhase==='hit'?5:0;c.translate(-reaction,Math.sin(time*2.2));

@@ -1,8 +1,10 @@
 # Elysia
 
-**Alpha 1.8.0 — Culture, Customs & Settlement Identity**
+**Alpha 1.8.5 — Settlement Boundaries & Visual Rebuild**
 
 Alpha 1.7.0 adds emergent per-settlement culture, customs, social reputation and culture-aware behavior while preserving every completed Alpha 1.6.0 system, including normalized Hunger, Safety and Happiness; persistent pair-specific relationships, deterministic continuous personality, bounded memories and source-aware knowledge; and a completely local semantic dialogue pipeline. Characters choose a `CommunicationIntent` before `LocalDialogueRealizer` composes readable Italian. Short conversations can transfer knowledge without omniscience, while cooldowns, information-value suppression, priorities, and Desktop/Mobile density limits keep world-anchored speech useful. The same system runs offline in Standard and Family Mode, where presentation-sensitive identity language is filtered.
+
+Alpha 1.8.5 stabilizes settlement growth: one Exalted may found one community, every community owns a distinct water source, four completed Homes form the Castle or Great Den, and routine inter-settlement traffic is closed. Lightning, Divine Weapons, and the Lion civilization now use rebuilt production-intent rendering.
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. Built on Alpha 1.0.0 civilization and migration, this milestone introduces the Rival Omnipotent’s first hostile act when the second Settlement is registered. A cinematic warning and ten-second Shield preparation window precede a meteor strike on the original Settlement; an unexplained rainbow and unicorn preserve its Castle while unshielded inhabitants face the established death rules. The game continues after the attack. The foundation also gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving
@@ -94,3 +96,12 @@ A dedicated `WorldEventSystem` schedules bounded, world-state-eligible local cri
 ## Alpha 1.8.0 — Diplomacy, Exchange & Settlement Relations
 
 Settlements now form persistent, perspective-specific relationships from witnessed aid, visits, family links, culture, belief and known wrongdoing. Trust, affinity, cooperation and tension remain internal; Castle and Great Den inspection presents stable qualitative relations and important remembered aid instead of scores or diplomacy buttons. Real shortages can produce representative requests and autonomous, scarcity-aware decisions. Accepted Food, Water or Wood is removed from donor storage, physically carried by a visiting adult, delivered exactly once and reported on return. Visitors retain their original membership, family visits require real kinship, and limited cultural influence requires completed contact. Hostility changes social behavior only: Alpha 1.8.0 adds no war, treaties, markets, currency or territory.
+
+
+## Alpha 1.8.5 — Settlement Boundaries & Visual Rebuild
+
+An Exalted remains Exalted after founding but the persisted `hasFoundedSettlement` state makes that founding a once-per-life act. A reservation counts against the exact three-Settlement cap. Every Human or Beast Settlement claims one spatially separated Water Source; normal residents use only their home Settlement's source and a dry source creates a real local crisis. Routine visits and physical aid traffic are disabled while relationship and genealogy records remain.
+
+The fourth-Home stall came from newcomer selection distributing arrivals across every growing Settlement before completing the nearest milestone. Growing Settlements are now prioritized by registered Home count, and the external-arrival allowance is exactly the three Households required after the founding Household. Transformation still requires four completed, registered Homes, absorbs all four, preserves all Households, and consolidates storage into the 30/30/30 central structure.
+
+Lightning is rebuilt as a staged gathering, deterministic organic branched strike, impact flare, and fading electrical remnants. Divine armament materializes visibly and remains readable: Humans receive a luminous blade, Deer reinforced antlers, Dogs a combat collar, and Cats divine claws. The Sahran Lion Archer and civilian share a new anatomical lionfolk renderer with muzzle, ears, mane, humanoid limbs, tail and civilization-specific dress; the Archer's raising, drawing, aiming and release phases remain synchronized with projectile creation.

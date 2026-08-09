@@ -18,6 +18,7 @@ export class Character {
     this.householdId = data.householdId ?? null;
     this.homeBuildingId = data.homeBuildingId ?? null;
     this.settlementId = data.settlementId ?? null;
+    this.homeSettlementId = data.homeSettlementId ?? this.settlementId;
     this.partnerId = data.partnerId ?? null;
     this.formerPartnerIds = [...new Set(data.formerPartnerIds ?? [])];
     this.parentIds = [...(data.parentIds ?? [])];
@@ -52,6 +53,7 @@ export class Character {
     this.blessingCount = data.blessingCount ?? 0;
     this.isExalted = data.isExalted ?? false;
     this.canFoundSettlement = data.canFoundSettlement ?? this.isExalted;
+    this.hasFoundedSettlement = data.hasFoundedSettlement ?? false;
     this.isArmed = data.isArmed ?? false;
     this.hasShield = data.hasShield ?? false;
     this.health = data.health ?? 100;

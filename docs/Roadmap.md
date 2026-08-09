@@ -50,3 +50,8 @@ Each Settlement owns a persistent multidimensional `SettlementCulture`. Aggregat
 ## Completed — Alpha 1.8.0 — Diplomacy, Exchange & Settlement Relations
 
 Every active Settlement pair has one persistent relationship with asymmetric perceptions, bounded important memories, stable qualitative status and perspective-derived reputation. Adult representatives and family visitors travel physically without changing citizenship. Actual shortages may generate requests; donor surplus, culture and history determine autonomous acceptance, partial help, refusal or inability. Resource cargo is conserved through a persisted delivery state machine. Known inter-Settlement theft affects only informed perceptions, minor tension can recover, and limited cultural diffusion requires a completed visit. No treaties, markets, borders or inter-Settlement war are introduced.
+
+
+## Alpha 1.8.5 — Settlement Boundaries & Visual Rebuild
+
+Completed stabilization milestone: one lifetime founding per Exalted, an atomic three-Settlement reservation cap, unique claimed Water Sources, isolated resident behavior, reliable four-Home transformation, and complete Lightning, Divine Weapon, Lion Archer and Lion Civilian rendering rebuilds. Laws and Justice remain outside this milestone.

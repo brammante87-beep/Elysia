@@ -1,4 +1,4 @@
-# Gameplay — Alpha 1.8.0
+# Gameplay — Alpha 1.8.5
 
 ## Needs and social intelligence
 
@@ -68,3 +68,8 @@ Established settlements develop distinct semantic identities from founder influe
 ## Diplomacy, Exchange & Settlement Relations
 
 Relationships are observed through speech, physical visitors, aid deliveries and the concise **RAPPORTI** section on a selected Castle or Great Den. There are no diplomatic action buttons. A hungry or undersupplied community can send a living adult representative; another community evaluates the real request from its surplus, cooperative or hospitable customs, trust and tension. A successful gift removes one to three real units at departure and adds the same cargo only on arrival. Visitors stay citizens and household members of home, return after their purpose, and can carry firsthand knowledge and a very small cultural signal home. Known theft can create tension, while unknown origins never magically implicate a Settlement. `HOSTILE` remains peaceful distrust in this milestone.
+
+
+## Settlement boundaries (Alpha 1.8.5)
+
+Each normal Character retains a `homeSettlementId`. Work, gathering, meals, sleep, building and social life remain local; family memories do not produce physical visits. Each Settlement claims exactly one Water Source, and later Settlement founders must travel to a buildable location beside a different unclaimed source. Four completed Homes—not three—are visibly registered before they are absorbed into a Castle or Great Den.
