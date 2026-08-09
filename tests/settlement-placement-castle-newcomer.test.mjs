@@ -61,14 +61,14 @@ test('four completed qualifying homes transform the founding Human home exactly 
   for (let number = 2; number <= 3; number += 1) { fixture.addCompletedHome(world, number, { x: 32 + number * 6, y: 24 }); assert.equal(world.settlementProgression.evaluate(), false); }
   fixture.addCompletedHome(world, 4, { x: 14, y: 24 }); const central = world.settlementProgression.evaluate();
   assert.equal(central.id, founding.id); assert.equal(central.kind, 'centralStructure'); assert.equal(central.centralVariant, 'castle'); assert.equal(central.visualVariant, 'castle'); assert.deepEqual(central.storage.values, { wood: 5, water: 4, food: 6 }); assert.equal(central.storage.capacity, 30);
-  assert.equal(world.homes.length, 4); assert.equal(world.households[0].homeBuildingId, central.id); assert.equal(world.settlements[0].centralStructureId, central.id); assert.equal(world.homes.filter(home => home.kind === 'centralStructure').length, 1); assert.equal(world.settlementProgression.evaluate(), false);
+  assert.equal(world.homes.length, 1); assert.equal(world.households[0].homeBuildingId, central.id); assert.equal(world.settlements[0].centralStructureId, central.id); assert.equal(world.homes.filter(home => home.kind === 'centralStructure').length, 1); assert.equal(world.settlementProgression.evaluate(), false);
   fixture.addCompletedHome(world, 5, { x: 32, y: 34 }); assert.equal(world.settlementProgression.evaluate(), false); assert.equal(world.homes.filter(home => home.kind === 'centralStructure').length, 1);
   assert.ok(world.effects.some(effect => effect.type === 'settlementTransform' && effect.message.includes('Castello'))); assert.ok(world.diagnostics.events.some(event => event.type === 'centralTransformationCompleted'));
 });
 
 test('four completed Beast dens transform the founding den into one Great Den with shared capacity', () => {
   const world = fixture.create('beast'); for (let number = 2; number <= 4; number += 1) fixture.addCompletedHome(world, number, { x: 8 + number * 7, y: 10 });
-  const central = world.settlementProgression.evaluate(); assert.equal(central.centralVariant, 'greatDen'); assert.equal(central.visualVariant, 'greatDen'); assert.equal(central.storage.capacity, 30); assert.equal(world.homes.length, 4); assert.equal(world.homes.filter(home => home.kind === 'centralStructure').length, 1);
+  const central = world.settlementProgression.evaluate(); assert.equal(central.centralVariant, 'greatDen'); assert.equal(central.visualVariant, 'greatDen'); assert.equal(central.storage.capacity, 30); assert.equal(world.homes.length, 1); assert.equal(world.homes.filter(home => home.kind === 'centralStructure').length, 1);
 });
 
 test('newcomer walks, pauses for readable exact speech, then progresses once and persists its introduction stage', () => {

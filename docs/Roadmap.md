@@ -1,5 +1,8 @@
 # Elysia Roadmap
 
+## Completed — Alpha 1.3.0
+Four founding dwellings now consolidate into one Castle or Great Den without losing households, relationships, characters, or resources. Legacy Castle-plus-three-Home saves are repaired only when all three registered obsolete dwellings are occupied. Rival combatants and civilian reveal forms have rebuilt presentations, Desktop play fills the viewport without a camera button, Mobile WorldTime sits immediately above its toolbar, and selection order is Plants, Beasts, Humans.
+
 - **Alpha 0.0.1 — COMPLETE — Foundation**
 - **Alpha 0.0.2 — COMPLETE — Title**
 - **Alpha 0.0.3 — COMPLETE — Introduction / World choice**

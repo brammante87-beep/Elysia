@@ -1,6 +1,6 @@
 # Elysia
 
-**Alpha 1.1.0 — The Rival Omnipotent & First Attack**
+**Alpha 1.3.0 — Visual & Presentation Consolidation**
 
 Elysia is being rebuilt as a vanilla JavaScript, ES-module, HTML5 Canvas game. Built on Alpha 1.0.0 civilization and migration, this milestone introduces the Rival Omnipotent’s first hostile act when the second Settlement is registered. A cinematic warning and ten-second Shield preparation window precede a meteor strike on the original Settlement; an unexplained rainbow and unicorn preserve its Castle while unshielded inhabitants face the established death rules. The game continues after the attack. The foundation also gives Human and Beast households a 90-second active-simulation day/night cycle,
 nighttime rest, deterministic intimacy and the first generation of children while preserving
@@ -55,7 +55,7 @@ normal gathering resumes at dawn. The semantic timer and in-progress meal state 
 
 ## Alpha 0.0.8 — Settlement Growth & First Castle
 
-A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle (approximately every 90 active seconds), one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving resources, residents, surrounding homes, and its generated settlement name. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
+A stable food-provision slot now manifests as a Cow for Humans and a finite natural food cache for Beasts. After each completed Elysia cycle (approximately every 90 active seconds), one newcomer can arrive from a reachable edge, gather three units of shared shelter material, and establish an independent household in the first settlement. Unrelated mutually compatible adults can pair; Beast pairs are same-species. At four completed homes the founding dwelling autonomously transforms into a 30/30/30 Castle or Great Den while preserving distinct households, residents, relationships, summed resources, and its generated settlement name; the four obsolete dwellings are removed. Arrival-cycle, household, settlement, occupancy, relationship, food-yield, and central-structure state are semantic save data.
 
 ## Alpha 0.0.9 — Complete Divine Power Set
 All ten fixed toolbar powers are functional in Human and Beast worlds. Placement miracles create Plants, Water, gameplay Flowers and world-specific food; character miracles apply Lightning, Blessing, Change Sex, Weapons and Shield; Ray of Light issues a temporary navigated rally. Flowers mature into renewable Apple Trees after exactly 90 elapsed simulation seconds, independently of cycle boundaries.
